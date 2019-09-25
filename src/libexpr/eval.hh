@@ -7,6 +7,7 @@
 #include "hash.hh"
 #include "config.hh"
 #include "function-trace.hh"
+#include "logging.hh"
 
 #include <map>
 #include <optional>
@@ -357,7 +358,25 @@ struct EvalSettings : Config
 
     Setting<bool> traceFunctionCalls{this, false, "trace-function-calls",
         "Emit log messages for each function entry and exit."};
+
+    Setting<bool> traceFileAccess{this, false, "trace-access",
+        "Emit log messages when files are being accessed."};
 };
+
+#define printLog3(level, type, path, args...) \
+    do { \
+        if (level <= nix::verbosity) { \
+            Logger::Fields fields { fmt("type=%s", type), fmt("path=%s") }; \
+            logger->log(level, fmt(args), fields); \
+        } \
+    } while (0)
+
+#define printFileAccess(type, path) \
+    printLog3( \
+        evalSettings.traceFileAccess ? lvlInfo : lvlTalkative, \
+        type, path, \
+        "trace-file-access: type=%1 path=%2", type, path \
+    )
 
 extern EvalSettings evalSettings;
 

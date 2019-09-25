@@ -741,7 +741,7 @@ void EvalState::evalFile(const Path & path_, Value & v)
         return;
     }
 
-    printTalkative("evaluating file '%1%'", path2);
+    printFileAccess("evalFile", path2);
     Expr * e = nullptr;
 
     auto j = fileParseCache.find(path2);
@@ -1651,8 +1651,8 @@ string EvalState::copyPathToStore(PathSet & context, const Path & path)
             ? store->computeStorePathForPath(baseNameOf(path), checkSourcePath(path)).first
             : store->addToStore(baseNameOf(path), checkSourcePath(path), true, htSHA256, defaultPathFilter, repair);
         srcToStore[path] = dstPath;
-        printMsg(lvlChatty, format("copied source '%1%' -> '%2%'")
-            % path % dstPath);
+
+        printFileAccess("copyPathToStore", path);
     }
 
     context.insert(dstPath);

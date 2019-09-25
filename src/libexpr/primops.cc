@@ -839,6 +839,8 @@ static void prim_pathExists(EvalState & state, const Pos & pos, Value * * args, 
             % path % e.path % pos);
     }
 
+    printFileAccess("pathExists", path);
+
     try {
         mkBool(v, pathExists(state.checkSourcePath(path)));
     } catch (SysError & e) {
@@ -882,6 +884,9 @@ static void prim_readFile(EvalState & state, const Pos & pos, Value * * args, Va
         throw EvalError(format("cannot read '%1%', since path '%2%' is not valid, at %3%")
             % path % e.path % pos);
     }
+
+    printFileAccess("readFile", path);
+
     string s = readFile(state.checkSourcePath(state.toRealPath(path, context)));
     if (s.find((char) 0) != string::npos)
         throw Error(format("the contents of the file '%1%' cannot be represented as a Nix string") % path);
@@ -953,6 +958,8 @@ static void prim_readDir(EvalState & state, const Pos & pos, Value * * args, Val
         throw EvalError(format("cannot read '%1%', since path '%2%' is not valid, at %3%")
             % path % e.path % pos);
     }
+
+    printFileAccess("readDir", path);
 
     DirEntries entries = readDirectory(state.checkSourcePath(path));
     state.mkAttrs(v, entries.size());
@@ -1043,6 +1050,9 @@ static void addPath(EvalState & state, const Pos & pos, const string & name, con
     const auto path = evalSettings.pureEval && expectedHash ?
         path_ :
         state.checkSourcePath(path_);
+
+    printFileAccess("addPath", path);
+
     PathFilter filter = filterFun ? ([&](const Path & path) {
         auto st = lstat(path);
 
