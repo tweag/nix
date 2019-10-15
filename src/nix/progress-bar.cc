@@ -111,7 +111,7 @@ public:
         quitCV.notify_one();
     }
 
-    void log(Verbosity lvl, const FormatOrString & fs) override
+    void log(Verbosity lvl, const FormatOrString & fs, const Fields & _fields = {}) override
     {
         auto state(state_.lock());
         log(*state, lvl, fs.s);

@@ -63,7 +63,7 @@ public:
 
     virtual ~Logger() { }
 
-    virtual void log(Verbosity lvl, const FormatOrString & fs) = 0;
+    virtual void log(Verbosity lvl, const FormatOrString & fs, const Fields & fields = {}) = 0;
 
     void log(const FormatOrString & fs)
     {

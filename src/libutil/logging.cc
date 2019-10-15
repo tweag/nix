@@ -36,7 +36,7 @@ public:
         tty = isatty(STDERR_FILENO);
     }
 
-    void log(Verbosity lvl, const FormatOrString & fs) override
+    void log(Verbosity lvl, const FormatOrString & fs, const Fields & _fields = {}) override
     {
         if (lvl > verbosity) return;
 
@@ -126,12 +126,13 @@ struct JSONLogger : Logger
         prevLogger.log(lvlError, "@nix " + json.dump());
     }
 
-    void log(Verbosity lvl, const FormatOrString & fs) override
+    void log(Verbosity lvl, const FormatOrString & fs, const Fields & fields = {}) override
     {
         nlohmann::json json;
         json["action"] = "msg";
         json["level"] = lvl;
         json["msg"] = fs.s;
+        addFields(json, fields);
         write(json);
     }
 

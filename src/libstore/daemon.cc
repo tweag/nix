@@ -64,7 +64,7 @@ struct TunnelLogger : public Logger
             state->pendingMsgs.push_back(s);
     }
 
-    void log(Verbosity lvl, const FormatOrString & fs) override
+    void log(Verbosity lvl, const FormatOrString & fs, const Fields & _fields = {}) override
     {
         if (lvl > verbosity) return;
 
@@ -109,7 +109,7 @@ struct TunnelLogger : public Logger
     {
         if (GET_PROTOCOL_MINOR(clientVersion) < 20) {
             if (!s.empty())
-                log(lvl, s + "...");
+                log(lvl, s + "...", fields);
             return;
         }
 
