@@ -356,7 +356,7 @@ struct EvalSettings : Config
         "Prefixes of URIs that builtin functions such as fetchurl and fetchGit are allowed to fetch."};
 
     Setting<bool> traceFunctionCalls{this, false, "trace-function-calls",
-        "Emit log messages for each function entry and exit at the 'vomit' log level (-vvvv)"};
+        "Emit log messages for each function entry and exit."};
 };
 
 extern EvalSettings evalSettings;
