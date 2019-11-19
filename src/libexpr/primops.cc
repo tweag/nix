@@ -142,6 +142,7 @@ static void prim_scopedImport(EvalState & state, const Pos & pos, Value * * args
             }
 
             printTalkative("evaluating file '%1%'", realPath);
+            printFileAccess("evalFile", realPath);
             Expr * e = state.parseExprFromFile(resolveExprPath(realPath), staticEnv);
 
             e->eval(state, *env, v);
