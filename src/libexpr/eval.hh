@@ -375,7 +375,7 @@ struct EvalSettings : Config
     printLog3( \
         evalSettings.traceFileAccess ? lvlInfo : lvlTalkative, \
         type, path, \
-        "trace-file-access: type=%1 path=%2", type, path \
+        "trace-file-access: type=%s path=%s", type, path \
     )
 
 extern EvalSettings evalSettings;
