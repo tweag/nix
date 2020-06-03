@@ -2,6 +2,7 @@
 
 #include "path.hh"
 #include "hash.hh"
+#include "symbolic-output.hh"
 #include "serialise.hh"
 #include "crypto.hh"
 #include "lru-cache.hh"
@@ -339,6 +340,10 @@ public:
     StorePath followLinksToStorePath(std::string_view path) const;
 
     StorePathWithOutputs followLinksToStorePathWithOutputs(std::string_view path) const;
+
+    /* Get the actual path for a symbolic output */
+    virtual StorePath resolveOutput(const SymbolicOutput & symbolicOutput)
+    { unsupported("resolveOutput"); }
 
     /* Constructs a unique store path name. */
     StorePath makeStorePath(const string & type,

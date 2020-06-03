@@ -57,6 +57,8 @@ public:
 
     StorePathSet querySubstitutablePaths(const StorePathSet & paths) override;
 
+    StorePath resolveOutput(const SymbolicOutput & SymbolicOutput) override;
+
     void querySubstitutablePathInfos(const StorePathSet & paths,
         SubstitutablePathInfos & infos) override;
 

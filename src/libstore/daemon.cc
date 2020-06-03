@@ -734,6 +734,16 @@ static void performOp(TunnelLogger * logger, ref<Store> store,
         break;
     }
 
+    case wopResolveOutput: {
+        auto deriver = store->parseStorePath(readString(from));
+        auto outputName = readString(from);
+        logger->startWork();
+        auto outPath = store->resolveOutput(SymbolicOutput{ std::move(deriver), outputName });
+        logger->stopWork();
+        to << store->printStorePath(outPath);
+        break;
+    }
+
     default:
         throw Error(format("invalid operation %1%") % op);
     }

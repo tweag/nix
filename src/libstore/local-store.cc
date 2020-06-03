@@ -1475,5 +1475,10 @@ void LocalStore::createUser(const std::string & userName, uid_t userId)
     }
 }
 
+StorePath LocalStore::resolveOutput(const SymbolicOutput &symbolicOutput) {
+    Derivation builder = this->derivationFromPath(symbolicOutput.deriver);
+    return builder.findOutput(symbolicOutput.outputName).clone();
+}
+
 
 }

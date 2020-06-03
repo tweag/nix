@@ -2694,6 +2694,9 @@ struct RestrictedStore : public LocalFSStore
     std::string getUri() override
     { return next->getUri(); }
 
+    StorePath resolveOutput(const SymbolicOutput & symbolicOutput) override
+    { return next->resolveOutput(symbolicOutput); }
+
     StorePathSet queryAllValidPaths() override
     {
         StorePathSet paths;

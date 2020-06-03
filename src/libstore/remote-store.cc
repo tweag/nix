@@ -351,6 +351,13 @@ void RemoteStore::querySubstitutablePathInfos(const StorePathSet & paths,
     }
 }
 
+StorePath RemoteStore::resolveOutput(const SymbolicOutput & symbolicOutput)
+{
+    auto conn(getConnection());
+    conn->to << wopResolveOutput << printStorePath(symbolicOutput.deriver) << symbolicOutput.outputName;
+    conn.processStderr();
+    return parseStorePath(readString(conn->from));
+}
 
 void RemoteStore::queryPathInfoUncached(const StorePath & path,
     Callback<std::shared_ptr<const ValidPathInfo>> callback) noexcept

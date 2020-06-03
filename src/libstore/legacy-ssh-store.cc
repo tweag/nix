@@ -274,6 +274,14 @@ struct LegacySSHStore : public Store
         return readStorePaths<StorePathSet>(*this, conn->from);
     }
 
+    StorePath resolveOutput(const SymbolicOutput & symbolicOutput) override
+    {
+        auto conn(connections->get());
+        conn->to << wopResolveOutput << printStorePath(symbolicOutput.deriver) << symbolicOutput.outputName;
+        conn->to.flush();
+        return parseStorePath(readString(conn->from));
+    }
+
     void connect() override
     {
         auto conn(connections->get());

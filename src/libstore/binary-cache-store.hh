@@ -94,6 +94,9 @@ public:
     void ensurePath(const StorePath & path) override
     { unsupported("ensurePath"); }
 
+    StorePath resolveOutput(const SymbolicOutput & symbolicOutput) override
+    { unsupported("resolveOutput"); }
+
     ref<FSAccessor> getFSAccessor() override;
 
     void addSignatures(const StorePath & storePath, const StringSet & sigs) override;
