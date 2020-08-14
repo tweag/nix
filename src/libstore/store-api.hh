@@ -291,6 +291,19 @@ public:
     StorePath computeStorePathForText(const string & name, const string & s,
         const StorePathSet & references) const;
 
+    /*
+     * Convert the given store path (in Nar format) to its content-addressed
+     * version.
+     *
+     * Write the new content-addressed path in to `dest` and return the
+     * `ValidPathInfo` corresponding to it.
+     */
+    ValidPathInfo makeNarContentAddressed(
+            const ValidPathInfo & info,
+            const StringSource & source,
+            StringSink & dest
+    );
+
     /* Check whether a path is valid. */
     bool isValidPath(const StorePath & path);
 

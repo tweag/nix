@@ -1,4 +1,5 @@
 #include "crypto.hh"
+#include "references.hh"
 #include "globals.hh"
 #include "store-api.hh"
 #include "util.hh"
@@ -385,6 +386,40 @@ StorePathSet Store::queryDerivationOutputs(const StorePath & path)
         outputPaths.emplace(std::move(i.second));
     }
     return outputPaths;
+}
+
+ValidPathInfo Store::makeNarContentAddressed(
+        const ValidPathInfo & info,
+        const StringSource & source,
+        StringSink & dest
+    )
+{
+    bool hasSelfReference = info.references.count(info.path);
+    *dest.s = source.s;
+    std::string oldHashPart(info.path.hashPart());
+    HashModuloSink hashModuloSink(htSHA256, oldHashPart);
+    hashModuloSink((unsigned char *) dest.s->data(), dest.s->size());
+
+    auto narHash = hashModuloSink.finish().first;
+
+    ValidPathInfo newInfo(
+        makeFixedOutputPath(
+            FileIngestionMethod::Recursive,
+            narHash,
+            info.path.name(),
+            info.references,
+            hasSelfReference
+        )
+    );
+    newInfo.references = info.references;
+    if (hasSelfReference) newInfo.references.insert(newInfo.path);
+    newInfo.narHash = narHash;
+    newInfo.narSize = dest.s->size();
+    newInfo.ca = FixedOutputHash {
+        .method = FileIngestionMethod::Recursive,
+        .hash = *newInfo.narHash,
+    };
+    return newInfo;
 }
 
 bool Store::isValidPath(const StorePath & storePath)
