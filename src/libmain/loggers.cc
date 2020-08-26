@@ -1,27 +1,12 @@
 #include "loggers.hh"
 #include "progress-bar.hh"
 #include "util.hh"
+#include "globals.hh"
 
 namespace nix {
 
-LogFormat defaultLogFormat = LogFormat::raw;
-
-LogFormat parseLogFormat(const std::string & logFormatStr) {
-    if (logFormatStr == "raw" || getEnv("NIX_GET_COMPLETIONS"))
-        return LogFormat::raw;
-    else if (logFormatStr == "raw-with-logs")
-        return LogFormat::rawWithLogs;
-    else if (logFormatStr == "internal-json")
-        return LogFormat::internalJson;
-    else if (logFormatStr == "bar")
-        return LogFormat::bar;
-    else if (logFormatStr == "bar-with-logs")
-        return LogFormat::barWithLogs;
-    throw Error("option 'log-format' has an invalid value '%s'", logFormatStr);
-}
-
 Logger * makeDefaultLogger() {
-    switch (defaultLogFormat) {
+    switch (settings.logFormat) {
     case LogFormat::raw:
         return makeSimpleLogger(false);
     case LogFormat::rawWithLogs:
@@ -37,12 +22,8 @@ Logger * makeDefaultLogger() {
     }
 }
 
-void setLogFormat(const std::string & logFormatStr) {
-    setLogFormat(parseLogFormat(logFormatStr));
-}
-
 void setLogFormat(const LogFormat & logFormat) {
-    defaultLogFormat = logFormat;
+    settings.logFormat = logFormat;
     createDefaultLogger();
 }
 
