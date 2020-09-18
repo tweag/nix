@@ -888,7 +888,7 @@ public:
     // FIXME: default shows as "3", but should show as "bar", due to the default
     // being an enum variant
     Setting<LogFormat> logFormat{this, LogFormat("bar"), "log-format",
-        fmt("Default build output logging format. Valid options are: %s.", "")};
+        fmt("Default build output logging format. Valid options are: %s.", listLogFormats())};
 
     Logger* makeDefaultLogger();
 };
