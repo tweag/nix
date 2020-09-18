@@ -8,8 +8,6 @@ libstore_SOURCES := $(wildcard $(d)/*.cc $(d)/builtins/*.cc)
 
 libstore_LIBS = libutil
 
-libstore_ALLOW_UNDEFINED = 1
-
 libstore_LDFLAGS = $(SQLITE3_LIBS) -lbz2 $(LIBCURL_LIBS) $(SODIUM_LIBS) -pthread
 ifneq ($(OS), FreeBSD)
  libstore_LDFLAGS += -ldl
@@ -34,7 +32,7 @@ ifeq ($(HAVE_SECCOMP), 1)
 endif
 
 libstore_CXXFLAGS += \
- -I src/libmain -I src/libutil -I src/libstore \
+ -I src/libutil -I src/libstore \
  -DNIX_PREFIX=\"$(prefix)\" \
  -DNIX_STORE_DIR=\"$(storedir)\" \
  -DNIX_DATA_DIR=\"$(datadir)\" \

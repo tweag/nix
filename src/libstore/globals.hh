@@ -4,6 +4,7 @@
 #include "config.hh"
 #include "abstractsettingtojson.hh"
 #include "util.hh"
+#include "loggers.hh"
 
 #include <map>
 #include <limits>
@@ -11,6 +12,8 @@
 #include <sys/types.h>
 
 namespace nix {
+
+std::string listLogFormats();
 
 typedef enum { smEnabled, smRelaxed, smDisabled } SandboxMode;
 
@@ -866,9 +869,6 @@ public:
     Setting<Strings> experimentalFeatures{this, {}, "experimental-features",
         "Experimental Nix features to enable."};
 
-    Setting<LogFormat> logFormat{this, LogFormat::bar, "log-format",
-        "Default build output logging format; \"raw\", \"raw-with-logs\", \"internal-json\", \"bar\" or \"bar-with-logs\"."};
-
     bool isExperimentalFeatureEnabled(const std::string & name);
 
     void requireExperimentalFeature(const std::string & name);
@@ -884,8 +884,18 @@ public:
 
     Setting<std::string> flakeRegistry{this, "https://github.com/NixOS/flake-registry/raw/master/flake-registry.json", "flake-registry",
         "Path or URI of the global flake registry."};
+
+    // FIXME: default shows as "3", but should show as "bar", due to the default
+    // being an enum variant
+    Setting<LogFormat> logFormat{this, LogFormat::bar, "log-format",
+        fmt("Default build output logging format. Valid options are: %s.", listLogFormats())};
+
+    Logger* makeDefaultLogger();
 };
 
+void setLogFormat(const LogFormat & logFormat);
+
+void createDefaultLogger();
 
 // FIXME: don't use a global variable.
 extern Settings settings;
