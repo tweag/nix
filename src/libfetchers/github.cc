@@ -184,7 +184,7 @@ struct GitHubInputScheme : GitArchiveInputScheme
 
     void addAccessToken(std::string & url) const
     {
-        std::string accessToken = settings.githubAccessToken.get();
+        std::string accessToken = settings()->githubAccessToken.get();
         if (accessToken != "")
             url += "?access_token=" + accessToken;
     }
@@ -257,7 +257,7 @@ struct GitLabInputScheme : GitArchiveInputScheme
             input.getRev()->to_string(Base16, false));
 
         /* # FIXME: add privat token auth (`curl --header "PRIVATE-TOKEN: <your_access_token>"`)
-        std::string accessToken = settings.githubAccessToken.get();
+        std::string accessToken = settings()->githubAccessToken.get();
         if (accessToken != "")
             url += "?access_token=" + accessToken;*/
 

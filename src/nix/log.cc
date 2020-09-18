@@ -35,7 +35,7 @@ struct CmdLog : InstallableCommand
 
     void run(ref<Store> store) override
     {
-        settings.readOnlyMode = true;
+        settings()->readOnlyMode = true;
 
         auto subs = getDefaultSubstituters();
 

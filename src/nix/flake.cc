@@ -107,7 +107,7 @@ struct CmdFlakeUpdate : FlakeCommand
     void run(nix::ref<nix::Store> store) override
     {
         /* Use --refresh by default for 'nix flake update'. */
-        settings.tarballTtl = 0;
+        settings()->tarballTtl = 0;
 
         lockFlake();
     }
@@ -213,7 +213,7 @@ struct CmdFlakeCheck : FlakeCommand
 
     void run(nix::ref<nix::Store> store) override
     {
-        settings.readOnlyMode = !build;
+        settings()->readOnlyMode = !build;
 
         auto state = getEvalState();
         auto flake = lockFlake();
@@ -407,7 +407,7 @@ struct CmdFlakeCheck : FlakeCommand
                                     auto drvPath = checkDerivation(
                                         fmt("%s.%s.%s", name, attr.name, attr2.name),
                                         *attr2.value, *attr2.pos);
-                                    if ((std::string) attr.name == settings.thisSystem.get())
+                                    if ((std::string) attr.name == settings()->thisSystem.get())
                                         drvPaths.push_back({drvPath});
                                 }
                             }
@@ -959,7 +959,7 @@ struct CmdFlake : NixMultiCommand
     {
         if (!command)
             throw UsageError("'nix flake' requires a sub-command.");
-        settings.requireExperimentalFeature("flakes");
+        settings()->requireExperimentalFeature("flakes");
         command->second->prepare();
         command->second->run();
     }

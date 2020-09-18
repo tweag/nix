@@ -415,7 +415,7 @@ expr_simple
           new ExprString(data->symbols.create(path)));
   }
   | URI {
-      static bool noURLLiterals = settings.isExperimentalFeatureEnabled("no-url-literals");
+      static bool noURLLiterals = settings()->isExperimentalFeatureEnabled("no-url-literals");
       if (noURLLiterals)
           throw ParseError({
               .hint = hintfmt("URL literals are disabled"),

@@ -67,7 +67,7 @@ private:
            forwarded. One option: A way to query the daemon for its
            settings, and then a series of params to SSHStore like
            forward-cores or forward-overridden-cores that only
-           override the requested settings.
+           override the requested settings()->
         */
     };
 };

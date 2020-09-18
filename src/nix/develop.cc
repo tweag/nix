@@ -231,7 +231,7 @@ struct Common : InstallableCommand, MixProfile
 
     Strings getDefaultFlakeAttrPaths() override
     {
-        return {"devShell." + settings.thisSystem.get(), "defaultPackage." + settings.thisSystem.get()};
+        return {"devShell." + settings()->thisSystem.get(), "defaultPackage." + settings()->thisSystem.get()};
     }
 
     StorePath getShellOutPath(ref<Store> store)
@@ -394,7 +394,7 @@ struct CmdDevelop : Common, MixEnvironment
                 state,
                 installable->nixpkgsFlakeRef(),
                 Strings{"bashInteractive"},
-                Strings{"legacyPackages." + settings.thisSystem.get() + "."},
+                Strings{"legacyPackages." + settings()->thisSystem.get() + "."},
                 lockFlags);
 
             shell = state->store->printStorePath(

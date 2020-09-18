@@ -175,7 +175,7 @@ ref<RemoteStore::Connection> UDSRemoteStore::openConnection()
         throw SysError("cannot create Unix domain socket");
     closeOnExec(conn->fd.get());
 
-    string socketPath = path ? *path : settings.nixDaemonSocketFile;
+    string socketPath = path ? *path : settings()->nixDaemonSocketFile;
 
     struct sockaddr_un addr;
     addr.sun_family = AF_UNIX;
@@ -212,7 +212,7 @@ void RemoteStore::initConnection(Connection & conn)
         conn.to << PROTOCOL_VERSION;
 
         if (GET_PROTOCOL_MINOR(conn.daemonVersion) >= 14) {
-            int cpu = sameMachine() && settings.lockCPU ? lockToCurrentCPU() : -1;
+            int cpu = sameMachine() && settings()->lockCPU ? lockToCurrentCPU() : -1;
             if (cpu != -1)
                 conn.to << 1 << cpu;
             else
@@ -236,29 +236,29 @@ void RemoteStore::initConnection(Connection & conn)
 void RemoteStore::setOptions(Connection & conn)
 {
     conn.to << wopSetOptions
-       << settings.keepFailed
-       << settings.keepGoing
-       << settings.tryFallback
+       << settings()->keepFailed
+       << settings()->keepGoing
+       << settings()->tryFallback
        << verbosity
-       << settings.maxBuildJobs
-       << settings.maxSilentTime
+       << settings()->maxBuildJobs
+       << settings()->maxSilentTime
        << true
-       << (settings.verboseBuild ? lvlError : lvlVomit)
+       << (settings()->verboseBuild ? lvlError : lvlVomit)
        << 0 // obsolete log type
        << 0 /* obsolete print build trace */
-       << settings.buildCores
-       << settings.useSubstitutes;
+       << settings()->buildCores
+       << settings()->useSubstitutes;
 
     if (GET_PROTOCOL_MINOR(conn.daemonVersion) >= 12) {
         std::map<std::string, Config::SettingInfo> overrides;
         globalConfig.getSettings(overrides, true);
-        overrides.erase(settings.keepFailed.name);
-        overrides.erase(settings.keepGoing.name);
-        overrides.erase(settings.tryFallback.name);
-        overrides.erase(settings.maxBuildJobs.name);
-        overrides.erase(settings.maxSilentTime.name);
-        overrides.erase(settings.buildCores.name);
-        overrides.erase(settings.useSubstitutes.name);
+        overrides.erase(settings()->keepFailed.name);
+        overrides.erase(settings()->keepGoing.name);
+        overrides.erase(settings()->tryFallback.name);
+        overrides.erase(settings()->maxBuildJobs.name);
+        overrides.erase(settings()->maxSilentTime.name);
+        overrides.erase(settings()->buildCores.name);
+        overrides.erase(settings()->useSubstitutes.name);
         overrides.erase(loggerSettings.showTrace.name);
         conn.to << overrides.size();
         for (auto & i : overrides)

@@ -372,7 +372,7 @@ EvalState::EvalState(const Strings & _searchPath, ref<Store> store)
     }
 
     try {
-        addToSearchPath("nix=" + canonPath(settings.nixDataDir + "/nix/corepkgs", true));
+        addToSearchPath("nix=" + canonPath(settings()->nixDataDir + "/nix/corepkgs", true));
     } catch (Error &) {
     }
 
@@ -1820,7 +1820,7 @@ string EvalState::copyPathToStore(PathSet & context, const Path & path)
     if (i != srcToStore.end())
         dstPath = store->printStorePath(i->second);
     else {
-        auto p = settings.readOnlyMode
+        auto p = settings()->readOnlyMode
             ? store->computeStorePathForPath(std::string(baseNameOf(path)), checkSourcePath(path)).first
             : store->addToStore(std::string(baseNameOf(path)), checkSourcePath(path), FileIngestionMethod::Recursive, htSHA256, defaultPathFilter, repair);
         dstPath = store->printStorePath(p);
@@ -2073,8 +2073,8 @@ Strings EvalSettings::getDefaultNixPath()
     Strings res;
     auto add = [&](const Path & p) { if (pathExists(p)) { res.push_back(p); } };
     add(getHome() + "/.nix-defexpr/channels");
-    add("nixpkgs=" + settings.nixStateDir + "/nix/profiles/per-user/root/channels/nixpkgs");
-    add(settings.nixStateDir + "/nix/profiles/per-user/root/channels");
+    add("nixpkgs=" + settings()->nixStateDir + "/nix/profiles/per-user/root/channels/nixpkgs");
+    add(settings()->nixStateDir + "/nix/profiles/per-user/root/channels");
     return res;
 }
 

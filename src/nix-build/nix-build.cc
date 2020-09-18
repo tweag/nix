@@ -330,7 +330,7 @@ static void _main(int argc, char * * argv)
         store->queryMissing(paths,
             willBuild, willSubstitute, unknown, downloadSize, narSize);
 
-        if (settings.printMissing)
+        if (settings()->printMissing)
             printMissing(ref<Store>(store), willBuild, willSubstitute, unknown, downloadSize, narSize);
 
         if (!dryRun)
@@ -407,7 +407,7 @@ static void _main(int argc, char * * argv)
 
         env["NIX_BUILD_TOP"] = env["TMPDIR"] = env["TEMPDIR"] = env["TMP"] = env["TEMP"] = *tmp;
         env["NIX_STORE"] = store->storeDir;
-        env["NIX_BUILD_CORES"] = std::to_string(settings.buildCores);
+        env["NIX_BUILD_CORES"] = std::to_string(settings()->buildCores);
 
         auto passAsFile = tokenizeString<StringSet>(get(drv.env, "passAsFile").value_or(""));
 

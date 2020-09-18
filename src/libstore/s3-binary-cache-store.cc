@@ -131,7 +131,7 @@ ref<Aws::Client::ClientConfiguration> S3Helper::makeConfig(const string & region
     res->requestTimeoutMs = 600 * 1000;
     res->connectTimeoutMs = 5 * 1000;
     res->retryStrategy = std::make_shared<RetryStrategy>();
-    res->caFile = settings.caFile;
+    res->caFile = settings()->caFile;
     return res;
 }
 

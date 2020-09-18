@@ -96,8 +96,8 @@ StringSet ParsedDerivation::getRequiredSystemFeatures() const
 
 bool ParsedDerivation::canBuildLocally(Store & localStore) const
 {
-    if (drv.platform != settings.thisSystem.get()
-        && !settings.extraPlatforms.get().count(drv.platform)
+    if (drv.platform != settings()->thisSystem.get()
+        && !settings()->extraPlatforms.get().count(drv.platform)
         && !drv.isBuiltin())
         return false;
 

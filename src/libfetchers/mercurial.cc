@@ -136,10 +136,10 @@ struct MercurialInputScheme : InputScheme
                 /* This is an unclean working tree. So copy all tracked
                    files. */
 
-                if (!settings.allowDirty)
+                if (!settings()->allowDirty)
                     throw Error("Mercurial tree '%s' is unclean", actualUrl);
 
-                if (settings.warnDirty)
+                if (settings()->warnDirty)
                     warn("Mercurial tree '%s' is unclean", actualUrl);
 
                 input.attrs.insert_or_assign("ref", chomp(runProgram("hg", true, { "branch", "-R", actualUrl })));

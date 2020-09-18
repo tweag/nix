@@ -105,7 +105,7 @@ struct CacheImpl : Cache
             inAttrsJson, infoJson, store->printStorePath(storePath));
 
         return Result {
-            .expired = !immutable && (settings.tarballTtl.get() == 0 || timestamp + settings.tarballTtl < time(0)),
+            .expired = !immutable && (settings()->tarballTtl.get() == 0 || timestamp + settings()->tarballTtl < time(0)),
             .infoAttrs = jsonToAttrs(nlohmann::json::parse(infoJson)),
             .storePath = std::move(storePath)
         };

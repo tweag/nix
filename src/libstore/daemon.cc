@@ -188,15 +188,15 @@ struct ClientSettings
 
     void apply(TrustedFlag trusted)
     {
-        settings.keepFailed = keepFailed;
-        settings.keepGoing = keepGoing;
-        settings.tryFallback = tryFallback;
+        settings()->keepFailed = keepFailed;
+        settings()->keepGoing = keepGoing;
+        settings()->tryFallback = tryFallback;
         nix::verbosity = verbosity;
-        settings.maxBuildJobs.assign(maxBuildJobs);
-        settings.maxSilentTime = maxSilentTime;
-        settings.verboseBuild = verboseBuild;
-        settings.buildCores = buildCores;
-        settings.useSubstitutes = useSubstitutes;
+        settings()->maxBuildJobs.assign(maxBuildJobs);
+        settings()->maxSilentTime = maxSilentTime;
+        settings()->verboseBuild = verboseBuild;
+        settings()->buildCores = buildCores;
+        settings()->useSubstitutes = useSubstitutes;
 
         for (auto & i : overrides) {
             auto & name(i.first);
@@ -205,8 +205,8 @@ struct ClientSettings
             auto setSubstituters = [&](Setting<Strings> & res) {
                 if (name != res.name && res.aliases.count(name) == 0)
                     return false;
-                StringSet trusted = settings.trustedSubstituters;
-                for (auto & s : settings.substituters.get())
+                StringSet trusted = settings()->trustedSubstituters;
+                for (auto & s : settings()->substituters.get())
                     trusted.insert(s);
                 Strings subs;
                 auto ss = tokenizeString<Strings>(value);
@@ -223,13 +223,13 @@ struct ClientSettings
                 if (name == "ssh-auth-sock") // obsolete
                     ;
                 else if (trusted
-                    || name == settings.buildTimeout.name
+                    || name == settings()->buildTimeout.name
                     || name == "connect-timeout"
                     || (name == "builders" && value == ""))
-                    settings.set(name, value);
-                else if (setSubstituters(settings.substituters))
+                    settings()->set(name, value);
+                else if (setSubstituters(settings()->substituters))
                     ;
-                else if (setSubstituters(settings.extraSubstituters))
+                else if (setSubstituters(settings()->extraSubstituters))
                     ;
                 else
                     debug("ignoring the client-specified setting '%s', because it is a restricted setting and you are not a trusted user", name);

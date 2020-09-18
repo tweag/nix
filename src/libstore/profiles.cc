@@ -256,8 +256,8 @@ Path getDefaultProfile()
         if (!pathExists(profileLink)) {
             replaceSymlink(
                 getuid() == 0
-                ? settings.nixStateDir + "/profiles/default"
-                : fmt("%s/profiles/per-user/%s/profile", settings.nixStateDir, getUserName()),
+                ? settings()->nixStateDir + "/profiles/default"
+                : fmt("%s/profiles/per-user/%s/profile", settings()->nixStateDir, getUserName()),
                 profileLink);
         }
         return absPath(readLink(profileLink), dirOf(profileLink));

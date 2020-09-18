@@ -138,7 +138,7 @@ SourceExprCommand::SourceExprCommand()
 
 Strings SourceExprCommand::getDefaultFlakeAttrPaths()
 {
-    return {"defaultPackage." + settings.thisSystem.get()};
+    return {"defaultPackage." + settings()->thisSystem.get()};
 }
 
 Strings SourceExprCommand::getDefaultFlakeAttrPathPrefixes()
@@ -146,10 +146,10 @@ Strings SourceExprCommand::getDefaultFlakeAttrPathPrefixes()
     return {
         // As a convenience, look for the attribute in
         // 'outputs.packages'.
-        "packages." + settings.thisSystem.get() + ".",
+        "packages." + settings()->thisSystem.get() + ".",
         // As a temporary hack until Nixpkgs is properly converted
         // to provide a clean 'packages' set, look in 'legacyPackages'.
-        "legacyPackages." + settings.thisSystem.get() + "."
+        "legacyPackages." + settings()->thisSystem.get() + "."
     };
 }
 
@@ -630,7 +630,7 @@ Buildables build(ref<Store> store, Realise mode,
     std::vector<std::shared_ptr<Installable>> installables, BuildMode bMode)
 {
     if (mode == Realise::Nothing)
-        settings.readOnlyMode = true;
+        settings()->readOnlyMode = true;
 
     Buildables buildables;
 
@@ -683,7 +683,7 @@ StorePathSet toStorePaths(ref<Store> store,
             }, b);
     } else {
         if (mode == Realise::Nothing)
-            settings.readOnlyMode = true;
+            settings()->readOnlyMode = true;
 
         for (auto & i : installables)
             for (auto & b : i->toBuildables())

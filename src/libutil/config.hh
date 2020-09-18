@@ -117,7 +117,7 @@ public:
     void reapplyUnknownSettings();
 };
 
-/* A class to simplify providing configuration settings. The typical
+/* A class to simplify providing configuration settings()-> The typical
    use is to inherit Config and add Setting<T> members:
 
    class MyClass : private Config

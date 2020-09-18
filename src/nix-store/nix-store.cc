@@ -143,7 +143,7 @@ static void opRealise(Strings opFlags, Strings opArgs)
         unknown = StorePathSet();
     }
 
-    if (settings.printMissing)
+    if (settings()->printMissing)
         printMissing(ref<Store>(store), willBuild, willSubstitute, unknown, downloadSize, narSize);
 
     if (dryRun) return;
@@ -423,7 +423,7 @@ static void opQuery(Strings opFlags, Strings opArgs)
 
             StorePathSet referrers;
             store->computeFSClosure(
-                args, referrers, true, settings.gcKeepOutputs, settings.gcKeepDerivations);
+                args, referrers, true, settings()->gcKeepOutputs, settings()->gcKeepDerivations);
 
             Roots roots = store->findRoots(false);
             for (auto & [target, links] : roots)
@@ -795,18 +795,18 @@ static void opServe(Strings opFlags, Strings opArgs)
         // FIXME: changing options here doesn't work if we're
         // building through the daemon.
         verbosity = lvlError;
-        settings.keepLog = false;
-        settings.useSubstitutes = false;
-        settings.maxSilentTime = readInt(in);
-        settings.buildTimeout = readInt(in);
+        settings()->keepLog = false;
+        settings()->useSubstitutes = false;
+        settings()->maxSilentTime = readInt(in);
+        settings()->buildTimeout = readInt(in);
         if (GET_PROTOCOL_MINOR(clientVersion) >= 2)
-            settings.maxLogSize = readNum<unsigned long>(in);
+            settings()->maxLogSize = readNum<unsigned long>(in);
         if (GET_PROTOCOL_MINOR(clientVersion) >= 3) {
-            settings.buildRepeat = readInt(in);
-            settings.enforceDeterminism = readInt(in);
-            settings.runDiffHook = true;
+            settings()->buildRepeat = readInt(in);
+            settings()->enforceDeterminism = readInt(in);
+            settings()->runDiffHook = true;
         }
-        settings.printRepeatedBuilds = false;
+        settings()->printRepeatedBuilds = false;
     };
 
     while (true) {

@@ -480,7 +480,7 @@ bool NixRepl::processLine(string line)
         state->callFunction(f, v, result, Pos());
 
         StorePath drvPath = getDerivationPath(result);
-        runProgram(settings.nixBinDir + "/nix-shell", Strings{state->store->printStorePath(drvPath)});
+        runProgram(settings()->nixBinDir + "/nix-shell", Strings{state->store->printStorePath(drvPath)});
     }
 
     else if (command == ":b" || command == ":i" || command == ":s") {
@@ -493,16 +493,16 @@ bool NixRepl::processLine(string line)
             /* We could do the build in this process using buildPaths(),
                but doing it in a child makes it easier to recover from
                problems / SIGINT. */
-            if (runProgram(settings.nixBinDir + "/nix", Strings{"build", "--no-link", drvPathRaw}) == 0) {
+            if (runProgram(settings()->nixBinDir + "/nix", Strings{"build", "--no-link", drvPathRaw}) == 0) {
                 auto drv = state->store->readDerivation(drvPath);
                 std::cout << std::endl << "this derivation produced the following outputs:" << std::endl;
                 for (auto & i : drv.outputsAndOptPaths(*state->store))
                     std::cout << fmt("  %s -> %s\n", i.first, state->store->printStorePath(*i.second.second));
             }
         } else if (command == ":i") {
-            runProgram(settings.nixBinDir + "/nix-env", Strings{"-i", drvPathRaw});
+            runProgram(settings()->nixBinDir + "/nix-env", Strings{"-i", drvPathRaw});
         } else {
-            runProgram(settings.nixBinDir + "/nix-shell", Strings{drvPathRaw});
+            runProgram(settings()->nixBinDir + "/nix-shell", Strings{drvPathRaw});
         }
     }
 

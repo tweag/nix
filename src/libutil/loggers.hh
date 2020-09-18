@@ -4,12 +4,11 @@
 
 namespace nix {
 
-enum class LogFormat {
-  raw,
-  rawWithLogs,
-  internalJson,
-  bar,
-  barWithLogs,
+struct LogFormat : std::string {
+    using std::string::string;
+
+    LogFormat(std::string s) : std::string(s) { }
+    LogFormat(char* s) : std::string(s) { }
 };
 
 struct LoggerBuilder {
@@ -17,10 +16,10 @@ struct LoggerBuilder {
   std::function<Logger*()> builder;
 };
 
-extern std::set<std::string> logFormats;
-
-extern std::vector<std::shared_ptr<LoggerBuilder>> registeredLoggers;
+std::vector<std::shared_ptr<LoggerBuilder>> getRegisteredLoggers();
 
 void registerLogger(std::string name, std::function<Logger*()> builder);
 
 }
+
+

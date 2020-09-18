@@ -694,8 +694,8 @@ void LocalStore::removeUnusedLinks(const GCState & state)
 void LocalStore::collectGarbage(const GCOptions & options, GCResults & results)
 {
     GCState state(options, results);
-    state.gcKeepOutputs = settings.gcKeepOutputs;
-    state.gcKeepDerivations = settings.gcKeepDerivations;
+    state.gcKeepOutputs = settings()->gcKeepOutputs;
+    state.gcKeepDerivations = settings()->gcKeepDerivations;
 
     /* Using `--ignore-liveness' with `--delete' can have unintended
        consequences if `keep-outputs' or `keep-derivations' are true
@@ -876,13 +876,13 @@ void LocalStore::autoGC(bool sync)
 
         auto now = std::chrono::steady_clock::now();
 
-        if (now < state->lastGCCheck + std::chrono::seconds(settings.minFreeCheckInterval)) return;
+        if (now < state->lastGCCheck + std::chrono::seconds(settings()->minFreeCheckInterval)) return;
 
         auto avail = getAvail();
 
         state->lastGCCheck = now;
 
-        if (avail >= settings.minFree || avail >= settings.maxFree) return;
+        if (avail >= settings()->minFree || avail >= settings()->maxFree) return;
 
         if (avail > state->availAfterGC * 0.97) return;
 
@@ -904,7 +904,7 @@ void LocalStore::autoGC(bool sync)
                 });
 
                 GCOptions options;
-                options.maxFreed = settings.maxFree - avail;
+                options.maxFreed = settings()->maxFree - avail;
 
                 printInfo("running auto-GC to free %d bytes", options.maxFreed);
 

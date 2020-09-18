@@ -12,8 +12,8 @@ void builtinFetchurl(const BasicDerivation & drv, const std::string & netrcData)
        this to be stored in a file. It would be nice if we could just
        pass a pointer to the data. */
     if (netrcData != "") {
-        settings.netrcFile = "netrc";
-        writeFile(settings.netrcFile, netrcData, 0600);
+        settings()->netrcFile = "netrc";
+        writeFile(settings()->netrcFile, netrcData, 0600);
     }
 
     auto getAttr = [&](const string & name) {
@@ -60,7 +60,7 @@ void builtinFetchurl(const BasicDerivation & drv, const std::string & netrcData)
 
     /* Try the hashed mirrors first. */
     if (getAttr("outputHashMode") == "flat")
-        for (auto hashedMirror : settings.hashedMirrors.get())
+        for (auto hashedMirror : settings()->hashedMirrors.get())
             try {
                 if (!hasSuffix(hashedMirror, "/")) hashedMirror += '/';
                 std::optional<HashType> ht = parseHashTypeOpt(getAttr("outputHashAlgo"));

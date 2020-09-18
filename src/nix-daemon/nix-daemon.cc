@@ -146,7 +146,7 @@ static ref<Store> openUncachedStore()
     Store::Params params; // FIXME: get params from somewhere
     // Disable caching since the client already does that.
     params["path-info-cache-size"] = "0";
-    return openStore(settings.storeUri, params);
+    return openStore(settings()->storeUri, params);
 }
 
 
@@ -171,8 +171,8 @@ static void daemonLoop(char * * argv)
 
     //  Otherwise, create and bind to a Unix domain socket.
     else {
-        createDirs(dirOf(settings.nixDaemonSocketFile));
-        fdSocket = createUnixDomainSocket(settings.nixDaemonSocketFile, 0666);
+        createDirs(dirOf(settings()->nixDaemonSocketFile));
+        fdSocket = createUnixDomainSocket(settings()->nixDaemonSocketFile, 0666);
     }
 
     //  Loop accepting connections.
@@ -202,13 +202,13 @@ static void daemonLoop(char * * argv)
             struct group * gr = peer.gidKnown ? getgrgid(peer.gid) : 0;
             string group = gr ? gr->gr_name : std::to_string(peer.gid);
 
-            Strings trustedUsers = settings.trustedUsers;
-            Strings allowedUsers = settings.allowedUsers;
+            Strings trustedUsers = settings()->trustedUsers;
+            Strings allowedUsers = settings()->allowedUsers;
 
             if (matchUser(user, group, trustedUsers))
                 trusted = Trusted;
 
-            if ((!trusted && !matchUser(user, group, allowedUsers)) || group == settings.buildUsersGroup)
+            if ((!trusted && !matchUser(user, group, allowedUsers)) || group == settings()->buildUsersGroup)
                 throw Error("user '%1%' is not allowed to connect to the Nix daemon", user);
 
             printInfo(format((string) "accepted connection from pid %1%, user %2%" + (trusted ? " (trusted)" : ""))

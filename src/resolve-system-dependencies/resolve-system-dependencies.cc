@@ -173,7 +173,7 @@ int main(int argc, char ** argv)
 
         uname(&_uname);
 
-        auto cacheParentDir = (format("%1%/dependency-maps") % settings.nixStateDir).str();
+        auto cacheParentDir = (format("%1%/dependency-maps") % settings()->nixStateDir).str();
 
         cacheDir = (format("%1%/%2%-%3%-%4%")
                 % cacheParentDir

@@ -393,7 +393,7 @@ void Goal::waiteeDone(GoalPtr waitee, ExitCode result)
 
     if (result == ecIncompleteClosure) ++nrIncompleteClosure;
 
-    if (waitees.empty() || (result == ecFailed && !settings.keepGoing)) {
+    if (waitees.empty() || (result == ecFailed && !settings()->keepGoing)) {
 
         /* If we failed and keepGoing is not set, we remove all
            remaining waitees. */
@@ -477,8 +477,8 @@ void handleDiffHook(
     const Path & tryA, const Path & tryB,
     const Path & drvPath, const Path & tmpDir)
 {
-    auto diffHook = settings.diffHook;
-    if (diffHook != "" && settings.runDiffHook) {
+    auto diffHook = settings()->diffHook;
+    if (diffHook != "" && settings()->runDiffHook) {
         try {
             RunOptions diffHookOptions(diffHook,{tryA, tryB, drvPath, tmpDir});
             diffHookOptions.searchPath = true;
@@ -538,18 +538,18 @@ public:
 
 UserLock::UserLock()
 {
-    assert(settings.buildUsersGroup != "");
-    createDirs(settings.nixStateDir + "/userpool");
+    assert(settings()->buildUsersGroup != "");
+    createDirs(settings()->nixStateDir + "/userpool");
 }
 
 bool UserLock::findFreeUser() {
     if (enabled()) return true;
 
     /* Get the members of the build-users-group. */
-    struct group * gr = getgrnam(settings.buildUsersGroup.get().c_str());
+    struct group * gr = getgrnam(settings()->buildUsersGroup.get().c_str());
     if (!gr)
         throw Error("the group '%1%' specified in 'build-users-group' does not exist",
-            settings.buildUsersGroup);
+            settings()->buildUsersGroup);
     gid = gr->gr_gid;
 
     /* Copy the result of getgrnam. */
@@ -561,7 +561,7 @@ bool UserLock::findFreeUser() {
 
     if (users.empty())
         throw Error("the build users group '%1%' has no members",
-            settings.buildUsersGroup);
+            settings()->buildUsersGroup);
 
     /* Find a user account that isn't currently in use for another
        build. */
@@ -571,10 +571,10 @@ bool UserLock::findFreeUser() {
         struct passwd * pw = getpwnam(i.c_str());
         if (!pw)
             throw Error("the user '%1%' in the group '%2%' does not exist",
-                i, settings.buildUsersGroup);
+                i, settings()->buildUsersGroup);
 
 
-        fnUserLock = (format("%1%/userpool/%2%") % settings.nixStateDir % pw->pw_uid).str();
+        fnUserLock = (format("%1%/userpool/%2%") % settings()->nixStateDir % pw->pw_uid).str();
 
         AutoCloseFD fd = open(fnUserLock.c_str(), O_RDWR | O_CREAT | O_CLOEXEC, 0600);
         if (!fd)
@@ -588,7 +588,7 @@ bool UserLock::findFreeUser() {
             /* Sanity check... */
             if (uid == getuid() || uid == geteuid())
                 throw Error("the Nix user should not be a member of '%1%'",
-                    settings.buildUsersGroup);
+                    settings()->buildUsersGroup);
 
 #if __linux__
             /* Get the list of supplementary groups of this build user.  This
@@ -646,7 +646,7 @@ struct HookInstance
 
 HookInstance::HookInstance()
 {
-    debug("starting build hook '%s'", settings.buildHook);
+    debug("starting build hook '%s'", settings()->buildHook);
 
     /* Create a pipe to get the output of the child. */
     fromHook.create();
@@ -678,13 +678,13 @@ HookInstance::HookInstance()
             throw SysError("dupping builder's stdout/stderr");
 
         Strings args = {
-            std::string(baseNameOf(settings.buildHook.get())),
+            std::string(baseNameOf(settings()->buildHook.get())),
             std::to_string(verbosity),
         };
 
-        execv(settings.buildHook.get().c_str(), stringsToCharPtrs(args).data());
+        execv(settings()->buildHook.get().c_str(), stringsToCharPtrs(args).data());
 
-        throw SysError("executing '%s'", settings.buildHook);
+        throw SysError("executing '%s'", settings()->buildHook);
     });
 
     pid.setSeparatePG(true);
@@ -1243,7 +1243,7 @@ void DerivationGoal::haveDerivation()
     trace("have derivation");
 
     if (drv->type() == DerivationType::CAFloating)
-        settings.requireExperimentalFeature("ca-derivations");
+        settings()->requireExperimentalFeature("ca-derivations");
 
     retrySubstitution = false;
 
@@ -1274,7 +1274,7 @@ void DerivationGoal::haveDerivation()
     /* We are first going to try to create the invalid output paths
        through substitutes.  If that doesn't work, we'll build
        them. */
-    if (settings.useSubstitutes && parsedDrv->substitutesAllowed())
+    if (settings()->useSubstitutes && parsedDrv->substitutesAllowed())
         for (auto & [_, status] : initialOutputs) {
             if (!status.wanted) continue;
             if (!status.known) {
@@ -1299,7 +1299,7 @@ void DerivationGoal::outputsSubstitutionTried()
 {
     trace("all outputs substituted (maybe)");
 
-    if (nrFailed > 0 && nrFailed > nrNoSubstituters + nrIncompleteClosure && !settings.tryFallback) {
+    if (nrFailed > 0 && nrFailed > nrNoSubstituters + nrIncompleteClosure && !settings()->tryFallback) {
         done(BuildResult::TransientFailure,
             fmt("some substitutes for the outputs of derivation '%s' failed (usually happens due to networking issues); try '--fallback' to build derivation from source ",
                 worker.store.printStorePath(drvPath)));
@@ -1358,7 +1358,7 @@ void DerivationGoal::gaveUpOnSubstitution()
 
     for (auto & i : drv->inputSrcs) {
         if (worker.store.isValidPath(i)) continue;
-        if (!settings.useSubstitutes)
+        if (!settings()->useSubstitutes)
             throw Error("dependency '%s' of '%s' does not exist, and substitution is disabled",
                 worker.store.printStorePath(i), worker.store.printStorePath(drvPath));
         addWaitee(worker.makeSubstitutionGoal(i));
@@ -1495,7 +1495,7 @@ void DerivationGoal::inputsRealised()
 
     /* Don't repeat fixed-output derivations since they're already
        verified by their output hash.*/
-    nrRounds = derivationIsFixed(derivationType) ? 1 : settings.buildRepeat + 1;
+    nrRounds = derivationIsFixed(derivationType) ? 1 : settings()->buildRepeat + 1;
 
     /* Okay, try to build.  Note that here we don't wait for a build
        slot to become available, since we don't need one if there is a
@@ -1615,7 +1615,7 @@ void DerivationGoal::tryToBuild()
        derivation prefers to be done locally, do it even if
        maxBuildJobs is 0. */
     unsigned int curBuilds = worker.getNrLocalBuilds();
-    if (curBuilds >= settings.maxBuildJobs && !(buildLocally && curBuilds == 0)) {
+    if (curBuilds >= settings()->maxBuildJobs && !(buildLocally && curBuilds == 0)) {
         worker.waitForBuildSlot(shared_from_this());
         outputLocks.unlock();
         return;
@@ -1629,7 +1629,7 @@ void DerivationGoal::tryLocalBuild() {
 
     /* If `build-users-group' is not empty, then we have to build as
        one of the members of that group. */
-    if (settings.buildUsersGroup != "" && getuid() == 0) {
+    if (settings()->buildUsersGroup != "" && getuid() == 0) {
 #if defined(__linux__) || defined(__APPLE__)
         if (!buildUser) buildUser = std::make_unique<UserLock>();
 
@@ -1795,9 +1795,9 @@ void DerivationGoal::buildDone()
            being valid. */
         registerOutputs();
 
-        if (settings.postBuildHook != "") {
+        if (settings()->postBuildHook != "") {
             Activity act(*logger, lvlInfo, actPostBuildHook,
-                fmt("running post-build-hook '%s'", settings.postBuildHook),
+                fmt("running post-build-hook '%s'", settings()->postBuildHook),
                 Logger::Fields{worker.store.printStorePath(drvPath)});
             PushActivity pact(act.id);
             StorePathSet outputPaths;
@@ -1809,7 +1809,7 @@ void DerivationGoal::buildDone()
             hookEnvironment.emplace("DRV_PATH", worker.store.printStorePath(drvPath));
             hookEnvironment.emplace("OUT_PATHS", chomp(concatStringsSep(" ", worker.store.printStorePathSet(outputPaths))));
 
-            RunOptions opts(settings.postBuildHook, {});
+            RunOptions opts(settings()->postBuildHook, {});
             opts.environment = hookEnvironment;
 
             struct LogSink : Sink {
@@ -1918,7 +1918,7 @@ HookReply DerivationGoal::tryBuildHook()
         /* Send the request to the hook. */
         worker.hook->sink
             << "try"
-            << (worker.getNrLocalBuilds() < settings.maxBuildJobs ? 1 : 0)
+            << (worker.getNrLocalBuilds() < settings()->maxBuildJobs ? 1 : 0)
             << drv->platform
             << worker.store.printStorePath(drvPath)
             << parsedDrv->getRequiredSystemFeatures();
@@ -2095,7 +2095,7 @@ void DerivationGoal::startBuilder()
             drv->platform,
             concatStringsSep(", ", parsedDrv->getRequiredSystemFeatures()),
             worker.store.printStorePath(drvPath),
-            settings.thisSystem,
+            settings()->thisSystem,
             concatStringsSep<StringSet>(", ", worker.store.systemFeatures));
 
     if (drv->isBuiltin())
@@ -2108,7 +2108,7 @@ void DerivationGoal::startBuilder()
     /* Are we doing a chroot build? */
     {
         auto noChroot = parsedDrv->getBoolAttr("__noChroot");
-        if (settings.sandboxMode == smEnabled) {
+        if (settings()->sandboxMode == smEnabled) {
             if (noChroot)
                 throw Error("derivation '%s' has '__noChroot' set, "
                     "but that's not allowed when 'sandbox' is 'true'", worker.store.printStorePath(drvPath));
@@ -2119,9 +2119,9 @@ void DerivationGoal::startBuilder()
 #endif
             useChroot = true;
         }
-        else if (settings.sandboxMode == smDisabled)
+        else if (settings()->sandboxMode == smDisabled)
             useChroot = false;
-        else if (settings.sandboxMode == smRelaxed)
+        else if (settings()->sandboxMode == smRelaxed)
             useChroot = !(derivationIsImpure(derivationType)) && !noChroot;
     }
 
@@ -2238,8 +2238,8 @@ void DerivationGoal::startBuilder()
 
         /* Allow a user-configurable set of directories from the
            host file system. */
-        PathSet dirs = settings.sandboxPaths;
-        PathSet dirs2 = settings.extraSandboxPaths;
+        PathSet dirs = settings()->sandboxPaths;
+        PathSet dirs2 = settings()->extraSandboxPaths;
         dirs.insert(dirs2.begin(), dirs2.end());
 
         dirsInChroot.clear();
@@ -2274,7 +2274,7 @@ void DerivationGoal::startBuilder()
             dirsInChroot.insert_or_assign(p, p);
         }
 
-        PathSet allowedPaths = settings.allowedImpureHostPrefixes;
+        PathSet allowedPaths = settings()->allowedImpureHostPrefixes;
 
         /* This works like the above, except on a per-derivation level */
         auto impurePaths = parsedDrv->getStringsAttr("__impureHostDeps").value_or(Strings());
@@ -2335,7 +2335,7 @@ void DerivationGoal::startBuilder()
                 "root:x:0:0:Nix build user:%3%:/noshell\n"
                 "nixbld:x:%1%:%2%:Nix build user:%3%:/noshell\n"
                 "nobody:x:65534:65534:Nobody:/:/noshell\n",
-                sandboxUid, sandboxGid, settings.sandboxBuildDir));
+                sandboxUid, sandboxGid, settings()->sandboxBuildDir));
 
         /* Declare the build user's group so that programs get a consistent
            view of the system (e.g., "id -gn"). */
@@ -2377,7 +2377,7 @@ void DerivationGoal::startBuilder()
 
         /* If we're repairing, checking or rebuilding part of a
            multiple-outputs derivation, it's possible that we're
-           rebuilding a path that is in settings.dirsInChroot
+           rebuilding a path that is in settings()->dirsInChroot
            (typically the dependencies of /bin/sh).  Throw them
            out. */
         for (auto & i : drv->outputsAndOptPaths(worker.store)) {
@@ -2401,9 +2401,9 @@ void DerivationGoal::startBuilder()
     if (needsHashRewrite() && pathExists(homeDir))
         throw Error("home directory '%1%' exists; please remove it to assure purity of builds without sandboxing", homeDir);
 
-    if (useChroot && settings.preBuildHook != "" && dynamic_cast<Derivation *>(drv.get())) {
+    if (useChroot && settings()->preBuildHook != "" && dynamic_cast<Derivation *>(drv.get())) {
         printMsg(lvlChatty, format("executing pre-build hook '%1%'")
-            % settings.preBuildHook);
+            % settings()->preBuildHook);
         auto args = useChroot ? Strings({worker.store.printStorePath(drvPath), chrootRootDir}) :
             Strings({ worker.store.printStorePath(drvPath) });
         enum BuildHookState {
@@ -2411,7 +2411,7 @@ void DerivationGoal::startBuilder()
             stExtraChrootDirs
         };
         auto state = stBegin;
-        auto lines = runProgram(settings.preBuildHook, false, args);
+        auto lines = runProgram(settings()->preBuildHook, false, args);
         auto lastPos = std::string::size_type{0};
         for (auto nlPos = lines.find('\n'); nlPos != string::npos;
                 nlPos = lines.find('\n', lastPos)) {
@@ -2583,7 +2583,7 @@ void DerivationGoal::startBuilder()
             /* Otherwise exit with EPERM so we can handle this in the
                parent. This is only done when sandbox-fallback is set
                to true (the default). */
-            if (child == -1 && (errno == EPERM || errno == EINVAL) && settings.sandboxFallback)
+            if (child == -1 && (errno == EPERM || errno == EINVAL) && settings()->sandboxFallback)
                 _exit(1);
             if (child == -1) throw SysError("cloning builder process");
 
@@ -2592,7 +2592,7 @@ void DerivationGoal::startBuilder()
         }, options);
 
         int res = helper.wait();
-        if (res != 0 && settings.sandboxFallback) {
+        if (res != 0 && settings()->sandboxFallback) {
             useChroot = false;
             initTmpDir();
             goto fallback;
@@ -2660,7 +2660,7 @@ void DerivationGoal::initTmpDir() {
     /* In a sandbox, for determinism, always use the same temporary
        directory. */
 #if __linux__
-    tmpDirInSandbox = useChroot ? settings.sandboxBuildDir : tmpDir;
+    tmpDirInSandbox = useChroot ? settings()->sandboxBuildDir : tmpDir;
 #else
     tmpDirInSandbox = tmpDir;
 #endif
@@ -2729,7 +2729,7 @@ void DerivationGoal::initEnv()
     env["NIX_STORE"] = worker.store.storeDir;
 
     /* The maximum number of cores to utilize for parallel building. */
-    env["NIX_BUILD_CORES"] = (format("%d") % settings.buildCores).str();
+    env["NIX_BUILD_CORES"] = (format("%d") % settings()->buildCores).str();
 
     initTmpDir();
 
@@ -3049,7 +3049,7 @@ struct RestrictedStore : public LocalFSStore, public virtual RestrictedStoreConf
 
 void DerivationGoal::startDaemon()
 {
-    settings.requireExperimentalFeature("recursive-nix");
+    settings()->requireExperimentalFeature("recursive-nix");
 
     Store::Params params;
     params["path-info-cache-size"] = "0";
@@ -3201,7 +3201,7 @@ void DerivationGoal::chownToBuilder(const Path & path)
 void setupSeccomp()
 {
 #if __linux__
-    if (!settings.filterSyscalls) return;
+    if (!settings()->filterSyscalls) return;
 #if HAVE_SECCOMP
     scmp_filter_ctx ctx;
 
@@ -3247,7 +3247,7 @@ void setupSeccomp()
         seccomp_rule_add(ctx, SCMP_ACT_ERRNO(ENOTSUP), SCMP_SYS(fsetxattr), 0) != 0)
         throw SysError("unable to add seccomp rule");
 
-    if (seccomp_attr_set(ctx, SCMP_FLTATR_CTL_NNP, settings.allowNewPrivileges ? 0 : 1) != 0)
+    if (seccomp_attr_set(ctx, SCMP_FLTATR_CTL_NNP, settings()->allowNewPrivileges ? 0 : 1) != 0)
         throw SysError("unable to set 'no new privileges' seccomp attribute");
 
     if (seccomp_load(ctx) != 0)
@@ -3283,7 +3283,7 @@ void DerivationGoal::runChild()
         std::string netrcData;
         try {
             if (drv->isBuiltin() && drv->builder == "builtin:fetchurl")
-                netrcData = readFile(settings.netrcFile);
+                netrcData = readFile(settings()->netrcFile);
         } catch (SysError &) { }
 
 #if __linux__
@@ -3424,7 +3424,7 @@ void DerivationGoal::runChild()
             /* Mount a new tmpfs on /dev/shm to ensure that whatever
                the builder puts in /dev/shm is cleaned up automatically. */
             if (pathExists("/dev/shm") && mount("none", (chrootRootDir + "/dev/shm").c_str(), "tmpfs", 0,
-                    fmt("size=%s", settings.sandboxShmSize).c_str()) == -1)
+                    fmt("size=%s", settings()->sandboxShmSize).c_str()) == -1)
                 throw SysError("mounting /dev/shm");
 
             /* Mount a new devpts on /dev/pts.  Note that this
@@ -3506,7 +3506,7 @@ void DerivationGoal::runChild()
         struct utsname utsbuf;
         uname(&utsbuf);
         if (drv->platform == "i686-linux" &&
-            (settings.thisSystem == "x86_64-linux" ||
+            (settings()->thisSystem == "x86_64-linux" ||
              (!strcmp(utsbuf.sysname, "Linux") && !strcmp(utsbuf.machine, "x86_64")))) {
             if (personality(PER_LINUX32) == -1)
                 throw SysError("cannot set i686-linux personality");
@@ -3514,7 +3514,7 @@ void DerivationGoal::runChild()
 
         /* Impersonate a Linux 2.6 machine to get some determinism in
            builds that depend on the kernel version. */
-        if ((drv->platform == "i686-linux" || drv->platform == "x86_64-linux") && settings.impersonateLinux26) {
+        if ((drv->platform == "i686-linux" || drv->platform == "x86_64-linux") && settings()->impersonateLinux26) {
             int cur = personality(0xffffffff);
             if (cur != -1) personality(cur | 0x0020000 /* == UNAME26 */);
         }
@@ -3605,7 +3605,7 @@ void DerivationGoal::runChild()
                 }
 
                 /* Violations will go to the syslog if you set this. Unfortunately the destination does not appear to be configurable */
-                if (settings.darwinLogSandboxViolations) {
+                if (settings()->darwinLogSandboxViolations) {
                     sandboxProfile += "(deny default)\n";
                 } else {
                     sandboxProfile += "(deny default (with no-log))\n";
@@ -3683,7 +3683,7 @@ void DerivationGoal::runChild()
                 args.push_back("-D");
                 args.push_back("_GLOBAL_TMP_DIR=" + globalTmpDir);
                 args.push_back("-D");
-                args.push_back("IMPORT_DIR=" + settings.nixDataDir + "/nix/sandbox/");
+                args.push_back("IMPORT_DIR=" + settings()->nixDataDir + "/nix/sandbox/");
                 if (allowLocalNetworking) {
                     args.push_back("-D");
                     args.push_back(string("_ALLOW_LOCAL_NETWORKING=1"));
@@ -3791,7 +3791,7 @@ void DerivationGoal::registerOutputs()
     InodesSeen inodesSeen;
 
     Path checkSuffix = ".check";
-    bool keepPreviousRound = settings.keepFailed || settings.runDiffHook;
+    bool keepPreviousRound = settings()->keepFailed || settings()->runDiffHook;
 
     std::exception_ptr delayedException;
 
@@ -4142,7 +4142,7 @@ void DerivationGoal::registerOutputs()
             ValidPathInfo oldInfo(*worker.store.queryPathInfo(newInfo.path));
             if (newInfo.narHash != oldInfo.narHash) {
                 worker.checkMismatch = true;
-                if (settings.runDiffHook || settings.keepFailed) {
+                if (settings()->runDiffHook || settings()->keepFailed) {
                     Path dst = worker.store.toRealPath(finalDestPath + checkSuffix);
                     deletePath(dst);
                     moveCheckToStore(actualPath, dst);
@@ -4224,7 +4224,7 @@ void DerivationGoal::registerOutputs()
                     prev, worker.store.printStorePath(i->second.path),
                     worker.store.printStorePath(drvPath), tmpDir);
 
-                if (settings.enforceDeterminism)
+                if (settings()->enforceDeterminism)
                     throw NotDeterministic(hint);
 
                 logError({
@@ -4459,7 +4459,7 @@ Path DerivationGoal::openLogFile()
 {
     logSize = 0;
 
-    if (!settings.keepLog) return "";
+    if (!settings()->keepLog) return "";
 
     auto baseName = std::string(baseNameOf(worker.store.printStorePath(drvPath)));
 
@@ -4468,14 +4468,14 @@ Path DerivationGoal::openLogFile()
     createDirs(dir);
 
     Path logFileName = fmt("%s/%s%s", dir, string(baseName, 2),
-        settings.compressLog ? ".bz2" : "");
+        settings()->compressLog ? ".bz2" : "");
 
     fdLogFile = open(logFileName.c_str(), O_CREAT | O_WRONLY | O_TRUNC | O_CLOEXEC, 0666);
     if (!fdLogFile) throw SysError("creating log file '%1%'", logFileName);
 
     logFileSink = std::make_shared<FdSink>(fdLogFile.get());
 
-    if (settings.compressLog)
+    if (settings()->compressLog)
         logSink = std::shared_ptr<CompressionSink>(makeCompressionSink("bzip2", *logFileSink));
     else
         logSink = logFileSink;
@@ -4499,7 +4499,7 @@ void DerivationGoal::deleteTmpDir(bool force)
     if (tmpDir != "") {
         /* Don't keep temporary directories for builtins because they
            might have privileged stuff (like a copy of netrc). */
-        if (settings.keepFailed && !force && !drv->isBuiltin()) {
+        if (settings()->keepFailed && !force && !drv->isBuiltin()) {
             printError("note: keeping build directory '%s'", tmpDir);
             chmod(tmpDir.c_str(), 0755);
         }
@@ -4516,12 +4516,12 @@ void DerivationGoal::handleChildOutput(int fd, const string & data)
         (!hook && fd == builderOut.readSide.get()))
     {
         logSize += data.size();
-        if (settings.maxLogSize && logSize > settings.maxLogSize) {
+        if (settings()->maxLogSize && logSize > settings()->maxLogSize) {
             killChild();
             done(
                 BuildResult::LogLimitExceeded,
                 Error("%s killed after writing more than %d bytes of log output",
-                    getName(), settings.maxLogSize));
+                    getName(), settings()->maxLogSize));
             return;
         }
 
@@ -4564,7 +4564,7 @@ void DerivationGoal::flushLine()
 
     else {
         logTail.push_back(currentLogLine);
-        if (logTail.size() > settings.logLines) logTail.pop_front();
+        if (logTail.size() > settings()->logLines) logTail.pop_front();
 
         act->result(resBuildLogLine, currentLogLine);
     }
@@ -4791,10 +4791,10 @@ void SubstitutionGoal::init()
         return;
     }
 
-    if (settings.readOnlyMode)
+    if (settings()->readOnlyMode)
         throw Error("cannot substitute path '%s' - no write access to the Nix store", worker.store.printStorePath(storePath));
 
-    subs = settings.useSubstitutes ? getDefaultSubstituters() : std::list<ref<Store>>();
+    subs = settings()->useSubstitutes ? getDefaultSubstituters() : std::list<ref<Store>>();
 
     tryNext();
 }
@@ -4841,13 +4841,13 @@ void SubstitutionGoal::tryNext()
         tryNext();
         return;
     } catch (SubstituterDisabled &) {
-        if (settings.tryFallback) {
+        if (settings()->tryFallback) {
             tryNext();
             return;
         }
         throw;
     } catch (Error & e) {
-        if (settings.tryFallback) {
+        if (settings()->tryFallback) {
             logError(e.info());
             tryNext();
             return;
@@ -4936,7 +4936,7 @@ void SubstitutionGoal::tryToRun()
        if maxBuildJobs == 0 (no local builds allowed), we still allow
        a substituter to run.  This is because substitutions cannot be
        distributed to another machine via the build hook. */
-    if (worker.getNrLocalBuilds() >= std::max(1U, (unsigned int) settings.maxBuildJobs)) {
+    if (worker.getNrLocalBuilds() >= std::max(1U, (unsigned int) settings()->maxBuildJobs)) {
         worker.waitForBuildSlot(shared_from_this());
         return;
     }
@@ -5124,7 +5124,7 @@ void Worker::removeGoal(GoalPtr goal)
         topGoals.erase(goal);
         /* If a top-level goal failed, then kill all other goals
            (unless keepGoing was set). */
-        if (goal->exitCode == Goal::ecFailed && !settings.keepGoing)
+        if (goal->exitCode == Goal::ecFailed && !settings()->keepGoing)
             topGoals.clear();
     }
 
@@ -5195,7 +5195,7 @@ void Worker::childTerminated(Goal * goal, bool wakeSleepers)
 void Worker::waitForBuildSlot(GoalPtr goal)
 {
     debug("wait for build slot");
-    if (getNrLocalBuilds() < settings.maxBuildJobs)
+    if (getNrLocalBuilds() < settings()->maxBuildJobs)
         wakeUp(goal); /* we can do it right away */
     else
         addToWeakGoals(wantingToBuild, goal);
@@ -5250,7 +5250,7 @@ void Worker::run(const Goals & _topGoals)
         if (!children.empty() || !waitingForAWhile.empty())
             waitForInput();
         else {
-            if (awake.empty() && 0 == settings.maxBuildJobs)
+            if (awake.empty() && 0 == settings()->maxBuildJobs)
             {
                 if (getMachines().empty())
                    throw Error("unable to start any build; either increase '--max-jobs' "
@@ -5269,9 +5269,9 @@ void Worker::run(const Goals & _topGoals)
     /* If --keep-going is not set, it's possible that the main goal
        exited while some of its subgoals were still active.  But if
        --keep-going *is* set, then they must all be finished now. */
-    assert(!settings.keepGoing || awake.empty());
-    assert(!settings.keepGoing || wantingToBuild.empty());
-    assert(!settings.keepGoing || children.empty());
+    assert(!settings()->keepGoing || awake.empty());
+    assert(!settings()->keepGoing || wantingToBuild.empty());
+    assert(!settings()->keepGoing || children.empty());
 }
 
 void Worker::waitForInput()
@@ -5292,15 +5292,15 @@ void Worker::waitForInput()
        is a build timeout, then wait for input until the first
        deadline for any child. */
     auto nearest = steady_time_point::max(); // nearest deadline
-    if (settings.minFree.get() != 0)
+    if (settings()->minFree.get() != 0)
         // Periodicallty wake up to see if we need to run the garbage collector.
         nearest = before + std::chrono::seconds(10);
     for (auto & i : children) {
         if (!i.respectTimeouts) continue;
-        if (0 != settings.maxSilentTime)
-            nearest = std::min(nearest, i.lastOutput + std::chrono::seconds(settings.maxSilentTime));
-        if (0 != settings.buildTimeout)
-            nearest = std::min(nearest, i.timeStarted + std::chrono::seconds(settings.buildTimeout));
+        if (0 != settings()->maxSilentTime)
+            nearest = std::min(nearest, i.lastOutput + std::chrono::seconds(settings()->maxSilentTime));
+        if (0 != settings()->buildTimeout)
+            nearest = std::min(nearest, i.timeStarted + std::chrono::seconds(settings()->buildTimeout));
     }
     if (nearest != steady_time_point::max()) {
         timeout = std::max(1L, (long) std::chrono::duration_cast<std::chrono::seconds>(nearest - before).count());
@@ -5314,7 +5314,7 @@ void Worker::waitForInput()
         if (lastWokenUp == steady_time_point::min() || lastWokenUp > before) lastWokenUp = before;
         timeout = std::max(1L,
             (long) std::chrono::duration_cast<std::chrono::seconds>(
-                lastWokenUp + std::chrono::seconds(settings.pollInterval) - before).count());
+                lastWokenUp + std::chrono::seconds(settings()->pollInterval) - before).count());
     } else lastWokenUp = steady_time_point::min();
 
     if (useTimeout)
@@ -5376,27 +5376,27 @@ void Worker::waitForInput()
         }
 
         if (goal->exitCode == Goal::ecBusy &&
-            0 != settings.maxSilentTime &&
+            0 != settings()->maxSilentTime &&
             j->respectTimeouts &&
-            after - j->lastOutput >= std::chrono::seconds(settings.maxSilentTime))
+            after - j->lastOutput >= std::chrono::seconds(settings()->maxSilentTime))
         {
             goal->timedOut(Error(
                     "%1% timed out after %2% seconds of silence",
-                    goal->getName(), settings.maxSilentTime));
+                    goal->getName(), settings()->maxSilentTime));
         }
 
         else if (goal->exitCode == Goal::ecBusy &&
-            0 != settings.buildTimeout &&
+            0 != settings()->buildTimeout &&
             j->respectTimeouts &&
-            after - j->timeStarted >= std::chrono::seconds(settings.buildTimeout))
+            after - j->timeStarted >= std::chrono::seconds(settings()->buildTimeout))
         {
             goal->timedOut(Error(
                     "%1% timed out after %2% seconds",
-                    goal->getName(), settings.buildTimeout));
+                    goal->getName(), settings()->buildTimeout));
         }
     }
 
-    if (!waitingForAWhile.empty() && lastWokenUp + std::chrono::seconds(settings.pollInterval) <= after) {
+    if (!waitingForAWhile.empty() && lastWokenUp + std::chrono::seconds(settings()->pollInterval) <= after) {
         lastWokenUp = after;
         for (auto & i : waitingForAWhile) {
             GoalPtr goal = i.lock();
@@ -5474,7 +5474,7 @@ static void primeCache(Store & store, const std::vector<StorePathWithOutputs> & 
     uint64_t downloadSize, narSize;
     store.queryMissing(paths, willBuild, willSubstitute, unknown, downloadSize, narSize);
 
-    if (!willBuild.empty() && 0 == settings.maxBuildJobs && getMachines().empty())
+    if (!willBuild.empty() && 0 == settings()->maxBuildJobs && getMachines().empty())
         throw Error(
             "%d derivations need to be built, but neither local builds ('--max-jobs') "
             "nor remote builds ('--builders') are enabled", willBuild.size());

@@ -235,10 +235,10 @@ struct GitInputScheme : InputScheme
 
                 /* This is an unclean working tree. So copy all tracked files. */
 
-                if (!settings.allowDirty)
+                if (!settings()->allowDirty)
                     throw Error("Git tree '%s' is dirty", actualUrl);
 
-                if (settings.warnDirty)
+                if (settings()->warnDirty)
                     warn("Git tree '%s' is dirty", actualUrl);
 
                 auto gitOpts = Strings({ "-C", actualUrl, "ls-files", "-z" });
@@ -341,7 +341,7 @@ struct GitInputScheme : InputScheme
                    git fetch to update the local ref to the remote ref. */
                 struct stat st;
                 doFetch = stat(localRefFile.c_str(), &st) != 0 ||
-                    (uint64_t) st.st_mtime + settings.tarballTtl <= (uint64_t) now;
+                    (uint64_t) st.st_mtime + settings()->tarballTtl <= (uint64_t) now;
             }
 
             if (doFetch) {

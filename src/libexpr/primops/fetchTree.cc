@@ -148,7 +148,7 @@ static void fetchTree(
 
 static void prim_fetchTree(EvalState & state, const Pos & pos, Value * * args, Value & v)
 {
-    settings.requireExperimentalFeature("flakes");
+    settings()->requireExperimentalFeature("flakes");
     fetchTree(state, pos, args, v, std::nullopt);
 }
 

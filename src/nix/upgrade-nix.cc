@@ -93,7 +93,7 @@ struct CmdUpgradeNix : MixDryRun, StoreCommand
         {
             Activity act(*logger, lvlInfo, actUnknown,
                 fmt("installing '%s' into profile '%s'...", store->printStorePath(storePath), profileDir));
-            runProgram(settings.nixBinDir + "/nix-env", false,
+            runProgram(settings()->nixBinDir + "/nix-env", false,
                 {"--profile", profileDir, "-i", store->printStorePath(storePath), "--no-sandbox"});
         }
 
@@ -152,7 +152,7 @@ struct CmdUpgradeNix : MixDryRun, StoreCommand
         auto v = state->allocValue();
         state->eval(state->parseExprFromString(*res.data, "/no-such-path"), *v);
         Bindings & bindings(*state->allocBindings(0));
-        auto v2 = findAlongAttrPath(*state, settings.thisSystem, bindings, *v).first;
+        auto v2 = findAlongAttrPath(*state, settings()->thisSystem, bindings, *v).first;
 
         return store->parseStorePath(state->forceString(*v2));
     }

@@ -196,7 +196,7 @@ struct StoreConfig : public Config
 
     virtual const std::string name() = 0;
 
-    const PathSetting storeDir_{this, false, settings.nixStore,
+    const PathSetting storeDir_{this, false, settings()->nixStore,
         "store", "path to the Nix store"};
     const Path storeDir = storeDir_;
 
@@ -208,7 +208,7 @@ struct StoreConfig : public Config
 
     Setting<bool> wantMassQuery{this, false, "want-mass-query", "whether this substituter can be queried efficiently for path validity"};
 
-    Setting<StringSet> systemFeatures{this, settings.systemFeatures,
+    Setting<StringSet> systemFeatures{this, settings()->systemFeatures,
         "system-features",
         "Optional features that the system this store builds on implements (like \"kvm\")."};
 
@@ -693,10 +693,10 @@ struct LocalFSStoreConfig : virtual StoreConfig
     const PathSetting rootDir{(StoreConfig*) this, true, "",
         "root", "directory prefixed to all other paths"};
     const PathSetting stateDir{(StoreConfig*) this, false,
-        rootDir != "" ? rootDir + "/nix/var/nix" : settings.nixStateDir,
+        rootDir != "" ? rootDir + "/nix/var/nix" : settings()->nixStateDir,
         "state", "directory where Nix will store state"};
     const PathSetting logDir{(StoreConfig*) this, false,
-        rootDir != "" ? rootDir + "/nix/var/log/nix" : settings.nixLogDir,
+        rootDir != "" ? rootDir + "/nix/var/log/nix" : settings()->nixLogDir,
         "log", "directory where Nix will store state"};
 };
 
@@ -787,7 +787,7 @@ void removeTempRoots();
    You can pass parameters to the store implementation by appending
    ‘?key=value&key=value&...’ to the URI.
 */
-ref<Store> openStore(const std::string & uri = settings.storeUri.get(),
+ref<Store> openStore(const std::string & uri = settings()->storeUri.get(),
     const Store::Params & extraParams = Store::Params());
 
 

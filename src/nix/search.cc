@@ -69,14 +69,14 @@ struct CmdSearch : InstallableCommand, MixJSON
     Strings getDefaultFlakeAttrPaths() override
     {
         return {
-            "packages." + settings.thisSystem.get() + ".",
-            "legacyPackages." + settings.thisSystem.get() + "."
+            "packages." + settings()->thisSystem.get() + ".",
+            "legacyPackages." + settings()->thisSystem.get() + "."
         };
     }
 
     void run(ref<Store> store) override
     {
-        settings.readOnlyMode = true;
+        settings()->readOnlyMode = true;
 
         // Empty search string should match all packages
         // Use "^" here instead of ".*" due to differences in resulting highlighting

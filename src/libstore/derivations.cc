@@ -79,7 +79,7 @@ StorePath writeDerivation(Store & store,
        held during a garbage collection). */
     auto suffix = std::string(drv.name) + drvExtension;
     auto contents = drv.unparse(store, false);
-    return settings.readOnlyMode
+    return settings()->readOnlyMode
         ? store.computeStorePathForText(suffix, contents, references)
         : store.addTextToStore(suffix, contents, references, repair);
 }
@@ -170,7 +170,7 @@ static DerivationOutput parseDerivationOutput(const Store & store,
                 },
             };
         } else {
-            settings.requireExperimentalFeature("ca-derivations");
+            settings()->requireExperimentalFeature("ca-derivations");
             assert(pathS == "");
             return DerivationOutput {
                 .output = DerivationOutputCAFloating {

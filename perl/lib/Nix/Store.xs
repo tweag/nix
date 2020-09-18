@@ -28,7 +28,7 @@ static ref<Store> store()
     if (!_store) {
         try {
             loadConfFile();
-            settings.lockCPU = false;
+            settings()->lockCPU = false;
             _store = openStore();
         } catch (Error & e) {
             croak("%s", e.what());
@@ -355,9 +355,9 @@ void addTempRoot(char * storePath)
 
 SV * getBinDir()
     PPCODE:
-        XPUSHs(sv_2mortal(newSVpv(settings.nixBinDir.c_str(), 0)));
+        XPUSHs(sv_2mortal(newSVpv(settings()->nixBinDir.c_str(), 0)));
 
 
 SV * getStoreDir()
     PPCODE:
-        XPUSHs(sv_2mortal(newSVpv(settings.nixStore.c_str(), 0)));
+        XPUSHs(sv_2mortal(newSVpv(settings()->nixStore.c_str(), 0)));

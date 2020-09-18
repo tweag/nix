@@ -315,9 +315,9 @@ struct curlFileTransfer : public FileTransfer
             }
 
             if (request.verifyTLS) {
-                debug("verify TLS: Nix CA file = '%s'", settings.caFile);
-                if (settings.caFile != "")
-                    curl_easy_setopt(req, CURLOPT_CAINFO, settings.caFile.c_str());
+                debug("verify TLS: Nix CA file = '%s'", settings()->caFile);
+                if (settings()->caFile != "")
+                    curl_easy_setopt(req, CURLOPT_CAINFO, settings()->caFile.c_str());
             } else {
                 curl_easy_setopt(req, CURLOPT_SSL_VERIFYPEER, 0);
                 curl_easy_setopt(req, CURLOPT_SSL_VERIFYHOST, 0);
@@ -330,7 +330,7 @@ struct curlFileTransfer : public FileTransfer
 
             /* If no file exist in the specified path, curl continues to work
                anyway as if netrc support was disabled. */
-            curl_easy_setopt(req, CURLOPT_NETRC_FILE, settings.netrcFile.get().c_str());
+            curl_easy_setopt(req, CURLOPT_NETRC_FILE, settings()->netrcFile.get().c_str());
             curl_easy_setopt(req, CURLOPT_NETRC, CURL_NETRC_OPTIONAL);
 
             if (writtenToSink)

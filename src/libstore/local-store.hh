@@ -35,7 +35,7 @@ struct LocalStoreConfig : virtual LocalFSStoreConfig
     using LocalFSStoreConfig::LocalFSStoreConfig;
 
     Setting<bool> requireSigs{(StoreConfig*) this,
-        settings.requireSigs,
+        settings()->requireSigs,
         "require-sigs", "whether store paths should have a trusted signature on import"};
 
     const std::string name() override { return "Local Store"; }

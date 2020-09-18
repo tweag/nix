@@ -99,7 +99,7 @@ struct CmdDoctor : StoreCommand
 
         if (!dirs.empty()) {
             std::stringstream ss;
-            ss << "Found profiles outside of " << settings.nixStateDir << "/profiles.\n"
+            ss << "Found profiles outside of " << settings()->nixStateDir << "/profiles.\n"
                << "The generation this profile points to might not have a gcroot and could be\n"
                << "garbage collected, resulting in broken symlinks.\n\n";
             for (auto & dir : dirs)

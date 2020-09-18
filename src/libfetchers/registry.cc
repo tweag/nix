@@ -101,7 +101,7 @@ void Registry::remove(const Input & input)
 
 static Path getSystemRegistryPath()
 {
-    return settings.nixConfDir + "/registry.json";
+    return settings()->nixConfDir + "/registry.json";
 }
 
 static std::shared_ptr<Registry> getSystemRegistry()
@@ -142,7 +142,7 @@ void overrideRegistry(
 static std::shared_ptr<Registry> getGlobalRegistry(ref<Store> store)
 {
     static auto reg = [&]() {
-        auto path = settings.flakeRegistry.get();
+        auto path = settings()->flakeRegistry.get();
 
         if (!hasPrefix(path, "/")) {
             auto storePath = downloadFile(store, path, "flake-registry.json", false).storePath;

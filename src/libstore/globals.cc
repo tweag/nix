@@ -23,9 +23,16 @@ namespace nix {
    must be deleted and recreated on startup.) */
 #define DEFAULT_SOCKET_PATH "/daemon-socket/socket"
 
-Settings settings;
+static Settings* _settings;
 
-static GlobalConfig::Register r1(&settings);
+Settings* settings()
+{
+    if (!_settings)
+        _settings = new Settings();
+    return _settings;
+}
+
+static GlobalConfig::Register r1(settings());
 
 Settings::Settings()
     : nixPrefix(NIX_PREFIX)
@@ -75,13 +82,13 @@ Settings::Settings()
 
 void loadConfFile()
 {
-    globalConfig.applyConfigFile(settings.nixConfDir + "/nix.conf");
+    globalConfig.applyConfigFile(settings()->nixConfDir + "/nix.conf");
 
     /* We only want to send overrides to the daemon, i.e. stuff from
        ~/.nix/nix.conf or the command line. */
     globalConfig.resetOverriden();
 
-    auto files = settings.nixUserConfFiles;
+    auto files = settings()->nixUserConfFiles;
     for (auto file = files.rbegin(); file != files.rend(); file++) {
         globalConfig.applyConfigFile(*file);
     }
@@ -187,7 +194,7 @@ template<> void BaseSetting<SandboxMode>::convertToArg(Args & args, const std::s
 
 static void logFormatCompleter(size_t index, std::string_view prefix)
 {
-    for (auto & builder : registeredLoggers)
+    for (auto & builder : getRegisteredLoggers())
         if (hasPrefix(builder->name, prefix))
             completions->insert(builder->name);
 }
@@ -196,11 +203,13 @@ std::string listLogFormats()
 {
     std::string res;
 
-    for (auto format = logFormats.begin(); format != logFormats.end(); ++format) {
+    auto loggers = getRegisteredLoggers();
+
+    for (auto format = loggers.begin(); format != loggers.end(); ++format) {
         if (!res.empty()) res += ", ";
-        if (std::next(format) == logFormats.end()) res += "or ";
+        if (std::next(format) == loggers.end()) res += "or ";
         res += "'";
-        res += *format;
+        res += (*format)->name;
         res += "'";
     }
 
@@ -209,24 +218,14 @@ std::string listLogFormats()
 
 template<> void BaseSetting<LogFormat>::set(const std::string & str)
 {
-    if (str == "raw") value = LogFormat::raw;
-    else if (str == "raw-with-logs") value = LogFormat::rawWithLogs;
-    else if (str == "internal-json") value = LogFormat::internalJson;
-    else if (str == "bar") value = LogFormat::bar;
-    else if (str == "bar-with-logs") value = LogFormat::barWithLogs;
-    else throw UsageError("option '%s' has an invalid value '%s'", name, str);
-
+    auto str_ = str;
+    value = LogFormat(str_);
     createDefaultLogger();
 }
 
 template<> std::string BaseSetting<LogFormat>::to_string() const
 {
-    if (value == LogFormat::raw) return "raw";
-    else if (value == LogFormat::rawWithLogs) return "raw-with-logs";
-    else if (value == LogFormat::internalJson) return "internal-json";
-    else if (value == LogFormat::bar) return "bar";
-    else if (value == LogFormat::barWithLogs) return "bar-with-logs";
-    else abort();
+    return value;
 }
 
 template<> void BaseSetting<LogFormat>::convertToArg(Args & args, const std::string & category)
@@ -237,7 +236,7 @@ template<> void BaseSetting<LogFormat>::convertToArg(Args & args, const std::str
         .category = category,
         .labels = {"format"},
         .handler = {[&](std::string format) {
-            settings.logFormat.set(format);
+            settings()->logFormat.set(format);
         }},
         .completer = logFormatCompleter
     });
@@ -245,19 +244,19 @@ template<> void BaseSetting<LogFormat>::convertToArg(Args & args, const std::str
 
 void setLogFormat(const LogFormat & logFormat)
 {
-    settings.logFormat = logFormat;
+    settings()->logFormat = logFormat;
     createDefaultLogger();
 }
 
 Logger* makeDefaultLogger()
 {
-    for (auto & builder : registeredLoggers) {
-        if (builder->name == settings.logFormat.to_string()) {
+    for (auto & builder : getRegisteredLoggers()) {
+        if (builder->name == settings()->logFormat.to_string()) {
             return builder->builder();
         }
     }
 
-    throw UsageError("Unknown logger '%s'", settings.logFormat.to_string());
+    throw UsageError("Unknown logger '%s'", settings()->logFormat.to_string());
 }
 
 void createDefaultLogger()
@@ -275,7 +274,7 @@ void MaxBuildJobsSetting::set(const std::string & str)
 
 void initPlugins()
 {
-    for (const auto & pluginFile : settings.pluginFiles.get()) {
+    for (const auto & pluginFile : settings()->pluginFiles.get()) {
         Paths pluginFiles;
         try {
             auto ents = readDirectory(pluginFile);
@@ -303,3 +302,5 @@ void initPlugins()
 }
 
 }
+
+

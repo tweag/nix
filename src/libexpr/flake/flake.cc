@@ -254,7 +254,7 @@ LockedFlake lockFlake(
     const FlakeRef & topRef,
     const LockFlags & lockFlags)
 {
-    settings.requireExperimentalFeature("flakes");
+    settings()->requireExperimentalFeature("flakes");
 
     FlakeCache flakeCache;
 
@@ -481,7 +481,7 @@ LockedFlake lockFlake(
         if (lockFlags.writeLockFile) {
             if (auto sourcePath = topRef.input.getSourcePath()) {
                 if (!newLockFile.isImmutable()) {
-                    if (settings.warnDirty)
+                    if (settings()->warnDirty)
                         warn("will not write lock file of flake '%s' because it has a mutable input", topRef);
                 } else {
                     if (!lockFlags.updateLockFile)

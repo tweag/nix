@@ -360,8 +360,8 @@ std::string Store::getUri()
 bool Store::PathInfoCacheValue::isKnownNow()
 {
     std::chrono::duration ttl = didExist()
-        ? std::chrono::seconds(settings.ttlPositiveNarInfoCache)
-        : std::chrono::seconds(settings.ttlNegativeNarInfoCache);
+        ? std::chrono::seconds(settings()->ttlPositiveNarInfoCache)
+        : std::chrono::seconds(settings()->ttlNegativeNarInfoCache);
 
     return std::chrono::steady_clock::now() < time_point + ttl;
 }
@@ -843,7 +843,7 @@ std::map<StorePath, StorePath> copyPaths(ref<Store> srcStore, ref<Store> dstStor
                     copyStorePath(srcStore, dstStore, storePath, repair, checkSigs);
                 } catch (Error &e) {
                     nrFailed++;
-                    if (!settings.keepGoing)
+                    if (!settings()->keepGoing)
                         throw e;
                     logger->log(lvlError, fmt("could not copy %s: %s", dstStore->printStorePath(storePath), e.what()));
                     showProgress();
@@ -1043,10 +1043,10 @@ static bool isNonUriPath(const std::string & spec) {
 std::shared_ptr<Store> openFromNonUri(const std::string & uri, const Store::Params & params)
 {
     if (uri == "" || uri == "auto") {
-        auto stateDir = get(params, "state").value_or(settings.nixStateDir);
+        auto stateDir = get(params, "state").value_or(settings()->nixStateDir);
         if (access(stateDir.c_str(), R_OK | W_OK) == 0)
             return std::make_shared<LocalStore>(params);
-        else if (pathExists(settings.nixDaemonSocketFile))
+        else if (pathExists(settings()->nixDaemonSocketFile))
             return std::make_shared<UDSRemoteStore>(params);
         else
             return std::make_shared<LocalStore>(params);
@@ -1113,10 +1113,10 @@ std::list<ref<Store>> getDefaultSubstituters()
             }
         };
 
-        for (auto uri : settings.substituters.get())
+        for (auto uri : settings()->substituters.get())
             addStore(uri);
 
-        for (auto uri : settings.extraSubstituters.get())
+        for (auto uri : settings()->extraSubstituters.get())
             addStore(uri);
 
         stores.sort([](ref<Store> & a, ref<Store> & b) {

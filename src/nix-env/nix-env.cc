@@ -271,8 +271,8 @@ static DrvInfos filterBySelector(EvalState & state, const DrvInfos & allElems,
 
                 if (k != newest.end()) {
                     d = j.first.querySystem() == k->second.first.querySystem() ? 0 :
-                        j.first.querySystem() == settings.thisSystem ? 1 :
-                        k->second.first.querySystem() == settings.thisSystem ? -1 : 0;
+                        j.first.querySystem() == settings()->thisSystem ? 1 :
+                        k->second.first.querySystem() == settings()->thisSystem ? -1 : 0;
                     if (d == 0)
                         d = comparePriorities(state, j.first, k->second.first);
                     if (d == 0)
@@ -494,7 +494,7 @@ static void installDerivations(Globals & globals,
         if (globals.dryRun) return;
 
         if (createUserEnv(*globals.state, allElems,
-                profile, settings.envKeepDerivations, lockToken)) break;
+                profile, settings()->envKeepDerivations, lockToken)) break;
     }
 }
 
@@ -604,7 +604,7 @@ static void upgradeDerivations(Globals & globals,
         if (globals.dryRun) return;
 
         if (createUserEnv(*globals.state, newElems,
-                globals.profile, settings.envKeepDerivations, lockToken)) break;
+                globals.profile, settings()->envKeepDerivations, lockToken)) break;
     }
 }
 
@@ -668,7 +668,7 @@ static void opSetFlag(Globals & globals, Strings opFlags, Strings opArgs)
 
         /* Write the new user environment. */
         if (createUserEnv(*globals.state, installedElems,
-                globals.profile, settings.envKeepDerivations, lockToken)) break;
+                globals.profile, settings()->envKeepDerivations, lockToken)) break;
     }
 }
 
@@ -754,7 +754,7 @@ static void uninstallDerivations(Globals & globals, Strings & selectors,
         if (globals.dryRun) return;
 
         if (createUserEnv(*globals.state, workingElems,
-                profile, settings.envKeepDerivations, lockToken)) break;
+                profile, settings()->envKeepDerivations, lockToken)) break;
     }
 }
 
@@ -909,7 +909,7 @@ static void opQuery(Globals & globals, Strings opFlags, Strings opArgs)
 
     enum { sInstalled, sAvailable } source = sInstalled;
 
-    settings.readOnlyMode = true; /* makes evaluation a bit faster */
+    settings()->readOnlyMode = true; /* makes evaluation a bit faster */
 
     for (Strings::iterator i = opFlags.begin(); i != opFlags.end(); ) {
         string arg = *i++;
@@ -1348,11 +1348,11 @@ static int _main(int argc, char * * argv)
             try {
                 createDirs(globals.instSource.nixExprPath);
                 replaceSymlink(
-                    fmt("%s/profiles/per-user/%s/channels", settings.nixStateDir, getUserName()),
+                    fmt("%s/profiles/per-user/%s/channels", settings()->nixStateDir, getUserName()),
                     globals.instSource.nixExprPath + "/channels");
                 if (getuid() != 0)
                     replaceSymlink(
-                        fmt("%s/profiles/per-user/root/channels", settings.nixStateDir),
+                        fmt("%s/profiles/per-user/root/channels", settings()->nixStateDir),
                         globals.instSource.nixExprPath + "/channels_root");
             } catch (Error &) { }
         }

@@ -64,7 +64,7 @@ static void removeChannel(const string & name)
     channels.erase(name);
     writeChannels();
 
-    runProgram(settings.nixBinDir + "/nix-env", true, { "--profile", profile, "--uninstall", name });
+    runProgram(settings()->nixBinDir + "/nix-env", true, { "--profile", profile, "--uninstall", name });
 }
 
 static Path nixDefExpr;
@@ -111,7 +111,7 @@ static void update(const StringSet & channelNames)
 
         bool unpacked = false;
         if (std::regex_search(filename, std::regex("\\.tar\\.(gz|bz2|xz)$"))) {
-            runProgram(settings.nixBinDir + "/nix-build", false, { "--no-out-link", "--expr", "import " + unpackChannelPath +
+            runProgram(settings()->nixBinDir + "/nix-build", false, { "--no-out-link", "--expr", "import " + unpackChannelPath +
                         "{ name = \"" + cname + "\"; channelName = \"" + name + "\"; src = builtins.storePath \"" + filename + "\"; }" });
             unpacked = true;
         }
@@ -136,7 +136,7 @@ static void update(const StringSet & channelNames)
     for (auto & expr : exprs)
         envArgs.push_back(std::move(expr));
     envArgs.push_back("--quiet");
-    runProgram(settings.nixBinDir + "/nix-env", false, envArgs);
+    runProgram(settings()->nixBinDir + "/nix-env", false, envArgs);
 
     // Make the channels appear in nix-env.
     struct stat st;
@@ -162,7 +162,7 @@ static int _main(int argc, char ** argv)
         nixDefExpr = home + "/.nix-defexpr";
 
         // Figure out the name of the channels profile.
-        profile = fmt("%s/profiles/per-user/%s/channels", settings.nixStateDir, getUserName());
+        profile = fmt("%s/profiles/per-user/%s/channels", settings()->nixStateDir, getUserName());
 
         enum {
             cNone,
@@ -242,7 +242,7 @@ static int _main(int argc, char ** argv)
                 } else {
                     envArgs.push_back("--rollback");
                 }
-                runProgram(settings.nixBinDir + "/nix-env", false, envArgs);
+                runProgram(settings()->nixBinDir + "/nix-env", false, envArgs);
                 break;
         }
 

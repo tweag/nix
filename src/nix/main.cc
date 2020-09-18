@@ -92,7 +92,7 @@ struct NixArgs : virtual MultiCommand, virtual MixCommonArgs
             .longName = "print-build-logs",
             .shortName = 'L',
             .description = "print full build logs on stderr",
-            .handler = {[&]() {setLogFormat(LogFormat::barWithLogs); }},
+            .handler = {[&]() {setLogFormat(LogFormat("bar-with-logs")); }},
         });
 
         addFlag({
@@ -170,7 +170,7 @@ void mainWrapped(int argc, char * * argv)
     }
 
     verbosity = lvlWarn;
-    settings.verboseBuild = false;
+    settings()->verboseBuild = false;
     evalSettings.pureEval = true;
 
     createDefaultLogger();
@@ -227,7 +227,7 @@ void mainWrapped(int argc, char * * argv)
     if (args.command->first != "repl"
         && args.command->first != "doctor"
         && args.command->first != "upgrade-nix")
-        settings.requireExperimentalFeature("nix-command");
+        settings()->requireExperimentalFeature("nix-command");
 
     if (args.useNet && !haveInternet()) {
         warn("you don't have Internet access; disabling some network-dependent features");
@@ -236,10 +236,10 @@ void mainWrapped(int argc, char * * argv)
 
     if (!args.useNet) {
         // FIXME: should check for command line overrides only.
-        if (!settings.useSubstitutes.overriden)
-            settings.useSubstitutes = false;
-        if (!settings.tarballTtl.overriden)
-            settings.tarballTtl = std::numeric_limits<unsigned int>::max();
+        if (!settings()->useSubstitutes.overriden)
+            settings()->useSubstitutes = false;
+        if (!settings()->tarballTtl.overriden)
+            settings()->tarballTtl = std::numeric_limits<unsigned int>::max();
         if (!fileTransferSettings.tries.overriden)
             fileTransferSettings.tries = 0;
         if (!fileTransferSettings.connectTimeout.overriden)
@@ -247,7 +247,7 @@ void mainWrapped(int argc, char * * argv)
     }
 
     if (args.refresh)
-        settings.tarballTtl = 0;
+        settings()->tarballTtl = 0;
 
     args.command->second->prepare();
     args.command->second->run();
@@ -261,3 +261,5 @@ int main(int argc, char * * argv)
         nix::mainWrapped(argc, argv);
     });
 }
+
+

@@ -220,7 +220,7 @@ void Store::queryMissing(const std::vector<StorePathWithOutputs> & targets,
             auto drv = make_ref<Derivation>(derivationFromPath(path.path));
             ParsedDerivation parsedDrv(StorePath(path.path), *drv);
 
-            if (knownOutputPaths && settings.useSubstitutes && parsedDrv.substitutesAllowed()) {
+            if (knownOutputPaths && settings()->useSubstitutes && parsedDrv.substitutesAllowed()) {
                 auto drvState = make_ref<Sync<DrvState>>(DrvState(invalid.size()));
                 for (auto & output : invalid)
                     pool.enqueue(std::bind(checkOutput, printStorePath(path.path), drv, output, drvState));

@@ -60,14 +60,14 @@ static int _main(int argc, char * * argv)
 
         FdSource source(STDIN_FILENO);
 
-        /* Read the parent's settings. */
+        /* Read the parent's settings()-> */
         while (readInt(source)) {
             auto name = readString(source);
             auto value = readString(source);
-            settings.set(name, value);
+            settings()->set(name, value);
         }
 
-        settings.maxBuildJobs.set("1"); // hack to make tests with local?root= work
+        settings()->maxBuildJobs.set("1"); // hack to make tests with local?root= work
 
         initPlugins();
 
@@ -104,8 +104,8 @@ static int _main(int argc, char * * argv)
             auto requiredFeatures = readStrings<std::set<std::string>>(source);
 
             auto canBuildLocally = amWilling
-                 &&  (  neededSystem == settings.thisSystem
-                     || settings.extraPlatforms.get().count(neededSystem) > 0)
+                 &&  (  neededSystem == settings()->thisSystem
+                     || settings()->extraPlatforms.get().count(neededSystem) > 0)
                  &&  allSupportedLocally(*store, requiredFeatures);
 
             /* Error ignored here, will be caught later */
@@ -265,7 +265,7 @@ connected:
             signal(SIGALRM, old);
         }
 
-        auto substitute = settings.buildersUseSubstitutes ? Substitute : NoSubstitute;
+        auto substitute = settings()->buildersUseSubstitutes ? Substitute : NoSubstitute;
 
         {
             Activity act(*logger, lvlTalkative, actUnknown, fmt("copying dependencies to '%s'", storeUri));

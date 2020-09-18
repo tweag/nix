@@ -77,7 +77,7 @@ void printMissing(ref<Store> store, const StorePathSet & willBuild,
 
     if (!unknown.empty()) {
         printMsg(lvl, fmt("don't know how to build these paths%s:",
-                (settings.readOnlyMode ? " (may be caused by read-only store access)" : "")));
+                (settings()->readOnlyMode ? " (may be caused by read-only store access)" : "")));
         for (auto & i : unknown)
             printMsg(lvl, fmt("  %s", store->printStorePath(i)));
     }
@@ -182,33 +182,33 @@ LegacyArgs::LegacyArgs(const std::string & programName,
         .longName = "no-build-output",
         .shortName = 'Q',
         .description = "do not show build output",
-        .handler = {[&]() {setLogFormat(LogFormat::raw); }},
+        .handler = {[&]() {setLogFormat(LogFormat("raw")); }},
     });
 
     addFlag({
         .longName = "keep-failed",
         .shortName ='K',
         .description = "keep temporary directories of failed builds",
-        .handler = {&(bool&) settings.keepFailed, true},
+        .handler = {&(bool&) settings()->keepFailed, true},
     });
 
     addFlag({
         .longName = "keep-going",
         .shortName ='k',
         .description = "keep going after a build fails",
-        .handler = {&(bool&) settings.keepGoing, true},
+        .handler = {&(bool&) settings()->keepGoing, true},
     });
 
     addFlag({
         .longName = "fallback",
         .description = "build from source if substitution fails",
-        .handler = {&(bool&) settings.tryFallback, true},
+        .handler = {&(bool&) settings()->tryFallback, true},
     });
 
     auto intSettingAlias = [&](char shortName, const std::string & longName,
         const std::string & description, const std::string & dest) {
         mkFlag<unsigned int>(shortName, longName, description, [=](unsigned int n) {
-            settings.set(dest, std::to_string(n));
+            settings()->set(dest, std::to_string(n));
         });
     };
 
@@ -217,7 +217,7 @@ LegacyArgs::LegacyArgs(const std::string & programName,
     intSettingAlias(0, "timeout", "number of seconds before a build is killed", "timeout");
 
     mkFlag(0, "readonly-mode", "do not write to the Nix store",
-        &settings.readOnlyMode);
+        &settings()->readOnlyMode);
 
     mkFlag(0, "no-gc-warning", "disable warning about not using '--add-root'",
         &gcWarning, false);
@@ -226,7 +226,7 @@ LegacyArgs::LegacyArgs(const std::string & programName,
         .longName = "store",
         .description = "URI of the Nix store to use",
         .labels = {"store-uri"},
-        .handler = {&(std::string&) settings.storeUri},
+        .handler = {&(std::string&) settings()->storeUri},
     });
 }
 
@@ -277,15 +277,15 @@ void printVersion(const string & programName)
 #if HAVE_SODIUM
         cfg.push_back("signed-caches");
 #endif
-        std::cout << "System type: " << settings.thisSystem << "\n";
-        std::cout << "Additional system types: " << concatStringsSep(", ", settings.extraPlatforms.get()) << "\n";
+        std::cout << "System type: " << settings()->thisSystem << "\n";
+        std::cout << "Additional system types: " << concatStringsSep(", ", settings()->extraPlatforms.get()) << "\n";
         std::cout << "Features: " << concatStringsSep(", ", cfg) << "\n";
-        std::cout << "System configuration file: " << settings.nixConfDir + "/nix.conf" << "\n";
+        std::cout << "System configuration file: " << settings()->nixConfDir + "/nix.conf" << "\n";
         std::cout << "User configuration files: " <<
-            concatStringsSep(":", settings.nixUserConfFiles)
+            concatStringsSep(":", settings()->nixUserConfFiles)
             << "\n";
-        std::cout << "Store directory: " << settings.nixStore << "\n";
-        std::cout << "State directory: " << settings.nixStateDir << "\n";
+        std::cout << "Store directory: " << settings()->nixStore << "\n";
+        std::cout << "State directory: " << settings()->nixStateDir << "\n";
     }
     throw Exit();
 }
@@ -294,7 +294,7 @@ void printVersion(const string & programName)
 void showManPage(const string & name)
 {
     restoreSignals();
-    setenv("MANPATH", settings.nixManDir.c_str(), 1);
+    setenv("MANPATH", settings()->nixManDir.c_str(), 1);
     execlp("man", "man", name.c_str(), nullptr);
     throw SysError("command 'man %1%' failed", name.c_str());
 }
@@ -403,3 +403,5 @@ PrintFreed::~PrintFreed()
 Exit::~Exit() { }
 
 }
+
+

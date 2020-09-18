@@ -906,7 +906,7 @@ static void prim_derivationStrict(EvalState & state, const Pos & pos, Value * * 
             }
 
             if (i->name == state.sContentAddressed) {
-                settings.requireExperimentalFeature("ca-derivations");
+                settings()->requireExperimentalFeature("ca-derivations");
                 contentAddressed = state.forceBool(*i->value, pos);
             }
 
@@ -1204,7 +1204,7 @@ static void prim_storePath(EvalState & state, const Pos & pos, Value * * args, V
             .errPos = pos
         });
     auto path2 = state.store->toStorePath(path).first;
-    if (!settings.readOnlyMode)
+    if (!settings()->readOnlyMode)
         state.store->ensurePath(path2);
     context.insert(state.store->printStorePath(path2));
     mkString(v, path, context);
@@ -1643,7 +1643,7 @@ static void prim_toFile(EvalState & state, const Pos & pos, Value * * args, Valu
         refs.insert(state.store->parseStorePath(path));
     }
 
-    auto storePath = state.store->printStorePath(settings.readOnlyMode
+    auto storePath = state.store->printStorePath(settings()->readOnlyMode
         ? state.store->computeStorePathForText(name, contents, refs)
         : state.store->addTextToStore(name, contents, refs, state.repair));
 
@@ -1767,7 +1767,7 @@ static void addPath(EvalState & state, const Pos & pos, const string & name, con
         expectedStorePath = state.store->makeFixedOutputPath(method, *expectedHash, name);
     Path dstPath;
     if (!expectedHash || !state.store->isValidPath(*expectedStorePath)) {
-        dstPath = state.store->printStorePath(settings.readOnlyMode
+        dstPath = state.store->printStorePath(settings()->readOnlyMode
             ? state.store->computeStorePathForPath(name, path, method, htSHA256, filter).first
             : state.store->addToStore(name, path, method, htSHA256, filter, state.repair));
         if (expectedHash && expectedStorePath != state.store->parseStorePath(dstPath))
@@ -3517,7 +3517,7 @@ void EvalState::createBaseEnv()
     }
 
     if (!evalSettings.pureEval) {
-        mkString(v, settings.thisSystem.get());
+        mkString(v, settings()->thisSystem.get());
         addConstant("__currentSystem", v);
     }
 
@@ -3554,7 +3554,7 @@ void EvalState::createBaseEnv()
 
     if (RegisterPrimOp::primOps)
         for (auto & primOp : *RegisterPrimOp::primOps)
-            if (!primOp.requiredFeature || settings.isExperimentalFeatureEnabled(*primOp.requiredFeature))
+            if (!primOp.requiredFeature || settings()->isExperimentalFeatureEnabled(*primOp.requiredFeature))
                 addPrimOp({
                     .fun = primOp.fun,
                     .arity = std::max(primOp.args.size(), primOp.arity),

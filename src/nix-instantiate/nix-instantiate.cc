@@ -138,7 +138,7 @@ static int _main(int argc, char * * argv)
             else if (*arg == "--repair")
                 repair = Repair;
             else if (*arg == "--dry-run")
-                settings.readOnlyMode = true;
+                settings()->readOnlyMode = true;
             else if (*arg != "" && arg->at(0) == '-')
                 return false;
             else
@@ -151,7 +151,7 @@ static int _main(int argc, char * * argv)
         initPlugins();
 
         if (evalOnly && !wantsReadWrite)
-            settings.readOnlyMode = true;
+            settings()->readOnlyMode = true;
 
         auto store = openStore();
 

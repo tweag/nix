@@ -52,7 +52,7 @@ struct CmdBundle : InstallableCommand
 
     Strings getDefaultFlakeAttrPaths() override
     {
-        Strings res{"defaultApp." + settings.thisSystem.get()};
+        Strings res{"defaultApp." + settings()->thisSystem.get()};
         for (auto & s : SourceExprCommand::getDefaultFlakeAttrPaths())
             res.push_back(s);
         return res;
@@ -60,7 +60,7 @@ struct CmdBundle : InstallableCommand
 
     Strings getDefaultFlakeAttrPathPrefixes() override
     {
-        Strings res{"apps." + settings.thisSystem.get() + ".", "packages"};
+        Strings res{"apps." + settings()->thisSystem.get() + ".", "packages"};
         for (auto & s : SourceExprCommand::getDefaultFlakeAttrPathPrefixes())
             res.push_back(s);
         return res;
@@ -88,7 +88,7 @@ struct CmdBundle : InstallableCommand
             context.insert("=" + store->printStorePath(i.path));
         mkString(*evalState->allocAttr(*arg, evalState->symbols.create("program")), app.program, context);
 
-        mkString(*evalState->allocAttr(*arg, evalState->symbols.create("system")), settings.thisSystem.get());
+        mkString(*evalState->allocAttr(*arg, evalState->symbols.create("system")), settings()->thisSystem.get());
 
         arg->attrs->sort();
  

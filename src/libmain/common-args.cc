@@ -55,7 +55,7 @@ MixCommonArgs::MixCommonArgs(const string & programName)
         .description = "maximum number of parallel builds",
         .labels = Strings{"jobs"},
         .handler = {[=](std::string s) {
-            settings.set("max-jobs", s);
+            settings()->set("max-jobs", s);
         }}
     });
 

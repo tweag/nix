@@ -304,7 +304,7 @@ void LocalStore::optimisePath(const Path & path)
     OptimiseStats stats;
     InodeHash inodeHash;
 
-    if (settings.autoOptimiseStore) optimisePath_(nullptr, stats, path, inodeHash);
+    if (settings()->autoOptimiseStore) optimisePath_(nullptr, stats, path, inodeHash);
 }
 
 

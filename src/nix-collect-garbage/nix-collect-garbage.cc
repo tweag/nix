@@ -76,7 +76,7 @@ static int _main(int argc, char * * argv)
 
         initPlugins();
 
-        auto profilesDir = settings.nixStateDir + "/profiles";
+        auto profilesDir = settings()->nixStateDir + "/profiles";
         if (removeOld) removeOldGenerations(profilesDir);
 
         // Run the actual garbage collector.

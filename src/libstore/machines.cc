@@ -101,7 +101,7 @@ void parseMachines(const std::string & s, Machines & machines)
         };
 
         machines.emplace_back(tokens[0],
-            isSet(1) ? tokenizeString<std::vector<string>>(tokens[1], ",") : std::vector<string>{settings.thisSystem},
+            isSet(1) ? tokenizeString<std::vector<string>>(tokens[1], ",") : std::vector<string>{settings()->thisSystem},
             isSet(2) ? tokens[2] : "",
             isSet(3) ? std::stoull(tokens[3]) : 1LL,
             isSet(4) ? std::stoull(tokens[4]) : 1LL,
@@ -115,7 +115,7 @@ Machines getMachines()
 {
     static auto machines = [&]() {
         Machines machines;
-        parseMachines(settings.builders, machines);
+        parseMachines(settings()->builders, machines);
         return machines;
     }();
     return machines;

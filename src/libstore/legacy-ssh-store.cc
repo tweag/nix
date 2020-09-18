@@ -223,15 +223,15 @@ private:
     void putBuildSettings(Connection & conn)
     {
         conn.to
-            << settings.maxSilentTime
-            << settings.buildTimeout;
+            << settings()->maxSilentTime
+            << settings()->buildTimeout;
         if (GET_PROTOCOL_MINOR(conn.remoteVersion) >= 2)
             conn.to
-                << settings.maxLogSize;
+                << settings()->maxLogSize;
         if (GET_PROTOCOL_MINOR(conn.remoteVersion) >= 3)
             conn.to
-                << settings.buildRepeat
-                << settings.enforceDeterminism;
+                << settings()->buildRepeat
+                << settings()->enforceDeterminism;
     }
 
 public:

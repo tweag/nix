@@ -83,16 +83,16 @@ LocalStore::LocalStore(const Params & params)
 
     /* Optionally, create directories and set permissions for a
        multi-user install. */
-    if (getuid() == 0 && settings.buildUsersGroup != "") {
+    if (getuid() == 0 && settings()->buildUsersGroup != "") {
         mode_t perm = 01775;
 
-        struct group * gr = getgrnam(settings.buildUsersGroup.get().c_str());
+        struct group * gr = getgrnam(settings()->buildUsersGroup.get().c_str());
         if (!gr)
             logError({
                 .name = "'build-users-group' not found",
                 .hint = hintfmt(
                     "warning: the group '%1%' specified in 'build-users-group' does not exist",
-                    settings.buildUsersGroup)
+                    settings()->buildUsersGroup)
             });
         else {
             struct stat st;
@@ -131,16 +131,16 @@ LocalStore::LocalStore(const Params & params)
     try {
         struct stat st;
         if (stat(reservedPath.c_str(), &st) == -1 ||
-            st.st_size != settings.reservedSize)
+            st.st_size != settings()->reservedSize)
         {
             AutoCloseFD fd = open(reservedPath.c_str(), O_WRONLY | O_CREAT | O_CLOEXEC, 0600);
             int res = -1;
 #if HAVE_POSIX_FALLOCATE
-            res = posix_fallocate(fd.get(), 0, settings.reservedSize);
+            res = posix_fallocate(fd.get(), 0, settings()->reservedSize);
 #endif
             if (res == -1) {
-                writeFull(fd.get(), string(settings.reservedSize, 'X'));
-                [[gnu::unused]] auto res2 = ftruncate(fd.get(), settings.reservedSize);
+                writeFull(fd.get(), string(settings()->reservedSize, 'X'));
+                [[gnu::unused]] auto res2 = ftruncate(fd.get(), settings()->reservedSize);
             }
         }
     } catch (SysError & e) { /* don't care about errors */
@@ -322,12 +322,12 @@ void LocalStore::openDB(State & state, bool create)
        should be safe enough.  If the user asks for it, don't sync at
        all.  This can cause database corruption if the system
        crashes. */
-    string syncMode = settings.fsyncMetadata ? "normal" : "off";
+    string syncMode = settings()->fsyncMetadata ? "normal" : "off";
     db.exec("pragma synchronous = " + syncMode);
 
     /* Set the SQLite journal mode.  WAL mode is fastest, so it's the
        default. */
-    string mode = settings.useSQLiteWAL ? "wal" : "truncate";
+    string mode = settings()->useSQLiteWAL ? "wal" : "truncate";
     string prevMode;
     {
         SQLiteStmt stmt;
@@ -851,7 +851,7 @@ std::optional<StorePath> LocalStore::queryPathFromHashPart(const std::string & h
 
 StorePathSet LocalStore::querySubstitutablePaths(const StorePathSet & paths)
 {
-    if (!settings.useSubstitutes) return StorePathSet();
+    if (!settings()->useSubstitutes) return StorePathSet();
 
     StorePathSet remaining;
     for (auto & i : paths)
@@ -882,7 +882,7 @@ StorePathSet LocalStore::querySubstitutablePaths(const StorePathSet & paths)
 
 void LocalStore::querySubstitutablePathInfos(const StorePathCAMap & paths, SubstitutablePathInfos & infos)
 {
-    if (!settings.useSubstitutes) return;
+    if (!settings()->useSubstitutes) return;
     for (auto & sub : getDefaultSubstituters()) {
         for (auto & path : paths) {
             auto subPath(path.first);
@@ -913,7 +913,7 @@ void LocalStore::querySubstitutablePathInfos(const StorePathCAMap & paths, Subst
             } catch (InvalidPath &) {
             } catch (SubstituterDisabled &) {
             } catch (Error & e) {
-                if (settings.tryFallback)
+                if (settings()->tryFallback)
                     logError(e.info());
                 else
                     throw;
@@ -937,7 +937,7 @@ void LocalStore::registerValidPaths(const ValidPathInfos & infos)
        be fsync-ed.  So some may want to fsync them before registering
        the validity, at the expense of some speed of the path
        registering operation. */
-    if (settings.syncBeforeRegistering) sync();
+    if (settings()->syncBeforeRegistering) sync();
 
     return retrySQLite<void>([&]() {
         auto state(_state.lock());
@@ -1034,7 +1034,7 @@ void LocalStore::addToStore(const ValidPathInfo & info, Source & source,
             // text hashing has long been allowed to have non-self-references because it is used for drv files.
             bool refersToSelf = info.references.count(info.path) > 0;
             if (info.ca.has_value() && !info.references.empty() && !(std::holds_alternative<TextHash>(*info.ca) && !refersToSelf))
-                settings.requireExperimentalFeature("ca-references");
+                settings()->requireExperimentalFeature("ca-references");
 
             /* While restoring the path from the NAR, compute the hash
                of the NAR. */
@@ -1092,10 +1092,10 @@ StorePath LocalStore::addToStoreFromDump(Source & source0, const string & name,
     /* Fill out buffer, and decide whether we are working strictly in
        memory based on whether we break out because the buffer is full
        or the original source is empty */
-    while (dump.size() < settings.narBufferSize) {
+    while (dump.size() < settings()->narBufferSize) {
         auto oldSize = dump.size();
         constexpr size_t chunkSize = 65536;
-        auto want = std::min(chunkSize, settings.narBufferSize - oldSize);
+        auto want = std::min(chunkSize, settings()->narBufferSize - oldSize);
         dump.resize(oldSize + want);
         auto got = 0;
         try {
@@ -1529,7 +1529,7 @@ void LocalStore::signPathInfo(ValidPathInfo & info)
 {
     // FIXME: keep secret keys in memory.
 
-    auto secretKeyFiles = settings.secretKeyFiles;
+    auto secretKeyFiles = settings()->secretKeyFiles;
 
     for (auto & secretKeyFile : secretKeyFiles.get()) {
         SecretKey secretKey(readFile(secretKeyFile));
