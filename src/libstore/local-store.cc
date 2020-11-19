@@ -686,8 +686,9 @@ void LocalStore::checkDerivationOutputs(const StorePath & drvPath, const Derivat
 }
 
 
-void LocalStore::registerDrvOutput(const DrvOutputId& id, const DrvOutputInfo & info)
+void LocalStore::registerDrvOutput(const DrvOutputInfo & info)
 {
+    auto id = info.id;
     auto state(_state.lock());
     retrySQLite<void>([&]() {
         state->stmtRegisterRealisedOutput.use()
@@ -1728,6 +1729,7 @@ std::optional<const DrvOutputInfo> LocalStore::queryDrvOutputInfo(const DrvOutpu
         while(useQueryPathReferences.next())
             dependencies.insert(parseStorePath(useQueryPathReferences.getStr(0)));
         return std::optional{DrvOutputInfo{
+            .id = id,
             .outPath = *outputPath,
             .dependencies = dependencies
         }};

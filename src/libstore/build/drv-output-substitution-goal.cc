@@ -70,7 +70,7 @@ void DrvOutputSubstitutionGoal::outPathValid()
         return;
     }
 
-    worker.store.registerDrvOutput(id, *outputInfo);
+    worker.store.registerDrvOutput(*outputInfo);
     finished();
 }
 

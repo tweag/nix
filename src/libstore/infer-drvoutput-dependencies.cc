@@ -63,7 +63,8 @@ void registerOneOutput(Store& store,
             registerOutputs(store, depId->drvPath, depDrv, {{depId->outputName, depInfo->outPath}});
         }
     }
-    store.registerDrvOutput(id, DrvOutputInfo{
+    store.registerDrvOutput(DrvOutputInfo{
+                                    .id = id,
                                     .outPath = outputPath,
                                     .dependencies = dependencies,
                                 });

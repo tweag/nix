@@ -942,7 +942,7 @@ std::map<StorePath, StorePath> copyPaths(
         },
         [&](const DrvOutputId& id) {
             auto outputInfo = srcStore->queryDrvOutputInfo(id);
-            dstStore->registerDrvOutput(id, *outputInfo);
+            dstStore->registerDrvOutput(*outputInfo);
         }
     );
     return pathsMap;

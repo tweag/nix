@@ -35,6 +35,7 @@ struct DrvInput : RawDrvInput {
 };
 
 struct DrvOutputInfo {
+    DrvOutputId id;
     StorePath outPath;
     std::set<DrvInput> dependencies;
 

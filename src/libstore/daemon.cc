@@ -871,7 +871,7 @@ static void performOp(TunnelLogger * logger, ref<Store> store,
         auto outputId = DrvOutputId::parse(readString(from));
         auto outputPath = StorePath(readString(from));
         auto dependencies = worker_proto::read(*store, from, Phantom<std::set<DrvInput>>());
-        store->registerDrvOutput(outputId, DrvOutputInfo{outputPath, dependencies});
+        store->registerDrvOutput(DrvOutputInfo{outputId, outputPath, dependencies});
         logger->stopWork();
         break;
     }

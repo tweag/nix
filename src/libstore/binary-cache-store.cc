@@ -467,9 +467,9 @@ std::optional<StorePath> BinaryCacheStore::queryOutputPathOf(
     return std::nullopt;
 }
 
-void BinaryCacheStore::registerDrvOutput(const DrvOutputId & id, const DrvOutputInfo & info)
+void BinaryCacheStore::registerDrvOutput(const DrvOutputInfo & info)
 {
-    auto filePath = "/drvOutputs/" + std::string(id.drvPath.hashPart()) + "!" + id.outputName + ".doi";
+    auto filePath = "/drvOutputs/" + std::string(info.id.drvPath.hashPart()) + "!" + info.id.outputName + ".doi";
     upsertFile(filePath, info.to_string(), "text/x-nix-derivertopath");
 }
 

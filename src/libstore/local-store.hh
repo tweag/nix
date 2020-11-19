@@ -230,7 +230,7 @@ public:
 
     /* Register the store path 'output' as the output named 'outputName' of
        derivation 'deriver'. */
-    void registerDrvOutput(const DrvOutputId & outputId, const DrvOutputInfo & info) override;
+    void registerDrvOutput(const DrvOutputInfo & info) override;
     void cacheDrvOutputMapping(State & state, const uint64_t deriver, const string & outputName, const StorePath & output);
 
     std::optional<const DrvOutputInfo> queryDrvOutputInfo(const DrvOutputId&) override;

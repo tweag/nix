@@ -482,9 +482,7 @@ public:
      * floating-ca derivations and their dependencies as there's no way to
      * retrieve this information otherwise.
      */
-    virtual void registerDrvOutput(const StorePath & deriver, const string & outputName, const DrvOutputInfo & output)
-    { registerDrvOutput(DrvOutputId{ deriver, outputName }, output); }
-    virtual void registerDrvOutput(const DrvOutputId &, const DrvOutputInfo & output)
+    virtual void registerDrvOutput(const DrvOutputInfo & output)
     { unsupported("registerDrvOutput"); }
 
     /* Write a NAR dump of a store path. */

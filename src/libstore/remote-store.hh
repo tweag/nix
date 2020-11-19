@@ -81,7 +81,7 @@ public:
     StorePath addTextToStore(const string & name, const string & s,
         const StorePathSet & references, RepairFlag repair) override;
 
-    void registerDrvOutput(const DrvOutputId & outputId, const DrvOutputInfo & info) override;
+    void registerDrvOutput(const DrvOutputInfo & info) override;
 
     std::optional<const DrvOutputInfo> queryDrvOutputInfo(const DrvOutputId &) override;
 

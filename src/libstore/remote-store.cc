@@ -621,11 +621,11 @@ StorePath RemoteStore::addTextToStore(const string & name, const string & s,
     return addCAToStore(source, name, TextHashMethod{}, references, repair)->path;
 }
 
-void RemoteStore::registerDrvOutput(const DrvOutputId & outputId, const DrvOutputInfo & info)
+void RemoteStore::registerDrvOutput(const DrvOutputInfo & info)
 {
     auto conn(getConnection());
     conn->to << wopRegisterDrvOutput;
-    conn->to << outputId.to_string();
+    conn->to << info.id.to_string();
     conn->to << std::string(info.outPath.to_string());
     worker_proto::write(*this, conn->to, info.dependencies);
     conn.processStderr();
@@ -643,7 +643,7 @@ std::optional<const DrvOutputInfo> RemoteStore::queryDrvOutputInfo(const DrvOutp
     }
     auto dependencies = worker_proto::read(*this, conn->from, Phantom<std::set<DrvInput>>{});
     auto outputPath = StorePath(rawOutputPath);
-    return {DrvOutputInfo{outputPath, dependencies}};
+    return {DrvOutputInfo{id, outputPath, dependencies}};
 }
 
 
