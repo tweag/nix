@@ -49,6 +49,8 @@ std::string DrvOutputInfo::to_string() const {
             rawDependencies.insert(dep.to_string());
         res += "Dependencies: " + concatStringsSep(" ", rawDependencies) + '\n';
     }
+    for (auto sig : signatures)
+        res += "Sig: " + sig + "\n";
 
     return res;
 }
@@ -63,6 +65,7 @@ DrvOutputInfo DrvOutputInfo::parse(const std::string & s, const std::string & wh
     std::optional<StorePath> outPath;
     std::optional<DrvOutputId> id;
     std::set<DrvInput> dependencies;
+    StringSet signatures;
 
     size_t pos = 0;
     while (pos < s.size()) {
@@ -87,6 +90,9 @@ DrvOutputInfo DrvOutputInfo::parse(const std::string & s, const std::string & wh
             for (auto& rawDep : tokenizeString<Strings>(value, " "))
                 dependencies.insert(DrvInput::parse(rawDep));
 
+        if (name == "Sig")
+            signatures.insert(value);
+
         pos = eol + 1;
     }
 
@@ -95,8 +101,22 @@ DrvOutputInfo DrvOutputInfo::parse(const std::string & s, const std::string & wh
     return DrvOutputInfo {
         .id = *id,
         .outPath = *outPath,
-        .dependencies = dependencies
+        .dependencies = dependencies,
+        .signatures = signatures,
     };
+}
+
+std::string DrvOutputInfo::fingerprint() const {
+    std::list<std::string> strDeps;
+    for (auto& dep : dependencies)
+        strDeps.push_front(dep.to_string());
+    return "1;" + std::string(outPath.to_string()) + ";" +
+           concatStringsSep(",", strDeps) + ";" +
+           id.to_string();
+}
+
+void DrvOutputInfo::sign(Store& _store, const SecretKey& secretKey) {
+    signatures.insert(secretKey.signDetached(fingerprint()));
 }
 
 } // namespace nix

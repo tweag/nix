@@ -1681,8 +1681,8 @@ void LocalStore::addSignatures(const StorePath & storePath, const StringSet & si
     });
 }
 
-
-void LocalStore::signPathInfo(ValidPathInfo & info)
+template<typename T>
+void signInfo(LocalStore& store, T& info)
 {
     // FIXME: keep secret keys in memory.
 
@@ -1690,8 +1690,15 @@ void LocalStore::signPathInfo(ValidPathInfo & info)
 
     for (auto & secretKeyFile : secretKeyFiles.get()) {
         SecretKey secretKey(readFile(secretKeyFile));
-        info.sign(*this, secretKey);
+        info.sign(store, secretKey);
     }
+}
+
+void LocalStore::signPathInfo(ValidPathInfo& info) {
+    signInfo<ValidPathInfo>(*this, info);
+}
+void LocalStore::signDrvOutputInfo(DrvOutputInfo& info) {
+    signInfo<DrvOutputInfo>(*this, info);
 }
 
 

@@ -299,9 +299,10 @@ private:
     bool isValidPath_(State & state, const StorePath & path);
     void queryReferrers(State & state, const StorePath & path, StorePathSet & referrers);
 
-    /* Add signatures to a ValidPathInfo using the secret keys
+    /* Add signatures to a ValidPathInfo or DrvOutputInfo using the secret keys
        specified by the ‘secret-key-files’ option. */
     void signPathInfo(ValidPathInfo & info);
+    void signDrvOutputInfo(DrvOutputInfo& info);
 
     Path getRealStoreDir() override { return realStoreDir; }
 

@@ -2,6 +2,7 @@
 
 #include "path.hh"
 #include "derivations.hh"
+#include "crypto.hh"
 
 namespace nix {
 
@@ -38,9 +39,13 @@ struct DrvOutputInfo {
     DrvOutputId id;
     StorePath outPath;
     std::set<DrvInput> dependencies;
+    StringSet signatures;
 
     std::string to_string() const;
     static DrvOutputInfo parse(const std::string & s, const std::string & whence);
+
+    std::string fingerprint() const;
+    void sign(Store& store, const SecretKey& secretKey);
 };
 
 typedef std::map<DrvOutputId, DrvOutputInfo> DrvOutputs;
