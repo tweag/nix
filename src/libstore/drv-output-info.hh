@@ -50,17 +50,20 @@ struct DrvOutputInfo {
 
 typedef std::map<DrvOutputId, DrvOutputInfo> DrvOutputs;
 
+enum struct Sign { Sign, NoSign };
 
 void registerOneOutput(Store& store,
                        DrvOutputId id,
                        StorePath& resolvedDrvPath,
                        std::set<DrvInput> buildTimeInputs,
-                       StorePath& outputPath);
+                       StorePath& outputPath,
+                       Sign sign = Sign::Sign);
 
 std::set<DrvInput> computeDrvInputs(Store& store, Derivation& drv);
 
 void registerOutputs(Store& store,
                      StorePath& drvPath,
                      Derivation& deriver,
-                     std::map<std::string, StorePath> outputPaths);
+                     std::map<std::string, StorePath> outputPaths,
+                     Sign sign = Sign::Sign);
 }

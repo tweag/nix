@@ -39,12 +39,13 @@ std::set<DrvInput> shrinkDrvInputs(Store& store, std::set<DrvInput> allDrvInputs
 void registerOutputs(Store& store,
                      StorePath& drvPath,
                      Derivation& deriver,
-                     std::map<std::string, StorePath> outputMappings) {
+                     std::map<std::string, StorePath> outputMappings,
+                     Sign sign) {
     std::set<DrvInput> buildTimeInputs = computeDrvInputs(store, deriver);
 
     for (auto& [outputName, outputPath] : outputMappings) {
         registerOneOutput(store, DrvOutputId{drvPath, outputName}, drvPath,
-                          buildTimeInputs, outputPath);
+                          buildTimeInputs, outputPath, sign);
     }
 }
 
@@ -52,7 +53,8 @@ void registerOneOutput(Store& store,
                        DrvOutputId id,
                        StorePath& resolvedDrvPath,
                        std::set<DrvInput> buildTimeInputs,
-                       StorePath& outputPath) {
+                       StorePath& outputPath,
+                       Sign sign) {
     StorePathSet outputPathDeps = store.queryPathInfo(outputPath)->references;
     auto dependencies = shrinkDrvInputs(store, buildTimeInputs, outputPathDeps);
     for (auto& dep : dependencies) {
@@ -60,13 +62,21 @@ void registerOneOutput(Store& store,
         if (auto depId = std::get_if<DrvOutputId>(&rawDep)) {
             auto depInfo = store.queryDrvOutputInfo(*depId);
             auto depDrv = store.readDerivation(depId->drvPath);
-            registerOutputs(store, depId->drvPath, depDrv, {{depId->outputName, depInfo->outPath}});
+            registerOutputs(store, depId->drvPath, depDrv,
+                            {{depId->outputName, depInfo->outPath}});
         }
     }
-    store.registerDrvOutput(DrvOutputInfo{
-                                    .id = id,
-                                    .outPath = outputPath,
-                                    .dependencies = dependencies,
-                                });
+    DrvOutputInfo thisInfo{
+        .id = id,
+        .outPath = outputPath,
+        .dependencies = dependencies,
+    };
+    auto secretKeyFiles = settings.secretKeyFiles;
+
+    for (auto& secretKeyFile : secretKeyFiles.get()) {
+        SecretKey secretKey(readFile(secretKeyFile));
+        thisInfo.sign(store, secretKey);
+    }
+    store.registerDrvOutput(thisInfo);
 }
 }
