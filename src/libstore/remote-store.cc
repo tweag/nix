@@ -628,6 +628,7 @@ void RemoteStore::registerDrvOutput(const DrvOutputInfo & info)
     conn->to << info.id.to_string();
     conn->to << std::string(info.outPath.to_string());
     worker_proto::write(*this, conn->to, info.dependencies);
+    worker_proto::write(*this, conn->to, info.signatures);
     conn.processStderr();
 }
 
@@ -642,8 +643,9 @@ std::optional<const DrvOutputInfo> RemoteStore::queryDrvOutputInfo(const DrvOutp
         return std::nullopt;
     }
     auto dependencies = worker_proto::read(*this, conn->from, Phantom<std::set<DrvInput>>{});
+    auto signatures = worker_proto::read(*this, conn->from, Phantom<StringSet>{});
     auto outputPath = StorePath(rawOutputPath);
-    return {DrvOutputInfo{id, outputPath, dependencies}};
+    return {DrvOutputInfo{id, outputPath, dependencies, signatures}};
 }
 
 

@@ -871,7 +871,8 @@ static void performOp(TunnelLogger * logger, ref<Store> store,
         auto outputId = DrvOutputId::parse(readString(from));
         auto outputPath = StorePath(readString(from));
         auto dependencies = worker_proto::read(*store, from, Phantom<std::set<DrvInput>>());
-        store->registerDrvOutput(DrvOutputInfo{outputId, outputPath, dependencies});
+        auto signatures = worker_proto::read(*store, from, Phantom<StringSet>());
+        store->registerDrvOutput(DrvOutputInfo{outputId, outputPath, dependencies, signatures});
         logger->stopWork();
         break;
     }
@@ -884,6 +885,7 @@ static void performOp(TunnelLogger * logger, ref<Store> store,
         if (info) {
             to << std::string(info->outPath.to_string());
             worker_proto::write(*store, to, info->dependencies);
+            worker_proto::write(*store, to, info->signatures);
         }
         else {
             to << "";
