@@ -55,7 +55,7 @@ int getSchema(Path schemaPath)
 
 void migrateCASchema(SQLite& db, Path schemaPath, AutoCloseFD& lockFd)
 {
-    const int nixCASchemaVersion = 2;
+    const int nixCASchemaVersion = 3;
     int curCASchema = getSchema(schemaPath);
     if (curCASchema != nixCASchemaVersion) {
         if (curCASchema > nixCASchemaVersion) {
@@ -83,20 +83,26 @@ void migrateCASchema(SQLite& db, Path schemaPath, AutoCloseFD& lockFd)
             txn.commit();
         }
 
-        else if (curCASchema < 2) {
-            db.exec(R"(
-                create table if not exists DerivationOutputRefs (
-                    referrer integer not null,
-                    drvOutputReference integer,
-                    opaquePathReference integer,
-                    foreign key (referrer) references OutputMappings(id) on delete cascade,
-                    foreign key (drvOutputReference) references DerivationOutputs(id) on delete restrict,
-                    foreign key (opaquePathReference) references ValidPaths(id) on delete restrict,
-                    CHECK ((drvOutputReference is null AND opaquePathReference is not null)
-                      OR (opaquePathReference is null AND drvOutputReference is not null))
-                )
-            )");
+        else {
+            if (curCASchema < 2) {
+                db.exec(R"(
+                    create table if not exists DerivationOutputRefs (
+                        referrer integer not null,
+                        drvOutputReference integer,
+                        opaquePathReference integer,
+                        foreign key (referrer) references OutputMappings(id) on delete cascade,
+                        foreign key (drvOutputReference) references DerivationOutputs(id) on delete restrict,
+                        foreign key (opaquePathReference) references ValidPaths(id) on delete restrict,
+                        CHECK ((drvOutputReference is null AND opaquePathReference is not null)
+                        OR (opaquePathReference is null AND drvOutputReference is not null))
+                    )
+                )");
+            }
+            if (curCASchema < 3) {
+                db.exec("alter table DerivationOutputs add column signatures text");
+            }
         }
+
         writeFile(schemaPath, (format("%1%") % nixCASchemaVersion).str());
         lockFile(lockFd.get(), ltRead, true);
     }
@@ -273,6 +279,7 @@ LocalStore::LocalStore(const Params & params)
             state->db.exec("alter table ValidPaths add column ca text");
             txn.commit();
         }
+
         writeFile(schemaPath, (format("%1%") % nixSchemaVersion).str());
 
         lockFile(globalLock.get(), ltRead, true);
@@ -311,13 +318,13 @@ LocalStore::LocalStore(const Params & params)
     if (settings.isExperimentalFeatureEnabled("ca-derivations")) {
         state->stmtRegisterRealisedOutput.create(state->db,
             R"(
-                insert or replace into OutputMappings (drvPath, outputName, outputPath)
-                values (?, ?, (select id from ValidPaths where path = ?))
+                insert or replace into OutputMappings (drvPath, outputName, outputPath, signatures)
+                values (?, ?, (select id from ValidPaths where path = ?), ?)
                 ;
             )");
         state->stmtQueryRealisedOutput.create(state->db,
             R"(
-                select outputName, Output.path from OutputMappings
+                select outputName, Output.path, OutputMappings.signatures from OutputMappings
                     inner join ValidPaths as Output on Output.id = OutputMappings.outputPath
                     where drvPath = ?
                     ;
@@ -342,7 +349,7 @@ LocalStore::LocalStore(const Params & params)
             )");
         state->stmtQueryDrvOutputInfo.create(state->db,
             R"(
-                select OutputMappings.id, Output.path from OutputMappings
+                select OutputMappings.id, Output.path, OutputMappings.signatures from OutputMappings
                     inner join ValidPaths as Output on Output.id = OutputMappings.outputPath
                     where drvPath = ? and outputName = ?
                     ;
@@ -695,6 +702,7 @@ void LocalStore::registerDrvOutput(const DrvOutputInfo & info)
             (printStorePath(id.drvPath))
             (id.outputName)
             (printStorePath(info.outPath))
+            (concatStringsSep(" ", info.signatures))
             .exec();
     });
     auto referrer = queryDrvOutputId(*state, id);
@@ -1717,11 +1725,17 @@ void LocalStore::createUser(const std::string & userName, uid_t userId)
 }
 
 std::optional<const DrvOutputInfo> LocalStore::queryDrvOutputInfo(const DrvOutputId& id) {
-    auto outputPath = queryOutputPathOf(id.drvPath, id.outputName);
-    if (!(outputPath && isValidPath(*outputPath)))
-        return std::nullopt;
-    return retrySQLite<std::optional<const DrvOutputInfo>>([&]() {
+    auto res = retrySQLite<std::optional<const DrvOutputInfo>>([&]() -> std::optional<const DrvOutputInfo> {
         auto state(_state.lock());
+
+        auto use(state->stmtQueryDrvOutputInfo.use()
+            (printStorePath(id.drvPath))(id.outputName));
+        if (!use.next()) {
+            return std::nullopt;
+        }
+
+        StorePath outputPath = parseStorePath(use.getStr(1));
+        StringSet signatures = tokenizeString<StringSet>(use.getStr(2), " ");
 
         std::set<DrvInput> dependencies;
         auto useQueryDrvOutputReferences(state->stmtQueryDrvOutputDrvOutputReferences.use()
@@ -1737,10 +1751,27 @@ std::optional<const DrvOutputInfo> LocalStore::queryDrvOutputInfo(const DrvOutpu
             dependencies.insert(parseStorePath(useQueryPathReferences.getStr(0)));
         return std::optional{DrvOutputInfo{
             .id = id,
-            .outPath = *outputPath,
-            .dependencies = dependencies
+            .outPath = outputPath,
+            .dependencies = dependencies,
+            .signatures = signatures
         }};
     });
+    if (res)
+        return res;
+
+    // Fallback case: Maybe we didn't register it but this output
+    // is known as the output of an input-addressed derivation
+    Derivation drv = readDerivation(id.drvPath);
+    auto drvOutputs = drv.outputsAndOptPaths(*this);
+    if (auto thisOutput = drvOutputs.find(id.outputName);
+        thisOutput != drvOutputs.end() && thisOutput->second.second
+        ) {
+        return std::optional{DrvOutputInfo{
+            .id = id,
+            .outPath = *thisOutput->second.second
+        }};
+    }
+    return std::nullopt;
 }
 
 }  // namespace nix

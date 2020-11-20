@@ -7,6 +7,7 @@ create table if not exists OutputMappings (
     drvPath text not null,
     outputName text not null, -- symbolic output id, usually "out"
     outputPath integer not null,
+    signatures text, -- space-separated
     foreign key (outputPath) references ValidPaths(id) on delete cascade
 );
 
