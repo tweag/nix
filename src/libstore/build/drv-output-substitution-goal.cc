@@ -52,6 +52,17 @@ void DrvOutputSubstitutionGoal::tryNext()
         tryNext();
         return;
     }
+    if (worker.store.requireSigs
+        && !sub->isTrusted
+        && !outputInfo->checkSignatures(worker.store.getPublicKeys()) ) {
+        logWarning({
+            .name = "Invalid drv output signature",
+            .hint = hintfmt("substituter '%s' does not have a valid signature for drv output '%s'",
+                sub->getUri(), id.to_string())
+        });
+        tryNext();
+        return;
+    }
 
     addWaitee(worker.makePathSubstitutionGoal(outputInfo->outPath));
 
@@ -70,7 +81,7 @@ void DrvOutputSubstitutionGoal::outPathValid()
         return;
     }
 
-    worker.store.registerDrvOutput(*outputInfo);
+    worker.store.registerDrvOutput(*outputInfo, CheckSigs);
     finished();
 }
 

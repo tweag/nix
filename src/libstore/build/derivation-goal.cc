@@ -2121,11 +2121,11 @@ struct RestrictedStore : public LocalFSStore, public virtual RestrictedStoreConf
         /* Nothing to be done; 'path' must already be valid. */
     }
 
-    void registerDrvOutput(const DrvOutputInfo & info) override
+    void registerDrvOutput(const DrvOutputInfo & info, CheckSigsFlag checkSigs) override
     {
         if (!goal.isAllowed(info.id.drvPath))
             throw InvalidPath("cannot register unknown drv output '%s' in recursive Nix", printStorePath(info.id.drvPath));
-        next->registerDrvOutput(info);
+        next->registerDrvOutput(info, checkSigs);
     }
 
     std::optional<const DrvOutputInfo> queryDrvOutputInfo(const DrvOutputId & id) override

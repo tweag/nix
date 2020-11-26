@@ -46,6 +46,12 @@ struct DrvOutputInfo {
 
     std::string fingerprint() const;
     void sign(Store& store, const SecretKey& secretKey);
+
+    /* Similar to `ValidPathInfo::checkSignatures` */
+    size_t checkSignatures(const PublicKeys & publicKeys) const;
+
+    /* Verify a single signature. */
+    bool checkSignature(const PublicKeys & publicKeys, const std::string & sig) const;
 };
 
 typedef std::map<DrvOutputId, DrvOutputInfo> DrvOutputs;

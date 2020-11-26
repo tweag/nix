@@ -799,7 +799,7 @@ static void performOp(TunnelLogger * logger, ref<Store> store,
     }
 
     case wopAddToStoreNar: {
-        bool repair, dontCheckSigs;
+        bool repair;
         auto path = store->parseStorePath(readString(from));
         auto deriver = readString(from);
         auto narHash = Hash::parseAny(readString(from), htSHA256);
@@ -810,9 +810,10 @@ static void performOp(TunnelLogger * logger, ref<Store> store,
         from >> info.registrationTime >> info.narSize >> info.ultimate;
         info.sigs = readStrings<StringSet>(from);
         info.ca = parseContentAddressOpt(readString(from));
-        from >> repair >> dontCheckSigs;
-        if (!trusted && dontCheckSigs)
-            dontCheckSigs = false;
+        from >> repair;
+        auto checkSigs = worker_proto::read(*store, from, Phantom<CheckSigsFlag>{});
+        if (!trusted && checkSigs == NoCheckSigs)
+            checkSigs = CheckSigs;
         if (!trusted)
             info.ultimate = false;
 
@@ -821,7 +822,7 @@ static void performOp(TunnelLogger * logger, ref<Store> store,
             {
                 FramedSource source(from);
                 store->addToStore(info, source, (RepairFlag) repair,
-                    dontCheckSigs ? NoCheckSigs : CheckSigs);
+                    checkSigs);
             }
             logger->stopWork();
         }
@@ -841,8 +842,7 @@ static void performOp(TunnelLogger * logger, ref<Store> store,
             logger->startWork();
 
             // FIXME: race if addToStore doesn't read source?
-            store->addToStore(info, *source, (RepairFlag) repair,
-                dontCheckSigs ? NoCheckSigs : CheckSigs);
+            store->addToStore(info, *source, (RepairFlag) repair, checkSigs);
 
             logger->stopWork();
         }
@@ -872,7 +872,8 @@ static void performOp(TunnelLogger * logger, ref<Store> store,
         auto outputPath = StorePath(readString(from));
         auto dependencies = worker_proto::read(*store, from, Phantom<std::set<DrvInput>>());
         auto signatures = worker_proto::read(*store, from, Phantom<StringSet>());
-        store->registerDrvOutput(DrvOutputInfo{outputId, outputPath, dependencies, signatures});
+        auto checkSigs = worker_proto::read(*store, from, Phantom<CheckSigsFlag>());
+        store->registerDrvOutput(DrvOutputInfo{outputId, outputPath, dependencies, signatures}, checkSigs);
         logger->stopWork();
         break;
     }

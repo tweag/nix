@@ -482,7 +482,7 @@ public:
      * floating-ca derivations and their dependencies as there's no way to
      * retrieve this information otherwise.
      */
-    virtual void registerDrvOutput(const DrvOutputInfo & output)
+    virtual void registerDrvOutput(const DrvOutputInfo & output, CheckSigsFlag = CheckSigs)
     { unsupported("registerDrvOutput"); }
 
     /* Write a NAR dump of a store path. */

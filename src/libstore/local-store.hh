@@ -112,11 +112,8 @@ public:
     const Path tempRootsDir;
     const Path fnTempRoots;
 
-private:
-
+    // Get the list of public keys that this store accepts
     const PublicKeys & getPublicKeys();
-
-public:
 
     // Hack for build-remote.cc.
     PathSet locksHeld;
@@ -230,7 +227,7 @@ public:
 
     /* Register the store path 'output' as the output named 'outputName' of
        derivation 'deriver'. */
-    void registerDrvOutput(const DrvOutputInfo & info) override;
+    void registerDrvOutput(const DrvOutputInfo & info, CheckSigsFlag) override;
     void cacheDrvOutputMapping(State & state, const uint64_t deriver, const string & outputName, const StorePath & output);
 
     std::optional<const DrvOutputInfo> queryDrvOutputInfo(const DrvOutputId&) override;

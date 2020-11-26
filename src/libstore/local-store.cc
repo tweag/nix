@@ -693,10 +693,14 @@ void LocalStore::checkDerivationOutputs(const StorePath & drvPath, const Derivat
 }
 
 
-void LocalStore::registerDrvOutput(const DrvOutputInfo & info)
+void LocalStore::registerDrvOutput(const DrvOutputInfo & info, CheckSigsFlag checkSigs)
 {
+
+    if (requireSigs && checkSigs && !info.checkSignatures(getPublicKeys()))
+        throw Error("cannot add the drv output '%s' because it lacks a valid signature", info.id.to_string());
     auto id = info.id;
     auto state(_state.lock());
+
     retrySQLite<void>([&]() {
         state->stmtRegisterRealisedOutput.use()
             (printStorePath(id.drvPath))

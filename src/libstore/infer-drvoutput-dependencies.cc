@@ -77,6 +77,6 @@ void registerOneOutput(Store& store,
         SecretKey secretKey(readFile(secretKeyFile));
         thisInfo.sign(store, secretKey);
     }
-    store.registerDrvOutput(thisInfo);
+    store.registerDrvOutput(thisInfo, NoCheckSigs);
 }
 }

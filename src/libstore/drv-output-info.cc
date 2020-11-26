@@ -119,4 +119,18 @@ void DrvOutputInfo::sign(Store& _store, const SecretKey& secretKey) {
     signatures.insert(secretKey.signDetached(fingerprint()));
 }
 
+bool DrvOutputInfo::checkSignature(const PublicKeys& publicKeys, const std::string& sig) const
+{
+    return verifyDetached(fingerprint(), sig, publicKeys);
+}
+
+size_t DrvOutputInfo::checkSignatures(const PublicKeys & publicKeys) const
+{
+    size_t good = 0;
+    for (auto & sig : signatures)
+        if (checkSignature(publicKeys, sig))
+            good++;
+    return good;
+}
+
 } // namespace nix

@@ -84,6 +84,16 @@ void write(const Store & store, Sink & out, const std::optional<ContentAddress> 
     out << (caOpt ? renderContentAddress(*caOpt) : "");
 }
 
+CheckSigsFlag read(const Store& store, Source& from, Phantom<CheckSigsFlag> _)
+{
+    bool dontCheckSigs;
+    from >> dontCheckSigs;
+    return dontCheckSigs ? NoCheckSigs : CheckSigs;
+}
+
+void write(const Store& store, Sink& out, const CheckSigsFlag & checkSigs)
+{ out << !checkSigs; }
+
 }
 
 
@@ -598,7 +608,8 @@ void RemoteStore::addToStore(const ValidPathInfo & info, Source & source,
         worker_proto::write(*this, conn->to, info.references);
         conn->to << info.registrationTime << info.narSize
                  << info.ultimate << info.sigs << renderContentAddress(info.ca)
-                 << repair << !checkSigs;
+                 << repair;
+        worker_proto::write(*this, conn->to, checkSigs);
 
         if (GET_PROTOCOL_MINOR(conn->daemonVersion) >= 23) {
             conn.withFramedSink([&](Sink & sink) {
@@ -621,7 +632,7 @@ StorePath RemoteStore::addTextToStore(const string & name, const string & s,
     return addCAToStore(source, name, TextHashMethod{}, references, repair)->path;
 }
 
-void RemoteStore::registerDrvOutput(const DrvOutputInfo & info)
+void RemoteStore::registerDrvOutput(const DrvOutputInfo & info, CheckSigsFlag checkSigs)
 {
     auto conn(getConnection());
     conn->to << wopRegisterDrvOutput;
@@ -629,6 +640,7 @@ void RemoteStore::registerDrvOutput(const DrvOutputInfo & info)
     conn->to << std::string(info.outPath.to_string());
     worker_proto::write(*this, conn->to, info.dependencies);
     worker_proto::write(*this, conn->to, info.signatures);
+    worker_proto::write(*this, conn->to, checkSigs);
     conn.processStderr();
 }
 

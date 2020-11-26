@@ -89,6 +89,7 @@ MAKE_WORKER_PROTO(, StorePath);
 MAKE_WORKER_PROTO(, ContentAddress);
 MAKE_WORKER_PROTO(, DrvOutputId);
 MAKE_WORKER_PROTO(, DrvInput);
+MAKE_WORKER_PROTO(, CheckSigsFlag);
 
 MAKE_WORKER_PROTO(template<typename T>, std::set<T>);
 
