@@ -7,9 +7,12 @@ source common.sh
 export REMOTE_STORE_PATH=$TEST_ROOT/remote_store
 chmod -R u+w "$REMOTE_STORE_PATH" || true
 rm -rf "$REMOTE_STORE_PATH"
+mkdir -p $REMOTE_STORE_PATH
 export REMOTE_STORE=file://$REMOTE_STORE_PATH
 
-nix-store --generate-binary-cache-key cache1.example.org $TEST_ROOT/sk1 $TEST_ROOT/pk1
+if [[ ! -f $TEST_ROOT/sk1 ]]; then
+    nix-store --generate-binary-cache-key cache1.example.org $TEST_ROOT/sk1 $TEST_ROOT/pk1
+fi
 pk1=$(cat $TEST_ROOT/pk1)
 sk1=$TEST_ROOT/sk1
 

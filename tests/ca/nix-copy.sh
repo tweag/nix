@@ -3,7 +3,9 @@ source common.sh
 clearStore
 clearCache
 
-nix-store --generate-binary-cache-key cache1.example.org $TEST_ROOT/sk1 $TEST_ROOT/pk1
+if [[ ! -f $TEST_ROOT/sk1 ]]; then
+    nix-store --generate-binary-cache-key cache1.example.org $TEST_ROOT/sk1 $TEST_ROOT/pk1
+fi
 pk1=$(cat $TEST_ROOT/pk1)
 
 commonArgs=( \
