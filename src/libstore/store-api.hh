@@ -205,6 +205,8 @@ struct StoreConfig : public Config
 
     const Setting<int> pathInfoCacheSize{this, 65536, "path-info-cache-size", "size of the in-memory store path information cache"};
 
+    const Setting<int> drvOutputInfoCacheSize{this, 65536, "drv-output-info-cache-size", "size of the in-memory derivation output information cache"};
+
     const Setting<bool> isTrusted{this, false, "trusted", "whether paths from this store can be used as substitutes even when they lack trusted signatures"};
 
     Setting<int> priority{this, 0, "priority", "priority of this substituter (lower value means higher priority)"};
@@ -247,6 +249,7 @@ protected:
     {
         // FIXME: fix key
         LRUCache<std::string, PathInfoCacheValue> pathInfoCache;
+        LRUCache<DrvOutputId, std::optional<DrvOutputInfo>> drvOutputInfoCache;
     };
 
     Sync<State> state;

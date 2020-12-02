@@ -345,7 +345,7 @@ ValidPathInfo Store::addToStoreSlow(std::string_view name, const Path & srcPath,
 
 Store::Store(const Params & params)
     : StoreConfig(params)
-    , state({(size_t) pathInfoCacheSize})
+    , state({(size_t) pathInfoCacheSize, (size_t) drvOutputInfoCacheSize})
 {
 }
 
@@ -471,8 +471,17 @@ void Store::queryDrvOutputInfo(
         const DrvOutputId& id,
         Callback<std::optional<const DrvOutputInfo>> callback)
 {
-    // FIXME: Make cached
-    queryDrvOutputInfoUncached(id, std::move(callback));
+    auto info = state.lock()->drvOutputInfoCache.get(id);
+    if (info) {
+        callback(*info);
+        return;
+    }
+    decltype(callback) callbackWithCaching = {[&](std::future<std::optional<const DrvOutputInfo>> fut) {
+        auto info = fut.get();
+        state.lock()->drvOutputInfoCache.upsert(id, info);
+        callback(std::move(info));
+    }};
+    queryDrvOutputInfoUncached(id, std::move(callbackWithCaching));
 }
 
 std::optional<const DrvOutputInfo> Store::queryDrvOutputInfo(const DrvOutputId& id)
