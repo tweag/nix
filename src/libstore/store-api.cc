@@ -467,6 +467,28 @@ static bool goodStorePath(const StorePath & expected, const StorePath & actual)
         && (expected.name() == Store::MissingName || expected.name() == actual.name());
 }
 
+void Store::queryDrvOutputInfo(
+        const DrvOutputId& id,
+        Callback<std::optional<const DrvOutputInfo>> callback)
+{
+    // FIXME: Make cached
+    queryDrvOutputInfoUncached(id, std::move(callback));
+}
+
+std::optional<const DrvOutputInfo> Store::queryDrvOutputInfo(const DrvOutputId& id)
+{
+    std::promise<std::optional<const DrvOutputInfo>> promise;
+    queryDrvOutputInfo(id,
+        {[&](std::future<std::optional<const DrvOutputInfo>> result) {
+            try {
+                promise.set_value(result.get());
+            } catch (...) {
+                promise.set_exception(std::current_exception());
+            }
+        }});
+
+    return promise.get_future().get();
+}
 
 void Store::queryPathInfo(const StorePath & storePath,
     Callback<ref<const ValidPathInfo>> callback) noexcept

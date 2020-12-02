@@ -83,7 +83,9 @@ public:
 
     void registerDrvOutput(const DrvOutputId & outputId, const DrvOutputInfo & info) override;
 
-    std::optional<const DrvOutputInfo> queryDrvOutputInfo(const DrvOutputId &) override;
+    void queryDrvOutputInfoUncached(
+        const DrvOutputId&,
+        Callback<std::optional<const DrvOutputInfo>>) override;
 
     void buildPaths(const std::vector<StorePathWithOutputs> & paths, BuildMode buildMode) override;
 

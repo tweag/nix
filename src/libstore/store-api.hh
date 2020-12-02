@@ -396,8 +396,15 @@ protected:
         Callback<std::shared_ptr<const ValidPathInfo>> callback) noexcept = 0;
 
 public:
+    virtual void queryDrvOutputInfoUncached(
+        const DrvOutputId&,
+        Callback<std::optional<const DrvOutputInfo>>) = 0;
 
-    virtual std::optional<const DrvOutputInfo> queryDrvOutputInfo(const DrvOutputId &) = 0;
+    void queryDrvOutputInfo(
+        const DrvOutputId&,
+        Callback<std::optional<const DrvOutputInfo>>);
+
+    std::optional<const DrvOutputInfo> queryDrvOutputInfo(const DrvOutputId &);
 
     virtual std::optional<StorePath> queryOutputPathOf(const StorePath & drvPath, const std::string & outputName);
 

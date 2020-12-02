@@ -61,8 +61,10 @@ struct DummyStore : public Store, public virtual DummyStoreConfig
         BuildMode buildMode) override
     { unsupported("buildDerivation"); }
 
-    std::optional<const DrvOutputInfo> queryDrvOutputInfo(const DrvOutputId&) override
-    { unsupported("queryDrvOutputInfo"); }
+    void queryDrvOutputInfoUncached(
+        const DrvOutputId& id,
+        Callback<std::optional<const DrvOutputInfo>> callback) override
+    { unsupported("queryDrvOutputInfoUncached"); }
 };
 
 static RegisterStoreImplementation<DummyStore, DummyStoreConfig> regDummyStore;

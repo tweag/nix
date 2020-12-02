@@ -446,17 +446,28 @@ StorePath BinaryCacheStore::addTextToStore(const string & name, const string & s
     })->path;
 }
 
-std::optional<const DrvOutputInfo> BinaryCacheStore::queryDrvOutputInfo(const DrvOutputId & id)
-{
-    auto outputInfoFilePath =
-        "/drvOutputs/" + std::string(id.drvPath.hashPart()) + "!" + id.outputName + ".doi";
-    auto rawOutputInfo = getFile(outputInfoFilePath);
+void BinaryCacheStore::queryDrvOutputInfoUncached(
+    const DrvOutputId& id,
+    Callback<std::optional<const DrvOutputInfo>> callback) {
+    auto outputInfoFilePath = "/drvOutputs/" +
+        std::string(id.drvPath.hashPart()) + "!" + id.outputName + ".doi";
+    auto callbackPtr =
+        std::make_shared<decltype(callback)>(std::move(callback));
+    getFile(
+        outputInfoFilePath,
+        {[=](std::future<std::shared_ptr<std::string>> fut) {
+            try {
+                auto rawOutputInfo = fut.get();
 
-    if (rawOutputInfo) {
-        return { DrvOutputInfo::parse(*rawOutputInfo, outputInfoFilePath) };
-    } else {
-        return std::nullopt;
-    }
+                if (!rawOutputInfo)
+                    return (*callbackPtr)(std::nullopt);
+
+                (*callbackPtr)(
+                    {DrvOutputInfo::parse(*rawOutputInfo, outputInfoFilePath)});
+            } catch (...) {
+                callbackPtr->rethrow();
+            }
+        }});
 }
 
 std::optional<StorePath> BinaryCacheStore::queryOutputPathOf(

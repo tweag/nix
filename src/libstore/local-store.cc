@@ -1631,14 +1631,15 @@ void LocalStore::createUser(const std::string & userName, uid_t userId)
     }
 }
 
-std::optional<const DrvOutputInfo> LocalStore::queryDrvOutputInfo(const DrvOutputId& id) {
+void LocalStore::queryDrvOutputInfoUncached(const DrvOutputId& id, Callback<std::optional<const DrvOutputInfo>> callback) {
+    // XXX: This isn't really async
     auto outputPath = queryOutputPathOf(id.drvPath, id.outputName);
     if (!(outputPath && isValidPath(*outputPath)))
-        return std::nullopt;
+        callback(std::nullopt);
     else
-        return {DrvOutputInfo{
+        callback({DrvOutputInfo{
             .outPath = *outputPath,
-        }};
+        }});
 }
 
 }  // namespace nix

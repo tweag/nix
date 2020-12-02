@@ -334,9 +334,11 @@ public:
         return conn->remoteVersion;
     }
 
-    std::optional<const DrvOutputInfo> queryDrvOutputInfo(const DrvOutputId&) override
+    virtual void queryDrvOutputInfoUncached(
+        const DrvOutputId& id,
+        Callback<std::optional<const DrvOutputInfo>> callback) override
     // TODO: Implement
-    { unsupported("queryDrvOutputInfo"); }
+    { unsupported("queryDrvOutputInfoUncached"); }
 };
 
 static RegisterStoreImplementation<LegacySSHStore, LegacySSHStoreConfig> regLegacySSHStore;

@@ -618,20 +618,24 @@ void RemoteStore::registerDrvOutput(const DrvOutputId & outputId, const DrvOutpu
     conn.processStderr();
 }
 
-std::optional<const DrvOutputInfo> RemoteStore::queryDrvOutputInfo(const DrvOutputId & id)
-{
-    auto conn(getConnection());
-    conn->to << wopQueryDrvOutputInfo;
-    conn->to << id.to_string();
-    conn.processStderr();
-    auto rawOutputPath = readString(conn->from);
-    if (rawOutputPath == "") {
-        return std::nullopt;
+void RemoteStore::queryDrvOutputInfoUncached(
+    const DrvOutputId& id,
+    Callback<std::optional<const DrvOutputInfo>> callback) {
+    try {
+        auto conn(getConnection());
+        conn->to << wopQueryDrvOutputInfo;
+        conn->to << id.to_string();
+        conn.processStderr();
+        auto rawOutputPath = readString(conn->from);
+        if (rawOutputPath == "") {
+            callback(std::nullopt);
+        }
+        auto outputPath = StorePath(rawOutputPath);
+        callback({DrvOutputInfo{outputPath}});
+    } catch (...) {
+        callback.rethrow();
     }
-    auto outputPath = StorePath(rawOutputPath);
-    return {DrvOutputInfo{outputPath}};
 }
-
 
 void RemoteStore::buildPaths(const std::vector<StorePathWithOutputs> & drvPaths, BuildMode buildMode)
 {

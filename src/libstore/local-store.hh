@@ -226,7 +226,9 @@ public:
     void registerDrvOutput(const DrvOutputId & outputId, const DrvOutputInfo & info) override;
     void cacheDrvOutputMapping(State & state, const uint64_t deriver, const string & outputName, const StorePath & output);
 
-    std::optional<const DrvOutputInfo> queryDrvOutputInfo(const DrvOutputId&) override;
+    void queryDrvOutputInfoUncached(
+            const DrvOutputId&,
+            Callback<std::optional<const DrvOutputInfo>>) override;
 
 private:
 
