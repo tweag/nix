@@ -249,16 +249,20 @@ string optimisticLockProfile(const Path & profile)
 }
 
 
+Path profilesDir()
+{
+    auto profileRoot = getDataDir() + "/nix/profiles";
+    createDirs(profileRoot);
+    return profileRoot;
+}
+
+
 Path getDefaultProfile()
 {
     Path profileLink = getHome() + "/.nix-profile";
     try {
         if (!pathExists(profileLink)) {
-            replaceSymlink(
-                getuid() == 0
-                ? settings.nixStateDir + "/profiles/default"
-                : fmt("%s/profiles/per-user/%s/profile", settings.nixStateDir, getUserName()),
-                profileLink);
+            replaceSymlink(profilesDir() + "/profile", profileLink);
         }
         return absPath(readLink(profileLink), dirOf(profileLink));
     } catch (Error &) {
