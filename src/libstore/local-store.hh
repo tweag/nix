@@ -262,8 +262,6 @@ private:
 
     void findRootsNoTempNoExternalDaemon(Roots & roots, bool censor);
 
-    void findRuntimeRoots(Roots & roots, bool censor);
-
     std::pair<Path, AutoCloseFD> createTempDirInStore();
 
     void checkDerivationOutputs(const StorePath & drvPath, const Derivation & drv);
