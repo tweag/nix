@@ -12,6 +12,7 @@ nix_tests = \
   flakes/build-paths.sh \
   ca/gc.sh \
   gc.sh \
+  gc-external-daemon.sh \
   remote-store.sh \
   lang.sh \
   fetchMercurial.sh \
