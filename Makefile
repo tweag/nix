@@ -11,6 +11,7 @@ makefiles = \
   src/libexpr/tests/local.mk \
   src/libcmd/local.mk \
   src/nix/local.mk \
+  src/nix-find-roots/local.mk \
   src/resolve-system-dependencies/local.mk \
   scripts/local.mk \
   misc/bash/local.mk \
