@@ -16,6 +16,7 @@ std::map<ExperimentalFeature, std::string> stringifiedXpFeatures = {
     { Xp::ReplFlake, "repl-flake" },
     { Xp::AutoAllocateUids, "auto-allocate-uids" },
     { Xp::Cgroups, "cgroups" },
+    { Xp::ExternalGCDaemon, "external-gc-daemon" },
 };
 
 const std::optional<ExperimentalFeature> parseExperimentalFeature(const std::string_view & name)
