@@ -26,6 +26,13 @@
 
 #include <cmath>
 
+#ifndef SMALL_VECTOR_VALUE_SIZE
+#define SMALL_VECTOR_VALUE_SIZE 8
+#endif
+#ifndef SMALL_VECTOR_PTR_SIZE
+#define SMALL_VECTOR_PTR_SIZE 8
+#endif
+
 namespace nix {
 
 
@@ -2469,7 +2476,7 @@ static void prim_catAttrs(EvalState & state, const PosIdx pos, Value * * args, V
     auto attrName = state.symbols.create(state.forceStringNoCtx(*args[0], pos));
     state.forceList(*args[1], pos);
 
-    boost::container::small_vector<Value *, 256> res(args[1]->listSize());
+    boost::container::small_vector<Value *, SMALL_VECTOR_PTR_SIZE> res(args[1]->listSize());
     size_t found = 0;
 
     for (auto v2 : args[1]->listItems()) {
@@ -2797,7 +2804,7 @@ static void prim_filter(EvalState & state, const PosIdx pos, Value * * args, Val
     state.forceFunction(*args[0], pos);
     state.forceList(*args[1], pos);
 
-    boost::container::small_vector<Value *, 256> vs(args[1]->listSize());
+    boost::container::small_vector<Value *, SMALL_VECTOR_PTR_SIZE> vs(args[1]->listSize());
     size_t k = 0;
 
     bool same = true;
@@ -3174,7 +3181,7 @@ static void prim_concatMap(EvalState & state, const PosIdx pos, Value * * args, 
     state.forceList(*args[1], pos);
     auto nrLists = args[1]->listSize();
 
-    boost::container::small_vector<Value, 64> lists(nrLists);
+    boost::container::small_vector<Value, SMALL_VECTOR_VALUE_SIZE> lists(nrLists);
     size_t len = 0;
 
     for (unsigned int n = 0; n < nrLists; ++n) {
