@@ -19,6 +19,7 @@ nix_tests = \
   gc-auto.sh \
   gc-external-daemon/gc-auto.sh \
   user-envs.sh \
+  user-envs-migration.sh \
   binary-cache.sh \
   multiple-outputs.sh \
   ca/build.sh \
