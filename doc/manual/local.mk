@@ -2,7 +2,8 @@ ifeq ($(doc_generate),yes)
 
 MANUAL_SRCS := \
   $(call rwildcard, $(d)/src, *.md) \
-  $(call rwildcard, $(d)/src, */*.md)
+  $(call rwildcard, $(d)/src, */*.md) \
+  $(call rwildcard, $(d)/../../python/doc, *.md)
 
 # Generate man pages.
 man-pages := $(foreach n, \
