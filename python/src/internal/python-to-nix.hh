@@ -1,7 +1,6 @@
 #pragma once
 
 #include <Python.h>
-#include <config.h>
 
 #include <eval.hh>
 #include <optional>
