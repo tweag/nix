@@ -309,7 +309,13 @@
             name = "nix-${version}";
             inherit version;
 
-            src = self;
+            src = builtins.path {
+              name = "source-nix";
+              path = ./.;
+              filter = path: type:
+                path != toString ./python
+                && path != toString ./flake.nix;
+            };
 
             VERSION_SUFFIX = versionSuffix;
 
