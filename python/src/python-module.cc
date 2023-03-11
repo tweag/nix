@@ -2,6 +2,7 @@
 
 #include "internal/eval.hh"
 #include "internal/ptr.hh"
+#include "nix/python/value.hh"
 
 #include <eval.hh>
 #include <globals.hh>
@@ -13,9 +14,13 @@ namespace nix::python {
 
 PyObject * ThrownNixError = nullptr;
 PyObject * NixError = nullptr;
+EvalState *state = nullptr;
 
 static PyMethodDef NixMethods[] = {
-    {"callExprString", (PyCFunction) eval, METH_VARARGS | METH_KEYWORDS, "Eval nix expression"}, {NULL, NULL, 0, NULL}};
+    {"callExprString", (PyCFunction) eval, METH_VARARGS | METH_KEYWORDS, "Eval nix expression and marshal"},
+    {"evalExprString", (PyCFunction) evalExprString, METH_VARARGS, "Eval nix expression and return a nix.Value"},
+    {NULL, NULL, 0, NULL}
+    };
 
 static struct PyModuleDef nixmodule = {
     PyModuleDef_HEAD_INIT, "nix", "Nix expression bindings",
@@ -67,6 +72,16 @@ extern "C" _public_ PyObject * PyInit_nix(void)
     }
 
     if (PyModule_AddObject(m.get(), "ThrownNixError", ThrownNixError) == -1) {
+        return nullptr;
+    }
+
+    if (PyType_Ready(&ValuePyType) < 0)
+        return nullptr;
+
+    Py_INCREF(&ValuePyType);
+    if (PyModule_AddObject(m.get(), "Value", (PyObject *) &ValuePyType) < 0) {
+        Py_DECREF(&ValuePyType);
+        Py_DECREF(m.get());
         return nullptr;
     }
 
