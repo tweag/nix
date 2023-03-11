@@ -10,6 +10,12 @@
 
 namespace nix::python {
 
+nix::EvalState &getState() {
+    nix::Strings searchPath;
+    static nix::EvalState state(searchPath, nix::openStore());
+    return state;
+}
+
 const char * currentExceptionTypeName()
 {
     int status;
@@ -20,7 +26,7 @@ const char * currentExceptionTypeName()
 static PyObject * _eval(const std::string & expression, PyObject * argument)
 {
     nix::Strings storePath;
-    nix::EvalState state(storePath, nix::openStore());
+    nix::EvalState &state(getState());
 
     auto nixArgument = pythonToNixValue(state, argument);
     if (!nixArgument) {
