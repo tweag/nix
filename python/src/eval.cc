@@ -2,6 +2,7 @@
 #include "internal/errors.hh"
 #include "internal/nix-to-python.hh"
 #include "internal/python-to-nix.hh"
+#include "nix/python/value.hh"
 #include <Python.h>
 
 #include <cxxabi.h>
@@ -92,4 +93,59 @@ PyObject * eval(PyObject * self, PyObject * args, PyObject * keywds)
         return PyErr_Format(NixError, "unexpected C++ exception: '%s'", currentExceptionTypeName());
     }
 }
+
+static PyObject * _evalExprString(const std::string & expression)
+{
+    nix::Strings storePath;
+    nix::EvalState state(storePath, nix::openStore());
+
+    // Release the GIL, so that other Python threads can be running in parallel
+    // while the potentially expensive Nix evaluation happens. This is safe
+    // because we don't operate on Python objects or call the Python/C API in
+    // this block
+    // See https://docs.python.org/3/c-api/init.html#thread-state-and-the-global-interpreter-lock
+    {
+        PyThreadState *_save;
+        _save = PyEval_SaveThread();
+        Finally reacquireGIL([&] {
+            PyEval_RestoreThread(_save);
+        });
+
+        // TODO: Should the "." be something else here?
+        auto e = state.parseExprFromString(expression, ".");
+        nix::Value v;
+        state.eval(e, v);
+        auto r = allocValuePyObject(&state);
+        ***r->value = std::move(v);
+        return (PyObject *) r;
+    }
+}
+
+PyObject * evalExprString(PyObject * self, PyObject * args, PyObject * _keywds)
+{
+    PyObject * expressionObject;
+
+    if (!PyArg_ParseTuple(args, "U", &expressionObject)) {
+        return nullptr;
+    }
+
+    // This handles null bytes in expressions correctly
+    Py_ssize_t expressionSize;
+    auto expressionBase = PyUnicode_AsUTF8AndSize(expressionObject, &expressionSize);
+    if (!expressionBase) {
+        return nullptr;
+    }
+    std::string expression(expressionBase, expressionSize);
+
+    try {
+        return _evalExprString(expression);
+    } catch (nix::ThrownError & e) {
+        return PyErr_Format(ThrownNixError, "%s", e.message().c_str());
+    } catch (nix::Error & e) {
+        return PyErr_Format(NixError, "%s", e.what());
+    } catch (...) {
+        return PyErr_Format(NixError, "unexpected C++ exception: '%s'", currentExceptionTypeName());
+    }
+}
+
 } // namespace nix::python

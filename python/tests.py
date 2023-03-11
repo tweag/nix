@@ -65,5 +65,19 @@ class TestPythonNix(unittest.TestCase):
     def test_null(self):
         self.assertIs(nix.callExprString("{ a }: assert a == null; a", arg=dict(a=None)), None)
 
+    def test_evalExprString_raise(self):
+        with self.assertRaises(nix.NixError):
+            nix.evalExprString("{ a = 123")
+
+    def test_evalExprString_ok(self):
+        nix.evalExprString("{ a = 123; }")
+
+    def test_evalExprString_value(self):
+        self.assertEqual(nix.evalExprString("{ a = 123; }").toPythonStrict(), dict(a = 123))
+
+    def test_evalExprString_value_raise(self):
+        with self.assertRaises(nix.NixError):
+            nix.evalExprString("{ a = throw ''nope''; }").toPythonStrict()
+
 if __name__ == '__main__':
     unittest.main()
