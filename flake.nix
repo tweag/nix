@@ -710,6 +710,7 @@
               ''
                 PATH=$prefix/bin:$PATH
                 unset PYTHONPATH
+                export PYTHONPATH=${pkgs.python3.pkgs.makePythonPath [pkgs.python3.pkgs.cffi]}
                 export MANPATH=$out/share/man:$MANPATH
 
                 # Make bash completion work.
