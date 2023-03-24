@@ -2,15 +2,20 @@ from cffi import FFI
 
 ffi = FFI()
 
-header_content = open("../src/libnixc/nix_api.h").read()
-header_content = header_content[header_content.index("// cffi start"):header_content.index("// cffi end")]
+def extract_cffi(fname):
+    with open(fname) as f:
+        contents = f.read()
+        return contents[contents.index("// cffi start"):contents.index("// cffi end")]
+header_content = extract_cffi("../src/libnixc/nix_api.h") + "\n" + extract_cffi("../src/libnixc/nix_value_api.h")
 
 # Define C declarations
 ffi.cdef(header_content)
 
 # Set the C source file
-ffi.set_source('_nix_api',
-               '#include "nix_api.h"',
+ffi.set_source('_nix_api', '''
+#include "nix_api.h"
+#include "nix_value_api.h"
+''',
                libraries=["nixc"],
                library_dirs=["../src/libnixc"],
                include_dirs=["../src/libnixc"])
