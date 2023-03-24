@@ -4,11 +4,20 @@
 #include <stdexcept>
 #include <cstring>
 
-#include "config.hh"
+#include "eval.hh"
 #include "globals.hh"
+#include "shared.hh"
+#include "config.hh"
+#include <store-api.hh>
 
 struct GCRef {
     std::shared_ptr<void> ptr;
+};
+struct Store {
+    nix::ref<nix::Store> ptr;
+};
+struct State {
+    nix::EvalState state;
 };
 
 // Error buffer
@@ -44,50 +53,72 @@ const char* nix_version_get() {
 }
 
 nix_err nix_init() {
-    // TODO: Implement this function
-    return NIX_OK;
+    try {
+        nix::initNix();
+        nix::initGC();
+        return NIX_OK;
+    } catch (const std::exception& e) {
+        set_error_message(e.what());
+        return NIX_ERR_UNKNOWN;
+    }
 }
 
-Expr* nix_parse_expr_from_string(State* state, const char* expr, const char* path, StaticEnv* env) {
-    // TODO: Implement this function
-    return nullptr;
+Expr* nix_parse_expr_from_string(State* state, const char* expr, const char* path) {
+    try {
+        return state->state.parseExprFromString(expr, path);
+    } catch (const std::exception& e) {
+        set_error_message(e.what());
+        return nullptr;
+    }
 }
 
-nix_err nix_expr_eval(State* state, Env* env, Value* value) {
-    // TODO: Implement this function
+nix_err nix_expr_eval(State* state, Expr* expr, Value* value) {
+    try {
+        state->state.eval((nix::Expr*)expr, *(nix::Value*)value);
+    } catch (const std::exception& e) {
+        set_error_message(e.what());
+        return NIX_ERR_UNKNOWN;
+    }
     return NIX_OK;
 }
 
 nix_err nix_value_force_deep(State* state, Value* value) {
-    // TODO: Implement this function
+    try {
+        state->state.forceValueDeep(*(nix::Value*)value);
+    } catch (const std::exception& e) {
+        set_error_message(e.what());
+        return NIX_ERR_UNKNOWN;
+    }
     return NIX_OK;
 }
 
 Store* nix_store_open() {
-    // TODO: Implement this function
-    return nullptr;
+    try {
+        // todo: uri, params
+        return new Store{nix::openStore()};
+    } catch (const std::exception& e) {
+        set_error_message(e.what());
+        return nullptr;
+    }
 }
 
 void nix_store_unref(Store* store) {
-    // TODO: Implement this function
+    delete store;
 }
 
 State* nix_state_create(const char** searchPath, Store* store) {
-    // TODO: Implement this function
-    return nullptr;
+    // todo: searchPath
+    try {
+        nix::Strings searchPath;
+        return new State{nix::EvalState(searchPath, store->ptr)};
+    } catch (const std::exception& e) {
+        set_error_message(e.what());
+        return nullptr;
+    }
 }
 
 void nix_state_free(State* state) {
-    // TODO: Implement this function
-}
-
-StaticEnv* nix_state_get_base_env(State* state) {
-    // TODO: Implement this function
-    return nullptr;
-}
-
-void nix_staticenv_unref(StaticEnv* env) {
-    // TODO: Implement this function
+    delete state;
 }
 
 void nix_err_msg(char* msg, int n) {
@@ -96,8 +127,16 @@ void nix_err_msg(char* msg, int n) {
 }
 
 GCRef* nix_gc_ref(void* obj) {
-    // TODO: Implement this function
-    return nullptr;
+    try {
+#if HAVE_BOEHMGC
+        return new GCRef{std::allocate_shared<void*>(traceable_allocator<void*>(), obj)};
+#else
+        return new GCRef{std::make_shared<void*>(obj)};
+#endif
+    } catch (const std::exception& e) {
+        set_error_message(e.what());
+        return nullptr;
+    }
 }
 
 void nix_gc_free(GCRef* ref) {
