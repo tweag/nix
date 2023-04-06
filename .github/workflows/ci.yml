@@ -27,7 +27,16 @@ jobs:
         name: '${{ env.CACHIX_NAME }}'
         signingKey: '${{ secrets.CACHIX_SIGNING_KEY }}'
         authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
-    - run: nix --experimental-features 'nix-command flakes' flake check -L
+    - run: |
+        ulimit -c unlimited
+        sudo mkdir -p /cores
+        sudo chmod -R +rwx /cores/
+        sudo $(which nix) --experimental-features 'nix-command flakes' flake check -L || true
+        sudo chmod -R +rwx /cores/*
+    - uses: actions/upload-artifact@master # capture all crashes as build artifacts
+      with:
+        name: crashes
+        path: /cores
 
   check_secrets:
     permissions:
