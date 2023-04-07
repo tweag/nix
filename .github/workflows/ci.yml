@@ -26,7 +26,8 @@ jobs:
         name: '${{ env.CACHIX_NAME }}'
         signingKey: '${{ secrets.CACHIX_SIGNING_KEY }}'
         authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
-    - run: nix --experimental-features 'nix-command flakes' flake check -L
+    - run: GC_DONT_GC=1 nix --experimental-features 'nix-command flakes' build
+    - run: ./result/bin/nix --experimental-features 'nix-command flakes' flake check -L
 
   check_secrets:
     permissions:
