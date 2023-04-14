@@ -90,7 +90,6 @@ int64_t nix_get_int(const Value* value) {
 
 Value* nix_get_list_byid(const Value* value, unsigned int ix) {
     check_value_not_null(value);
-    // TODO: Implement this function based on the internal structure of Value
     const nix::Value &v = *(const nix::Value*)value;
     assert(v.type() == nix::nList);
     return (Value*)v.listElems()[ix];
@@ -100,9 +99,21 @@ Value* nix_get_attr_byname(const Value* value, State* state, const char* name) {
     check_value_not_null(value);
     const nix::Value &v = *(const nix::Value*)value;
     assert(v.type() == nix::nAttrs);
-    // TODO: Implement this function based on the internal structure of Value
     nix::Symbol s = state->state.symbols.create(name);
-    return (*v.attrs).get(s)->value;
+    auto attr = v.attrs->get(s);
+    if (attr) return attr->value;
+    // todo: set_error_message
+    return nullptr;
+}
+
+bool nix_has_attr_byname(const Value* value, State* state, const char* name) {
+    check_value_not_null(value);
+    const nix::Value &v = *(const nix::Value*)value;
+    assert(v.type() == nix::nAttrs);
+    nix::Symbol s = state->state.symbols.create(name);
+    auto attr = v.attrs->get(s);
+    if (attr) return true;
+    return false;
 }
 
 Value* nix_get_attr_iterate(const Value* value, const State* state, void (*iter)(const char*, Value*, void*), void* data) {

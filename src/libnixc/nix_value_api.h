@@ -39,6 +39,7 @@ int64_t nix_get_int(const Value* value);
 
 Value* nix_get_list_byid(const Value* value, unsigned int ix);
 Value* nix_get_attr_byname(const Value* value, State* state, const char* name);
+bool nix_has_attr_byname(const Value* value, State* state, const char* name);
 Value* nix_get_attr_iterate(const Value* value, const State* state, void (*iter)(const char*, Value*, void*), void* data);
 
 

@@ -1,6 +1,7 @@
 import os
 import builtins
 import types
+import collections.abc
 from _nix_api import ffi, lib
 
 # todo: estimate size for ffi.gc calls
@@ -63,7 +64,7 @@ class State:
         return Expr(self, expr)
         
 #Evaluated = lambda: int | float | str | types.NoneType | dict[str, Value] | list[Value] # Function | String
-Evaluated = lambda: int | float | str | types.NoneType | dict | list # Function | String
+Evaluated = lambda: int | float | str | types.NoneType | dict | list | Function # | String
 DeepEvaluated = lambda: int | float | str | "String" | types.NoneType | dict[string, DeepEvaluated] | list[DeepEvaluated] | Function
 
 def err_check(err_code):
@@ -74,6 +75,20 @@ def null_check(obj):
     if not obj:
         raise NixAPIError(nix_err_msg())
     return obj
+
+class Function:
+    def __init__(self, val):
+        self.value = val
+    def __repr__(self):
+        return repr(self.value)
+    def __call__(self, arg):
+        assert isinstance(arg, Value)
+        res = Value(self.value._state)
+        err_check(lib.nix_value_call(self.value._state, self.value._value, arg._value, res._value))
+        return res
+
+class X:
+    Function = Function
 
 class Value:
     def __init__(self, state_ptr, value_ptr=None):
@@ -108,7 +123,7 @@ class Value:
             case lib.NIX_TYPE_LIST:
                 return list
             case lib.NIX_TYPE_FUNCTION:
-                raise NotImplementedError
+                return Function
             case lib.NIX_TYPE_EXTERNAL:
                 raise NotImplementedError
             case _:
@@ -134,7 +149,7 @@ class Value:
             case builtins.bool:
                 return bool(lib.nix_get_bool(self._value))
             case builtins.str:
-                return self.get_string()
+                return ffi.string(lib.nix_get_string(self._value)).decode()
             case builtins.dict:
                 res = {}
                 if deep:
@@ -148,55 +163,72 @@ class Value:
                     # todo don't need another force call
                     l = [x._to_python(deep=True) for x in l]
                 return l
+            case X.Function:
+                return Function(self)
             case _:
                 raise NotImplementedError
 
-    def force(self, typeCheck=Evaluated, convert=True, deep=False):
+    def force(self, typeCheck=Evaluated, deep=False):
+        self.force_type(typeCheck, deep=deep)
+        return self._to_python(deep)
+
+    def force_type(self, typeCheck=Evaluated, deep=False):
         if isinstance(typeCheck, types.FunctionType):
             typeCheck = typeCheck()
 
         self._force(deep=deep)
-        if not issubclass(self.get_type(), typeCheck):
+        tp = self.get_type()
+        if not issubclass(tp, typeCheck):
             raise TypeError("nix value is {} while {} was expected".format(self.get_typename(), str(typeCheck)))
 
-        return self._to_python(deep) if convert else None
+        return tp
 
     def get_typename(self) -> str:
         return ffi.string(lib.nix_get_typename(self._value)).decode()
 
-    def get_string(self) -> str:
-        return ffi.string(lib.nix_get_string(self._value)).decode()
-
     def get_list_byid(self, ix: int) -> "Value":
-        value_ptr = lib.nix_get_list_byid(self._value, ix)
+        value_ptr = null_check(lib.nix_get_list_byid(self._value, ix))
         return Value(self._state, value_ptr)
 
     def get_attr_byname(self, name: str) -> "Value":
-        value_ptr = lib.nix_get_attr_byname(
+        value_ptr = null_check(lib.nix_get_attr_byname(
             self._value,
             self._state,
-            name.encode())
+            name.encode()))
         return Value(self._state, value_ptr)
 
     def get_attr_iterate(self, iter_func) -> None:
-        @ffi.callback("void(char[], Value*, void*)")
+        @ffi.callback("void(char*, Value*, void*)")
         def iter_callback(name, value_ptr, data):
             iter_func(ffi.string(name).decode(), Value(self._state, value_ptr))
 
         lib.nix_get_attr_iterate(self._value, self._state, iter_callback, ffi.NULL)
 
+    def __iter__(self):
+        match self.force_type(dict | list):
+            case builtins.list:
+                return collections.abc.Sequence.__iter__(self)
+            case builtins.dict:
+                return iter(self.force())
+
     def __int__(self) -> int:
-        return self.force(int)
+        return int(self.force(int | float | str))
 
     def __str__(self) -> str:
-        return self.force(str)
+        return str(self.force(float | int | str | None))
 
     def __float__(self) -> float:
-        return self.force(float)
+        return float(self.force(float | int | str))
+
+    def __bool__(self):
+        match self.force_type():
+            case builtins.dict | builtins.list:
+                return bool(len(self))
+            case _:
+                return bool(self._to_python())
 
     def __len__(self) -> int:
-        self.force(dict | list, convert=False)
-        match self.get_type():
+        match self.force_type(dict | list):
             case builtins.dict:
                 return lib.nix_get_attrs_size(self._value)
             case builtins.list:
@@ -204,17 +236,32 @@ class Value:
             case _:
                 raise RuntimeError()
 
-    def __getitem__(self, i: int | str): #-> Value:
-        self.force(dict | list, convert=False)
-        match self.get_type():
+    def __contains__(self, i: int | str) -> bool:
+        match self.force_type(dict | list):
             case builtins.dict:
-                return self.force(dict)[i]
+                return bool(lib.nix_has_attr_byname(self._value, self._state, i.encode()))
+            case builtins.list:
+                return i in list(self)
+
+    def __getitem__(self, i: int | str): #-> Value:
+        match self.force_type(dict | list):
+            case builtins.dict:
+                if not isinstance(i, str):
+                    raise TypeError("key should be a string")
+                return self.get_attr_byname(i)
             case builtins.list:
                 if i >= len(self):
                     raise IndexError("list index out of range")
                 return self.get_list_byid(i % len(self))
             case _:
                 raise RuntimeError()
+
+    def keys(self):
+        self.force_type(dict)
+        return iter(self)
+
+    def __call__(self, x):
+        return self.force(Function)(x)
 
 # Example usage:
 if __name__ == "__main__":
