@@ -29,6 +29,7 @@ nix_err nix_init();
 // returns: GC'd Expr
 Expr* nix_parse_expr_from_string(State* state, const char* expr, const char* path);
 nix_err nix_expr_eval(State* state, Expr* expr, Value* value);
+nix_err nix_value_force(State* state, Value* value);
 nix_err nix_value_force_deep(State* state, Value* value);
 
 // returns: owned Store*

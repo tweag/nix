@@ -82,6 +82,16 @@ nix_err nix_expr_eval(State* state, Expr* expr, Value* value) {
     return NIX_OK;
 }
 
+nix_err nix_value_force(State* state, Value* value) {
+    try {
+        state->state.forceValue(*(nix::Value*)value, nix::noPos);
+    } catch (const std::exception& e) {
+        set_error_message(e.what());
+        return NIX_ERR_UNKNOWN;
+    }
+    return NIX_OK;
+}
+
 nix_err nix_value_force_deep(State* state, Value* value) {
     try {
         state->state.forceValueDeep(*(nix::Value*)value);

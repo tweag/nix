@@ -67,6 +67,13 @@ unsigned int nix_get_list_size(const Value* value) {
     return v.listSize();
 }
 
+unsigned int nix_get_attrs_size(const Value* value) {
+    check_value_not_null(value);
+    const nix::Value &v = *(const nix::Value*)value;
+    assert(v.type() == nix::nAttrs);
+    return v.attrs->size();
+}
+
 double nix_get_double(const Value* value) {
     check_value_not_null(value);
     const nix::Value &v = *(const nix::Value*)value;

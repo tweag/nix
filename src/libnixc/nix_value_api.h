@@ -33,6 +33,7 @@ Value* nix_alloc_value(State* state);
 bool nix_get_bool(const Value* value);
 const char* nix_get_string(const Value* value);
 unsigned int nix_get_list_size(const Value* value);
+unsigned int nix_get_attrs_size(const Value* value);
 double nix_get_double(const Value* value);
 int64_t nix_get_int(const Value* value);
 
