@@ -31,10 +31,20 @@ static void set_error_message(const char* msg) {
 // Implementations
 nix_err nix_setting_get(const char* key, char* value, int n) {
     try {
-        // std::map<std::string, SettingInfo>
-        // nix::settings.getSettings(settings);
-        // TODO: Implement this function
-        return NIX_OK;
+        std::map<std::string, nix::AbstractConfig::SettingInfo> settings;
+        nix::globalConfig.getSettings(settings);
+        if (settings.contains(key)) {
+            size_t i = settings[key].value.copy(value, n-1);
+            value[i] = 0;
+            if (i == n - 1) {
+                set_error_message("Provided buffer too short");
+                return NIX_ERR_UNKNOWN;
+            } else
+                return NIX_OK;
+        } else {
+            set_error_message("Setting not found");
+            return NIX_ERR_UNKNOWN;
+        }
     } catch (const std::exception& e) {
         set_error_message(e.what());
         return NIX_ERR_UNKNOWN;
@@ -42,8 +52,12 @@ nix_err nix_setting_get(const char* key, char* value, int n) {
 }
 
 nix_err nix_setting_set(const char* key, const char* value) {
-    // TODO: Implement this function
-    return NIX_OK;
+    if (nix::globalConfig.set(key, value))
+        return NIX_OK;
+    else {
+        set_error_message("unknown setting");
+        return NIX_ERR_UNKNOWN;
+    }
 }
 
 const char* nix_version_get() {
@@ -126,10 +140,13 @@ void nix_store_unref(Store* store) {
     delete store;
 }
 
-State* nix_state_create(const char** searchPath, Store* store) {
-    // todo: searchPath
+State* nix_state_create(const char** searchPath_c, Store* store) {
     try {
         nix::Strings searchPath;
+        if (searchPath_c != nullptr)
+            for (size_t i = 0; searchPath_c[i] != nullptr; i++)
+                searchPath.push_back(searchPath_c[i]);
+
         return new State{nix::EvalState(searchPath, store->ptr)};
     } catch (const std::exception& e) {
         set_error_message(e.what());
