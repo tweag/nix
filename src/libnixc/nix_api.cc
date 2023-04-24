@@ -6,9 +6,8 @@
 
 #include "eval.hh"
 #include "globals.hh"
-#include "shared.hh"
 #include "config.hh"
-#include <store-api.hh>
+#include "store-api.hh"
 
 struct GCRef {
     std::shared_ptr<void> ptr;
@@ -54,7 +53,7 @@ const char* nix_version_get() {
 
 nix_err nix_init() {
     try {
-        nix::initNix();
+        nix::initLibStore();
         nix::initGC();
         return NIX_OK;
     } catch (const std::exception& e) {

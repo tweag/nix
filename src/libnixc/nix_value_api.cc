@@ -1,6 +1,5 @@
 #include "eval.hh"
 #include "globals.hh"
-#include "shared.hh"
 #include "config.hh"
 #include "nix_value_api.h"
 #include "nix_api.h"

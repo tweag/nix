@@ -6,10 +6,10 @@ libnixc_DIR := $(d)
 
 libnixc_SOURCES := $(wildcard $(d)/*.cc)
 
-libnixc_CXXFLAGS += -I src/libutil -I src/libstore -I src/libexpr -I src/libmain -I src/libfetchers
+libnixc_CXXFLAGS += -I src/libutil -I src/libstore -I src/libexpr -I src/libfetchers
 
 libnixc_LDFLAGS = $(EDITLINE_LIBS) $(LOWDOWN_LIBS) -pthread
 
-libnixc_LIBS = libstore libutil libexpr libmain libfetchers
+libnixc_LIBS = libstore libutil libexpr libfetchers
 
 $(eval $(call install-file-in, $(d)/nix-c.pc, $(libdir)/pkgconfig, 0644))
