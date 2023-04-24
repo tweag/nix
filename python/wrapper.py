@@ -62,6 +62,14 @@ class State:
             self._state, expr_string.encode(), path.encode()
         ))
         return Expr(self, expr)
+
+    def alloc_val(self):
+        return Value(self._state)
+
+    def val_from_python(self, py_val):
+        v = self.alloc_val()
+        v.set(py_val)
+        return v
         
 #Evaluated = lambda: int | float | str | types.NoneType | dict[str, Value] | list[Value] # Function | String
 Evaluated = lambda: int | float | str | types.NoneType | dict | list | Function # | String
@@ -82,7 +90,10 @@ class Function:
     def __repr__(self):
         return repr(self.value)
     def __call__(self, arg):
-        assert isinstance(arg, Value)
+        if not isinstance(arg, Value):
+            arg2 = Value(self.value._state)
+            arg2.set(arg)
+            arg = arg2
         res = Value(self.value._state)
         err_check(lib.nix_value_call(self.value._state, self.value._value, arg._value, res._value))
         return res
@@ -138,7 +149,13 @@ class Value:
 
     def __repr__(self):
         # todo: state.print
-        return "<Nix Value ({})>".format(self.get_typename())
+        t = self._get_type()
+        if t == lib.NIX_TYPE_ATTRS and 'type' in self and self['type'].force() == "derivation":
+            return "<Nix derivation {}>".format(self["drvPath"].force())
+        elif t not in [lib.NIX_TYPE_THUNK, lib.NIX_TYPE_FUNCTION, lib.NIX_TYPE_ATTRS]:
+            return "<Nix: {}>".format(self.force())
+        else:
+            return "<Nix Value ({})>".format(self.get_typename())
 
     def _to_python(self, deep=False):
         match self.get_type():
@@ -262,6 +279,35 @@ class Value:
 
     def __call__(self, x):
         return self.force(Function)(x)
+
+    def set(self, py_val: DeepEvaluated):
+        match type(py_val):
+            case builtins.bool:
+                lib.nix_set_bool(self._value, py_val)
+            case builtins.str:
+                lib.nix_set_string(self._value, py_val.encode())
+            case builtins.float:
+                lib.nix_set_double(self._value, py_val)
+            case builtins.int:
+                lib.nix_set_int(self._value, py_val)
+            case types.NoneType:
+                lib.nix_set_null(self._value)
+            case builtins.list:
+                lib.nix_make_list(self._state, self._value, len(py_val))
+                for i in range(len(py_val)):
+                    v = Value(self._state)
+                    v.set(py_val[i])
+                    lib.nix_set_list_byid(self._value, i, v._value)
+            case builtins.dict:
+                bb = ffi.gc(lib.nix_make_bindings_builder(self._state, len(py_val)), lib.nix_bindings_builder_unref)
+                for k, dv in py_val.items():
+                    v = Value(self._state)
+                    v.set(dv)
+                    lib.nix_bindings_builder_insert(bb, k.encode(), v._value)
+                lib.nix_make_attrs(self._value, bb)
+            case _:
+                raise TypeError("tried to convert unknown type to nix")
+
 
 # Example usage:
 if __name__ == "__main__":

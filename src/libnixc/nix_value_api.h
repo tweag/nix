@@ -22,6 +22,7 @@ typedef enum {
 } ValueType;
 
 typedef void Value;
+typedef void BindingsBuilder;
 typedef struct State State;
 
 // Function prototypes
@@ -42,6 +43,19 @@ Value* nix_get_attr_byname(const Value* value, State* state, const char* name);
 bool nix_has_attr_byname(const Value* value, State* state, const char* name);
 Value* nix_get_attr_iterate(const Value* value, const State* state, void (*iter)(const char*, Value*, void*), void* data);
 
+void nix_set_bool(Value* value, bool b);
+void nix_set_string(Value* value, const char* str);
+void nix_set_double(Value* value, double d);
+void nix_set_int(Value* value, int64_t i);
+void nix_set_null(Value* value);
+void nix_make_list(State* s, Value* value, unsigned int size);
+void nix_set_list_byid(Value* value, unsigned int ix, Value* elem);
+void nix_make_attrs(Value* value, BindingsBuilder* b);
+
+// owned ref
+BindingsBuilder* nix_make_bindings_builder(State* state, size_t capacity);
+void nix_bindings_builder_insert(BindingsBuilder* b, const char* name, Value* value);
+void nix_bindings_builder_unref(BindingsBuilder*);
 
 // cffi end
 #ifdef __cplusplus

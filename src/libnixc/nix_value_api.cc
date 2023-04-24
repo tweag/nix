@@ -126,3 +126,73 @@ Value* nix_get_attr_iterate(const Value* value, const State* state, void (*iter)
     return nullptr;
 }
 
+
+void nix_set_bool(Value* value, bool b) {
+    check_value_not_null(value);
+    nix::Value &v = *(nix::Value*)value;
+    v.mkBool(b);
+}
+
+// todo string context
+void nix_set_string(Value* value, const char* str) {
+    check_value_not_null(value);
+    nix::Value &v = *(nix::Value*)value;
+    v.mkString(str);
+}
+
+void nix_set_double(Value* value, double d) {
+    check_value_not_null(value);
+    nix::Value &v = *(nix::Value*)value;
+    v.mkFloat(d);
+}
+
+void nix_set_int(Value* value, int64_t i) {
+    check_value_not_null(value);
+    nix::Value &v = *(nix::Value*)value;
+    v.mkInt(i);
+}
+
+void nix_set_null(Value* value) {
+    check_value_not_null(value);
+    nix::Value &v = *(nix::Value*)value;
+    v.mkNull();
+}
+
+void nix_make_list(State* s, Value* value, unsigned int size) {
+    check_value_not_null(value);
+    nix::Value &v = *(nix::Value*)value;
+    s->state.mkList(v, size);
+}
+
+void nix_set_list_byid(Value* value, unsigned int ix, Value* elem) {
+    check_value_not_null(value);
+    check_value_not_null(elem);
+    // todo: assert that this is a list
+    nix::Value &v = *(nix::Value*)value;
+    v.listElems()[ix] = (nix::Value*)elem;
+}
+
+typedef std::shared_ptr<nix::BindingsBuilder> BindingsBuilder_Inner;
+
+void nix_make_attrs(Value* value, BindingsBuilder* b) {
+    check_value_not_null(value);
+    nix::BindingsBuilder& builder = **(BindingsBuilder_Inner*)b;
+    nix::Value &v = *(nix::Value*)value;
+    v.mkAttrs(builder);
+}
+
+BindingsBuilder* nix_make_bindings_builder(State* state, size_t capacity) {
+    auto bb = state->state.buildBindings(capacity);
+    auto res = new BindingsBuilder_Inner();
+    *res = std::allocate_shared<nix::BindingsBuilder>(traceable_allocator<nix::BindingsBuilder>(), bb);
+    return res;
+}
+void nix_bindings_builder_insert(BindingsBuilder* b, const char* name, Value* value) {
+    nix::BindingsBuilder& builder = **(BindingsBuilder_Inner*)b;
+    nix::Value &v = *(nix::Value*)value;
+    nix::Symbol s = builder.state.symbols.create(name);
+    builder.insert(s, &v);
+}
+void nix_bindings_builder_unref(BindingsBuilder* bb) {
+    delete (BindingsBuilder_Inner*)bb;
+}
