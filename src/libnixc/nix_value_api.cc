@@ -137,7 +137,7 @@ void nix_set_bool(Value* value, bool b) {
 void nix_set_string(Value* value, const char* str) {
     check_value_not_null(value);
     nix::Value &v = *(nix::Value*)value;
-    v.mkString(str);
+    v.mkString(std::string_view(str));
 }
 
 void nix_set_double(Value* value, double d) {

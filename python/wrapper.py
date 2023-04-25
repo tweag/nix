@@ -30,7 +30,7 @@ def nix_init() -> None:
 def nix_err_msg() -> str:
     msg = ffi.new("char[1024]")
     lib.nix_err_msg(msg, len(msg))
-    return ffi.string(msg).decode()
+    return ffi.string(msg).decode('utf-8', errors='replace')
 
 class GCpin:
     def __init__(self, ptr: ffi.CData) -> None:
@@ -345,6 +345,7 @@ class Value:
 # Example usage:
 if __name__ == "__main__":
     nix_init()
+    nix_setting_set("extra-experimental-features", "flakes")
 
     try:
         state = State([], Store())
