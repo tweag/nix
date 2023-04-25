@@ -16,16 +16,19 @@ CData: TypeAlias = ffi.CData
 class NixAPIError(Exception):
     pass
 
-def nix_setting_get(key: str) -> str:
-    value = ffi.new("char[1024]")
-    err_check(lib.nix_setting_get(key.encode(), value, len(value)))
-    return ffi.string(value).decode()
+class Settings:
+    def __init__(self): pass
+    def __setitem__(self, key: str, value: str) -> None:
+        return err_check(lib.nix_setting_set(key.encode(), value.encode()))
+    def __getitem__(self, key: str) -> str:
+        value = ffi.new("char[1024]")
+        err_check(lib.nix_setting_get(key.encode(), value, len(value)))
+        return ffi.string(value).decode()
 
-def nix_setting_set(key: str, value: str) -> None:
-    err_check(lib.nix_setting_set(key.encode(), value.encode()))
+settings = Settings()
 
 def nix_init() -> None:
-    err_check(lib.nix_init())
+    err_check(lib.nix_libexpr_init())
 
 def nix_err_msg() -> str:
     msg = ffi.new("char[1024]")
@@ -345,7 +348,7 @@ class Value:
 # Example usage:
 if __name__ == "__main__":
     nix_init()
-    nix_setting_set("extra-experimental-features", "flakes")
+    settings["extra-experimental-features"] = "flakes"
 
     try:
         state = State([], Store())

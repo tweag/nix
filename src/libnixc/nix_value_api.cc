@@ -1,10 +1,12 @@
 #include "eval.hh"
 #include "globals.hh"
 #include "config.hh"
-#include "nix_value_api.h"
-#include "nix_api.h"
 #include "value.hh"
 #include "attr-set.hh"
+
+#include "nix_api_util.h"
+#include "nix_api_expr.h"
+#include "nix_value_api.h"
 
 struct State {
     nix::EvalState state;
