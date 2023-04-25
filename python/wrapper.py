@@ -27,6 +27,8 @@ class Settings:
 
 settings = Settings()
 
+version = ffi.string(lib.nix_version_get()).decode()
+
 def nix_init() -> None:
     err_check(lib.nix_libexpr_init())
 
@@ -44,6 +46,15 @@ class Store:
         self._store = ffi.gc(lib.nix_store_open(),
                              lib.nix_store_unref)
 
+    def get_uri(self) -> str:
+        dest = ffi.new("char[256]")
+        err_check(lib.nix_store_get_uri(self._store, dest, len(dest)))
+        return ffi.string(dest).decode()
+
+    def get_version(self) -> str:
+        dest = ffi.new("char[256]")
+        err_check(lib.nix_store_get_version(self._store, dest, len(dest)))
+        return ffi.string(dest).decode()
 
 class Expr:
     def __init__(self, state_wrapper: State, expr: ffi.CData) -> None:
@@ -351,7 +362,8 @@ if __name__ == "__main__":
     settings["extra-experimental-features"] = "flakes"
 
     try:
-        state = State([], Store())
+        store = Store()
+        state = State([], store)
         e = state.parse_expr_from_string("((x: [1 2 x]) 1)", ".")
         v = e.eval()
 
