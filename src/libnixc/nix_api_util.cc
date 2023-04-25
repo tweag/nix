@@ -14,7 +14,6 @@ void nix_set_err_msg(const char* msg) {
 
 
 const char* nix_version_get() {
-    // borrowed static
     return PACKAGE_VERSION;
 }
 
@@ -28,12 +27,12 @@ nix_err nix_setting_get(const char* key, char* value, int n) {
             value[i] = 0;
             if (i == n - 1) {
                 nix_set_err_msg("Provided buffer too short");
-                return NIX_ERR_UNKNOWN;
+                return NIX_ERR_OVERFLOW;
             } else
                 return NIX_OK;
         } else {
             nix_set_err_msg("Setting not found");
-            return NIX_ERR_UNKNOWN;
+            return NIX_ERR_KEY;
         }
     } catch (const std::exception& e) {
         nix_set_err_msg(e.what());
@@ -46,7 +45,7 @@ nix_err nix_setting_set(const char* key, const char* value) {
         return NIX_OK;
     else {
         nix_set_err_msg("unknown setting");
-        return NIX_ERR_UNKNOWN;
+        return NIX_ERR_KEY;
     }
 }
 
