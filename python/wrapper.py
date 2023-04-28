@@ -42,8 +42,22 @@ class GCpin:
         self._ref = ffi.gc(lib.nix_gc_ref(ptr), lib.nix_gc_free)
 
 class Store:
-    def __init__(self) -> None:
-        self._store = ffi.gc(lib.nix_store_open(),
+    def __init__(self, url: str=None, params: dict[str, str]=None) -> None:
+        url_c = ffi.NULL
+        params_c = ffi.NULL
+        if url is not None:
+            url_c = ffi.new("char[]", url.encode())
+        # store references because they have ownership
+        pm = []
+        kvs = []
+        if params is not None:
+            for k, v in params.items():
+                kv = [ffi.new("char[]", k.encode()), ffi.new("char[]", v.encode())]
+                kvs.append(kv)
+                pm.append(ffi.new("char*[]", kv))
+            pm.append(ffi.NULL)
+            params_c = ffi.new("char**[]", pm)
+        self._store = ffi.gc(null_check(lib.nix_store_open(url_c, params_c)),
                              lib.nix_store_unref)
 
     def get_uri(self) -> str:

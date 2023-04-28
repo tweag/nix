@@ -26,10 +26,21 @@ nix_err nix_libstore_init() {
     }
 }
 
-Store* nix_store_open() {
+Store* nix_store_open(const char* uri, const char*** params) {
     try {
-        // todo: uri, params
-        return new Store{nix::openStore()};
+        if (!uri) {
+            return new Store{nix::openStore()};
+        } else {
+            std::string uri_str = uri;
+            if (!params)
+                return new Store{nix::openStore(uri_str)};
+
+            nix::Store::Params params_map;
+            for (size_t i = 0; params[i] != nullptr; i++) {
+                params_map[params[i][0]] = params[i][1];
+            }
+            return new Store{nix::openStore(uri_str, params_map)};
+        }
     } catch (const std::exception& e) {
         nix_set_err_msg(e.what());
         return nullptr;

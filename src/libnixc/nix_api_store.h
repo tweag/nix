@@ -12,8 +12,10 @@ typedef struct Store Store;
 
 nix_err nix_libstore_init();
 
-// returns: owned Store*
-Store* nix_store_open();
+// returns: ref-counted Store*
+// uri: null or store uri
+// params: null or {{"endpoint", "https://s3.local/"}, NULL}
+Store* nix_store_open(const char* uri, const char*** params);
 void nix_store_unref(Store* store);
 
 nix_err nix_store_get_uri(Store* store, char* dest, unsigned int n);
