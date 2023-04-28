@@ -6,6 +6,10 @@
 
 #include "globals.hh"
 
+struct StorePath {
+    nix::StorePath path;
+};
+
 static nix_err export_std_string(std::string& str, char* dest, unsigned int n) {
     size_t i = str.copy(dest, n-1);
     dest[i] = 0;
@@ -64,4 +68,44 @@ nix_err nix_store_get_version(Store* store, char* dest, unsigned int n) {
         nix_set_err_msg("store does not have a version");
         return NIX_ERR_UNKNOWN;
     }
+}
+
+bool nix_store_is_valid_path(Store* store, StorePath* path) {
+    return store->ptr->isValidPath(path->path);
+}
+
+StorePath* nix_store_parse_path(Store* store, const char* path) {
+    try {
+        nix::StorePath s = store->ptr->parseStorePath(path);
+        return new StorePath{std::move(s)};
+    } catch (const std::exception& e) {
+        nix_set_err_msg(e.what());
+        return nullptr;
+    }
+}
+
+
+nix_err nix_store_build(Store* store, StorePath* path, void (*iter)(const char*, const char*)) {
+    try {
+      store->ptr->buildPaths({
+          nix::DerivedPath::Built{
+              .drvPath = path->path,
+              .outputs = nix::OutputsSpec::All{},
+          },
+      });
+      if (iter) {
+          for (auto & [outputName, outputPath] : store->ptr->queryDerivationOutputMap(path->path)) {
+              auto op = store->ptr->printStorePath(outputPath);
+              iter(outputName.c_str(), op.c_str());
+          }
+      }
+      return NIX_OK;
+    } catch (const std::exception& e) {
+        nix_set_err_msg(e.what());
+        return NIX_ERR_UNKNOWN;
+    }
+}
+
+void nix_store_path_free(StorePath* sp) {
+    delete sp;
 }

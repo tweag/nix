@@ -41,6 +41,10 @@ class GCpin:
     def __init__(self, ptr: ffi.CData) -> None:
         self._ref = ffi.gc(lib.nix_gc_ref(ptr), lib.nix_gc_free)
 
+class StorePath:
+    def __init__(self, ptr: ffi.CData) -> None:
+        self._path = ptr
+
 class Store:
     def __init__(self, url: str=None, params: dict[str, str]=None) -> None:
         url_c = ffi.NULL
@@ -69,6 +73,33 @@ class Store:
         dest = ffi.new("char[256]")
         err_check(lib.nix_store_get_version(self._store, dest, len(dest)))
         return ffi.string(dest).decode()
+
+    def parse_path(self, path: str) -> StorePath:
+        path_ct = ffi.new("char[]", path.encode())
+        sp = null_check(lib.nix_store_parse_path(self._store, path_ct))
+        return StorePath(ffi.gc(sp, lib.nix_store_path_free))
+
+    def _ensure_store_path(self, path: StorePath | str) -> StorePath:
+        if isinstance(path, StorePath):
+            return path
+        if isinstance(path, str):
+            return self.parse_path(path)
+        # value
+        # if value is string: storepath(str)
+        if "type" in path and str(path['type']) == "derivation":
+            return self.parse_path(str(path['drvPath']))
+
+    def is_valid_path(self, path: StorePath | str) -> bool:
+        return bool(lib.nix_store_is_valid_path(self._store, self._ensure_store_path(path)._path))
+
+    def build(self, path: StorePath | str) -> dict[str, str]:
+        path = self._ensure_store_path(path)
+        res = {}
+        @ffi.callback("void(char*, char*)")
+        def iter_callback(key: CData, path: CData) -> None:
+            res[ffi.string(key).decode()] = ffi.string(path).decode()
+        err_check(lib.nix_store_build(self._store, path._path, iter_callback))
+        return res
 
 class Expr:
     def __init__(self, state_wrapper: State, expr: ffi.CData) -> None:
@@ -334,6 +365,12 @@ class Value:
     def keys(self) -> Iterator[str]:
         self.force_type(dict)
         return iter(self)
+
+    def build(self, store: Store) -> dict[str, str]:
+        self.force_type(dict)
+        if "type" in self and self["type"].force() == "derivation":
+            return store.build(str(self['drvPath']))
+        raise TypeError("nix value is not a derivation")
 
     def __call__(self, x: Value | Evaluated) -> Value:
         return typing.cast(Function, self.force(Function))(x)
