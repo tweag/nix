@@ -1,4 +1,5 @@
 from cffi import FFI
+from pathlib import Path
 
 ffi = FFI()
 
@@ -8,12 +9,12 @@ def extract_cffi(fname):
         return contents[contents.index("// cffi start"):contents.index("// cffi end")]
 
 headers = [
-    "nix_api_util.h",
-    "nix_api_store.h",
-    "nix_api_expr.h",
-    "nix_value_api.h"
+    "libutil/nix_api_util.h",
+    "libstore/nix_api_store.h",
+    "libexpr/nix_api_expr.h",
+    "libexpr/nix_api_value.h"
 ]
-header_content = "\n".join([extract_cffi("../src/libnixc/" + p) for p in headers])
+header_content = "\n".join([extract_cffi("../src/" + p) for p in headers])
 
 # Define C declarations
 ffi.cdef(header_content)
@@ -23,11 +24,11 @@ ffi.set_source('_nix_api', '''
 #include "nix_api_util.h"
 #include "nix_api_store.h"
 #include "nix_api_expr.h"
-#include "nix_value_api.h"
+#include "nix_api_value.h"
 ''',
-               libraries=["nixc"],
-               library_dirs=["../src/libnixc"],
-               include_dirs=["../src/libnixc"])
+               libraries=["nixutil", "nixstore", "nixexpr"],
+               library_dirs=["../outputs/out/lib"],
+               include_dirs=list(set(str(p.parent) for p in Path("../").glob("src/lib*/*.h"))))
 
 # Compile the CFFI extension
 if __name__ == '__main__':

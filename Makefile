@@ -7,7 +7,6 @@ makefiles = \
   src/libmain/local.mk \
   src/libexpr/local.mk \
   src/libcmd/local.mk \
-	src/libnixc/local.mk \
   src/nix/local.mk \
   src/resolve-system-dependencies/local.mk \
   scripts/local.mk \
