@@ -40,7 +40,7 @@ nix_err nix_libexpr_init() {
 
 Expr* nix_parse_expr_from_string(State* state, const char* expr, const char* path) {
     try {
-        return state->state.parseExprFromString(expr, path);
+        return state->state.parseExprFromString(expr, state->state.rootPath(nix::CanonPath(path)));
     } catch (const std::exception& e) {
         nix_set_err_msg(e.what());
         return nullptr;
