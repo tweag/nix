@@ -7,99 +7,20 @@ import typing
 from collections.abc import Callable, Iterator
 from typing import Any, TypeAlias, Union
 
-from _nix_api import ffi, lib
+from .util import err_check, null_check, settings, NixAPIError
+from .store import Store
+from ._nix_api_expr import ffi, lib
 
 CData: TypeAlias = ffi.CData
 
 # todo: estimate size for ffi.gc calls
-
-class NixAPIError(Exception):
-    pass
-
-class Settings:
-    def __init__(self): pass
-    def __setitem__(self, key: str, value: str) -> None:
-        return err_check(lib.nix_setting_set(key.encode(), value.encode()))
-    def __getitem__(self, key: str) -> str:
-        value = ffi.new("char[1024]")
-        err_check(lib.nix_setting_get(key.encode(), value, len(value)))
-        return ffi.string(value).decode()
-
-settings = Settings()
-
-version = ffi.string(lib.nix_version_get()).decode()
-
-def nix_init() -> None:
-    err_check(lib.nix_libexpr_init())
-
-def nix_err_msg() -> str:
-    msg = ffi.new("char[1024]")
-    lib.nix_err_msg(msg, len(msg))
-    return ffi.string(msg).decode('utf-8', errors='replace')
-
 class GCpin:
     def __init__(self, ptr: ffi.CData) -> None:
         self._ref = ffi.gc(lib.nix_gc_ref(ptr), lib.nix_gc_free)
 
-class StorePath:
-    def __init__(self, ptr: ffi.CData) -> None:
-        self._path = ptr
 
-class Store:
-    def __init__(self, url: str=None, params: dict[str, str]=None) -> None:
-        url_c = ffi.NULL
-        params_c = ffi.NULL
-        if url is not None:
-            url_c = ffi.new("char[]", url.encode())
-        # store references because they have ownership
-        pm = []
-        kvs = []
-        if params is not None:
-            for k, v in params.items():
-                kv = [ffi.new("char[]", k.encode()), ffi.new("char[]", v.encode())]
-                kvs.append(kv)
-                pm.append(ffi.new("char*[]", kv))
-            pm.append(ffi.NULL)
-            params_c = ffi.new("char**[]", pm)
-        self._store = ffi.gc(null_check(lib.nix_store_open(url_c, params_c)),
-                             lib.nix_store_unref)
-
-    def get_uri(self) -> str:
-        dest = ffi.new("char[256]")
-        err_check(lib.nix_store_get_uri(self._store, dest, len(dest)))
-        return ffi.string(dest).decode()
-
-    def get_version(self) -> str:
-        dest = ffi.new("char[256]")
-        err_check(lib.nix_store_get_version(self._store, dest, len(dest)))
-        return ffi.string(dest).decode()
-
-    def parse_path(self, path: str) -> StorePath:
-        path_ct = ffi.new("char[]", path.encode())
-        sp = null_check(lib.nix_store_parse_path(self._store, path_ct))
-        return StorePath(ffi.gc(sp, lib.nix_store_path_free))
-
-    def _ensure_store_path(self, path: StorePath | str) -> StorePath:
-        if isinstance(path, StorePath):
-            return path
-        if isinstance(path, str):
-            return self.parse_path(path)
-        # value
-        # if value is string: storepath(str)
-        if "type" in path and str(path['type']) == "derivation":
-            return self.parse_path(str(path['drvPath']))
-
-    def is_valid_path(self, path: StorePath | str) -> bool:
-        return bool(lib.nix_store_is_valid_path(self._store, self._ensure_store_path(path)._path))
-
-    def build(self, path: StorePath | str) -> dict[str, str]:
-        path = self._ensure_store_path(path)
-        res = {}
-        @ffi.callback("void(char*, char*)")
-        def iter_callback(key: CData, path: CData) -> None:
-            res[ffi.string(key).decode()] = ffi.string(path).decode()
-        err_check(lib.nix_store_build(self._store, path._path, iter_callback))
-        return res
+def nix_expr_init() -> None:
+    err_check(lib.nix_libexpr_init())
 
 class Expr:
     def __init__(self, state_wrapper: State, expr: ffi.CData) -> None:
@@ -116,6 +37,7 @@ class Expr:
 
 class State:
     def __init__(self, search_path: list[str], store_wrapper: Store) -> None:
+        ffi.init_once(nix_expr_init, "init_libexpr")
         search_path_c = [ffi.new("char[]", path.encode()) for path in search_path]
         search_path_c.append(ffi.NULL)
         search_path_ptr = ffi.new("char*[]", search_path_c)
@@ -156,15 +78,6 @@ DeepEvaluated = Union[
     "Function",
     # string
 ]
-
-def err_check(err_code: int) -> None:
-    if err_code != lib.NIX_OK:
-        raise NixAPIError(nix_err_msg())
-
-def null_check(obj: ffi.CData) -> ffi.CData:
-    if not obj:
-        raise NixAPIError(nix_err_msg())
-    return obj
 
 class Function:
     def __init__(self, val: Value) -> None:
@@ -409,7 +322,6 @@ class Value:
 
 # Example usage:
 if __name__ == "__main__":
-    nix_init()
     settings["extra-experimental-features"] = "flakes"
 
     try:
