@@ -13,6 +13,7 @@ from ._nix_api_expr import ffi, lib
 
 CData: TypeAlias = ffi.CData
 
+
 # todo: estimate size for ffi.gc calls
 class GCpin:
     def __init__(self, ptr: ffi.CData) -> None:
@@ -21,6 +22,7 @@ class GCpin:
 
 def nix_expr_init() -> None:
     err_check(lib.nix_libexpr_init())
+
 
 class Expr:
     def __init__(self, state_wrapper: State, expr: ffi.CData) -> None:
@@ -43,12 +45,17 @@ class State:
         search_path_ptr = ffi.new("char*[]", search_path_c)
         self._state = ffi.gc(
             lib.nix_state_create(search_path_ptr, store_wrapper._store),
-            lib.nix_state_free)
+            lib.nix_state_free,
+        )
 
     def parse_expr_from_string(self, expr_string: str, path: str) -> Expr:
-        expr = null_check(lib.nix_parse_expr_from_string(
-            self._state, expr_string.encode(), path.encode(),
-        ))
+        expr = null_check(
+            lib.nix_parse_expr_from_string(
+                self._state,
+                expr_string.encode(),
+                path.encode(),
+            )
+        )
         return Expr(self, expr)
 
     def alloc_val(self) -> Value:
@@ -59,6 +66,7 @@ class State:
         v.set(py_val)
         return v
 
+
 Evaluated: TypeAlias = Union[
     int,
     float,
@@ -66,7 +74,7 @@ Evaluated: TypeAlias = Union[
     None,
     dict,
     list,
-    "Function", # | String
+    "Function",  # | String
 ]
 DeepEvaluated = Union[
     int,
@@ -79,27 +87,37 @@ DeepEvaluated = Union[
     # string
 ]
 
+
 class Function:
     def __init__(self, val: Value) -> None:
         self.value = val
+
     def __repr__(self) -> str:
         return repr(self.value)
+
     def __call__(self, arg: Value | Evaluated) -> Value:
         if not isinstance(arg, Value):
             arg2 = Value(self.value._state)
             arg2.set(arg)
             arg = arg2
         res = Value(self.value._state)
-        err_check(lib.nix_value_call(self.value._state, self.value._value, arg._value, res._value))
+        err_check(
+            lib.nix_value_call(
+                self.value._state, self.value._value, arg._value, res._value
+            )
+        )
         return res
+
 
 class X:
     Function = Function
 
+
 T = typing.TypeVar("T")
 
+
 class Value:
-    def __init__(self, state_ptr: CData, value_ptr: CData | None=None) -> None:
+    def __init__(self, state_ptr: CData, value_ptr: CData | None = None) -> None:
         self._state = state_ptr
         if value_ptr is None:
             self._value = lib.nix_alloc_value(state_ptr)
@@ -113,7 +131,7 @@ class Value:
     def get_type(self) -> type:
         match self._get_type():
             case lib.NIX_TYPE_THUNK:
-                return Value # todo?
+                return Value  # todo?
             case lib.NIX_TYPE_INT:
                 return int
             case lib.NIX_TYPE_FLOAT:
@@ -123,7 +141,7 @@ class Value:
             case lib.NIX_TYPE_STRING:
                 return str
             case lib.NIX_TYPE_PATH:
-                return str # todo
+                return str  # todo
             case lib.NIX_TYPE_NULL:
                 return types.NoneType
             case lib.NIX_TYPE_ATTRS:
@@ -137,23 +155,26 @@ class Value:
             case _:
                 raise RuntimeError("invalid type from nix_get_type")
 
-    def _force(self, deep: bool=False) -> None:
+    def _force(self, deep: bool = False) -> None:
         if deep:
             err_check(lib.nix_value_force_deep(self._state, self._value))
         else:
             err_check(lib.nix_value_force(self._state, self._value))
 
-
     def __repr__(self) -> str:
         t = self._get_type()
-        if t == lib.NIX_TYPE_ATTRS and "type" in self and self["type"].force() == "derivation":
+        if (
+            t == lib.NIX_TYPE_ATTRS
+            and "type" in self
+            and self["type"].force() == "derivation"
+        ):
             return "<Nix derivation {}>".format(self["drvPath"].force())
         elif t not in [lib.NIX_TYPE_THUNK, lib.NIX_TYPE_FUNCTION, lib.NIX_TYPE_ATTRS]:
             return f"<Nix: {self.force()}>"
         else:
             return f"<Nix Value ({self.get_typename()})>"
 
-    def _to_python(self, deep: bool=False) -> Evaluated:
+    def _to_python(self, deep: bool = False) -> Evaluated:
         match self.get_type():
             case builtins.int:
                 return int(lib.nix_get_int(self._value))
@@ -166,9 +187,11 @@ class Value:
             case builtins.dict:
                 res_dict: dict[str, Value | DeepEvaluated] = {}
                 if deep:
-                    self.get_attr_iterate(lambda k,v: res_dict.__setitem__(k, v._to_python(deep)))
+                    self.get_attr_iterate(
+                        lambda k, v: res_dict.__setitem__(k, v._to_python(deep))
+                    )
                 else:
-                    self.get_attr_iterate(lambda k,v: res_dict.__setitem__(k, v))
+                    self.get_attr_iterate(lambda k, v: res_dict.__setitem__(k, v))
                 return res_dict
             case builtins.list:
                 res_list: list[Value] = list(self)
@@ -182,18 +205,20 @@ class Value:
                 raise NotImplementedError
 
     # https://github.com/python/mypy/issues/9773
-    def force(self, typeCheck: Any = Evaluated, deep: bool=False) -> typing.Any:
+    def force(self, typeCheck: Any = Evaluated, deep: bool = False) -> typing.Any:
         self.force_type(typeCheck, deep=deep)
         return self._to_python(deep)
 
-    def force_type(self, typeCheck: Any=Evaluated, deep: bool=False) -> type[Any]:
+    def force_type(self, typeCheck: Any = Evaluated, deep: bool = False) -> type[Any]:
         if isinstance(typeCheck, types.FunctionType):
             typeCheck = typeCheck()
 
         self._force(deep=deep)
         tp = self.get_type()
         if not issubclass(tp, typeCheck):
-            raise TypeError(f"nix value is {self.get_typename()} while {str(typeCheck)} was expected")
+            raise TypeError(
+                f"nix value is {self.get_typename()} while {str(typeCheck)} was expected"
+            )
 
         return tp
 
@@ -205,10 +230,9 @@ class Value:
         return Value(self._state, value_ptr)
 
     def get_attr_byname(self, name: str) -> Value:
-        value_ptr = null_check(lib.nix_get_attr_byname(
-            self._value,
-            self._state,
-            name.encode()))
+        value_ptr = null_check(
+            lib.nix_get_attr_byname(self._value, self._state, name.encode())
+        )
         return Value(self._state, value_ptr)
 
     def get_attr_iterate(self, iter_func: Callable[[str, Value], None]) -> None:
@@ -221,7 +245,9 @@ class Value:
     def __iter__(self) -> typing.Any:
         match self.force_type(dict | list):
             case builtins.list:
-                return collections.abc.Sequence.__iter__(typing.cast(collections.abc.Sequence[Value], self))
+                return collections.abc.Sequence.__iter__(
+                    typing.cast(collections.abc.Sequence[Value], self)
+                )
             case builtins.dict:
                 return iter(self.force())
 
@@ -254,7 +280,9 @@ class Value:
         match self.force_type(dict | list):
             case builtins.dict:
                 assert type(i) == str
-                return bool(lib.nix_has_attr_byname(self._value, self._state, i.encode()))
+                return bool(
+                    lib.nix_has_attr_byname(self._value, self._state, i.encode())
+                )
             case builtins.list:
                 return i in list(self)
             case _:
@@ -282,7 +310,7 @@ class Value:
     def build(self, store: Store) -> dict[str, str]:
         self.force_type(dict)
         if "type" in self and self["type"].force() == "derivation":
-            return store.build(str(self['drvPath']))
+            return store.build(str(self["drvPath"]))
         raise TypeError("nix value is not a derivation")
 
     def __call__(self, x: Value | Evaluated) -> Value:
@@ -310,7 +338,10 @@ class Value:
                 v.set(py_val[i])
                 lib.nix_set_list_byid(self._value, i, v._value)
         elif isinstance(py_val, dict):
-            bb = ffi.gc(lib.nix_make_bindings_builder(self._state, len(py_val)), lib.nix_bindings_builder_unref)
+            bb = ffi.gc(
+                lib.nix_make_bindings_builder(self._state, len(py_val)),
+                lib.nix_bindings_builder_unref,
+            )
             for k, dv in py_val.items():
                 v = Value(self._state)
                 v.set(dv)
@@ -333,7 +364,7 @@ if __name__ == "__main__":
     except NixAPIError as e:
         print(f"Error: {e}")
 
+
 def nix(expr: str) -> Value:
     e = state.parse_expr_from_string(expr, ".")
     return e.eval()
-

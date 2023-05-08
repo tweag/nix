@@ -1,9 +1,14 @@
-__all__ = ["util", "store", "expr"]
+__all__ = ["util", "store", "expr", "eval"]
+
+from __future__ import annotations
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from .expr import Value
 
 _state = None
 _store = None
 
-def eval(string, path="."):
+def eval(string: str, path: str=".") -> Value:
     from .store import Store
     from .expr import State
 
