@@ -369,6 +369,8 @@ void LocalStore::findRuntimeRoots(Roots & roots, bool censor)
 {
     UncheckedRoots unchecked;
 
+    std::string pids = std::to_string(getpid());
+
     auto procDir = AutoCloseDir{opendir("/proc")};
     if (procDir) {
         struct dirent * ent;
@@ -377,7 +379,7 @@ void LocalStore::findRuntimeRoots(Roots & roots, bool censor)
         auto storePathRegex = std::regex(quoteRegexChars(storeDir) + R"(/[0-9a-z]+[0-9a-zA-Z\+\-\._\?=]*)");
         while (errno = 0, ent = readdir(procDir.get())) {
             checkInterrupt();
-            if (std::regex_match(ent->d_name, digitsRegex)) {
+            if (std::regex_match(ent->d_name, digitsRegex) && strcmp(pids.c_str(), ent->d_name)) {
                 try {
                     readProcLink(fmt("/proc/%s/exe" ,ent->d_name), unchecked);
                     readProcLink(fmt("/proc/%s/cwd", ent->d_name), unchecked);
@@ -471,7 +473,7 @@ struct GCLimitReached { };
 
 void LocalStore::collectGarbage(const GCOptions & options, GCResults & results)
 {
-    bool shouldDelete = options.action == GCOptions::gcDeleteDead || options.action == GCOptions::gcDeleteSpecific;
+    bool shouldDelete = std::holds_alternative<GCDelete>(options.action);
     bool gcKeepOutputs = settings.gcKeepOutputs;
     bool gcKeepDerivations = settings.gcKeepDerivations;
 
@@ -496,10 +498,12 @@ void LocalStore::collectGarbage(const GCOptions & options, GCResults & results)
        consequences if `keep-outputs' or `keep-derivations' are true
        (the garbage collector will recurse into deleting the outputs
        or derivers, respectively).  So disable them. */
-    if (options.action == GCOptions::gcDeleteSpecific && options.ignoreLiveness) {
-        gcKeepOutputs = false;
-        gcKeepDerivations = false;
-    }
+    std::visit(overloaded{[&](GCDelete del){
+        if (del.pathsToDelete.has_value() && del.ignoreLiveness) {
+            gcKeepOutputs = false;
+            gcKeepDerivations = false;
+        }
+    }, [](GCReturn arg){}}, options.action);
 
     if (shouldDelete)
         deletePath(reservedPath);
@@ -624,8 +628,16 @@ void LocalStore::collectGarbage(const GCOptions & options, GCResults & results)
        permanent roots cannot increase now. */
     printInfo("finding garbage collector roots...");
     Roots rootMap;
-    if (!options.ignoreLiveness)
-        findRootsNoTemp(rootMap, true);
+
+    std::visit(overloaded{
+        [&](GCDelete del) {
+            if (!del.ignoreLiveness)
+                findRootsNoTemp(rootMap, true);
+        },
+        [&](GCReturn r){
+            findRootsNoTemp(rootMap, true);
+        }},
+    options.action);
 
     for (auto & i : rootMap) roots.insert(i.first);
 
@@ -732,9 +744,9 @@ void LocalStore::collectGarbage(const GCOptions & options, GCResults & results)
                 return markAlive();
             }
 
-            if (options.action == GCOptions::gcDeleteSpecific
-                && !options.pathsToDelete.count(*path))
-                return;
+            if (const GCDelete * del = std::get_if<GCDelete>(&options.action))
+                if (del->pathsToDelete.has_value() && !del->pathsToDelete->paths.count(*path))
+                    return;
 
             {
                 auto hashPart = std::string(path->hashPart());
@@ -788,6 +800,10 @@ void LocalStore::collectGarbage(const GCOptions & options, GCResults & results)
         }
     };
 
+    /* Synchronisation point for testing, see tests/gc-concurrent.sh. */
+    if (auto p = getEnv("_NIX_TEST_GC_SYNC"))
+        readFile(*p);
+
     /* Either delete all garbage paths, or just the specified
        paths (for gcDeleteSpecific). */
     if (options.action == GCOptions::gcDeleteSpecific || options.action == GCOptions::gcDeleteDead) {
@@ -832,65 +848,87 @@ void LocalStore::collectGarbage(const GCOptions & options, GCResults & results)
             }
         } catch (GCLimitReached & e) {
         }
-    }
+    };
 
-    if (options.action == GCOptions::gcReturnLive) {
-        for (auto & i : alive)
-            results.paths.insert(printStorePath(i));
-        return;
-    }
-
-    if (options.action == GCOptions::gcReturnDead) {
-        for (auto & i : dead)
-            results.paths.insert(printStorePath(i));
-        return;
-    }
-
-    /* Unlink all files in /nix/store/.links that have a link count of 1,
-       which indicates that there are no other links and so they can be
-       safely deleted.  FIXME: race condition with optimisePath(): we
-       might see a link count of 1 just before optimisePath() increases
-       the link count. */
-    if (options.action == GCOptions::gcDeleteDead || options.action == GCOptions::gcDeleteSpecific) {
-        printInfo("deleting unused links...");
-
-        AutoCloseDir dir(opendir(linksDir.c_str()));
-        if (!dir) throw SysError("opening directory '%1%'", linksDir);
-
-        int64_t actualSize = 0, unsharedSize = 0;
-
-        struct dirent * dirent;
-        while (errno = 0, dirent = readdir(dir.get())) {
-            checkInterrupt();
-            std::string name = dirent->d_name;
-            if (name == "." || name == "..") continue;
-            Path path = linksDir + "/" + name;
-
-            auto st = lstat(path);
-
-            if (st.st_nlink != 1) {
-                actualSize += st.st_size;
-                unsharedSize += (st.st_nlink - 1) * st.st_size;
-                continue;
+    /* Either delete all garbage paths, or just the specified
+       paths (for gcDeleteSpecific). */
+    std::visit(overloaded{
+        [&](GCDelete del){
+            if (del.pathsToDelete.has_value()) {
+                for (auto & i : del.pathsToDelete->paths) {
+                    deleteReferrersClosure(i);
+                    if (!del.pathsToDelete->skipAlive && !dead.count(i))
+                        throw Error(
+                            "Cannot delete path '%1%' since it is still alive. "
+                            "To find out why, use: "
+                            "nix-store --query --roots",
+                            printStorePath(i));
+                }
+            } else if (options.maxFreed > 0) {
+                printInfo("deleting garbage...");
+                findOrDeleteRoots();
             }
 
-            printMsg(lvlTalkative, "deleting unused link '%1%'", path);
+            /* Unlink all files in /nix/store/.links that have a link count of 1,
+               which indicates that there are no other links and so they can be
+               safely deleted.  FIXME: race condition with optimisePath(): we
+               might see a link count of 1 just before optimisePath() increases
+               the link count. */
 
-            if (unlink(path.c_str()) == -1)
-                throw SysError("deleting '%1%'", path);
+            printInfo("deleting unused links...");
 
-            /* Do not accound for deleted file here. Rely on deletePath()
-               accounting.  */
-        }
+            AutoCloseDir dir(opendir(linksDir.c_str()));
+            if (!dir) throw SysError("opening directory '%1%'", linksDir);
 
-        struct stat st;
-        if (stat(linksDir.c_str(), &st) == -1)
-            throw SysError("statting '%1%'", linksDir);
-        int64_t overhead = st.st_blocks * 512ULL;
+            int64_t actualSize = 0, unsharedSize = 0;
 
-        printInfo("note: currently hard linking saves %.2f MiB",
-            ((unsharedSize - actualSize - overhead) / (1024.0 * 1024.0)));
-    }
+            struct dirent * dirent;
+            while (errno = 0, dirent = readdir(dir.get())) {
+                checkInterrupt();
+                std::string name = dirent->d_name;
+                if (name == "." || name == "..") continue;
+                Path path = linksDir + "/" + name;
+
+                auto st = lstat(path);
+
+                if (st.st_nlink != 1) {
+                    actualSize += st.st_size;
+                    unsharedSize += (st.st_nlink - 1) * st.st_size;
+                    continue;
+                }
+
+                printMsg(lvlTalkative, "deleting unused link '%1%'", path);
+
+                if (unlink(path.c_str()) == -1)
+                    throw SysError("deleting '%1%'", path);
+
+                /* Do not accound for deleted file here. Rely on deletePath()
+                   accounting.  */
+            }
+
+            struct stat st;
+            if (stat(linksDir.c_str(), &st) == -1)
+                throw SysError("statting '%1%'", linksDir);
+            int64_t overhead = st.st_blocks * 512ULL;
+
+            printInfo("note: currently hard linking saves %.2f MiB",
+                ((unsharedSize - actualSize - overhead) / (1024.0 * 1024.0)));
+        },
+        [&](GCReturn ret){
+            printInfo("determining live/dead paths...");
+            findOrDeleteRoots();
+            if (ret == GCReturn::Live) {
+                for (auto & i : alive)
+                    results.paths.insert(printStorePath(i));
+                return;
+            }
+
+            if (ret == GCReturn::Dead) {
+                for (auto & i : dead)
+                    results.paths.insert(printStorePath(i));
+                return;
+            }
+        }}, options.action);
 
     /* While we're at it, vacuum the database. */
     //if (options.action == GCOptions::gcDeleteDead) vacuumDB();
@@ -952,8 +990,7 @@ void LocalStore::autoGC(bool sync)
                     promise.set_value();
                 });
 
-                GCOptions options;
-                options.maxFreed = settings.maxFree - avail;
+                GCOptions options{.action = GCAction{GCDelete{}}, .maxFreed = settings.maxFree - avail};
 
                 printInfo("running auto-GC to free %d bytes", options.maxFreed);
 

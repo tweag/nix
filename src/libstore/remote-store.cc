@@ -850,14 +850,44 @@ Roots RemoteStore::findRoots(bool censor)
 void RemoteStore::collectGarbage(const GCOptions & options, GCResults & results)
 {
     auto conn(getConnection());
+    int action;
+    StorePathSet pathsToDelete;
+    bool ignoreLiveness {false};
+    bool recursive {false};
+    std::visit(overloaded{
+        [&](GCReturn ret){
+            switch (ret) {
+                case (GCReturn::Live):
+                    action = 0;
+                    break;
+                case (GCReturn::Dead):
+                    action = 1;
+                    break;
+            }
+        },
+        [&](GCDelete del) {
+            ignoreLiveness = del.ignoreLiveness;
+            if (!del.pathsToDelete.has_value()) {
+                action = 2;
+            } else {
+                action = 3;
+                pathsToDelete = del.pathsToDelete->paths;
+                recursive = del.pathsToDelete->skipAlive;
+            };
+        }
+    }, options.action);
 
     conn->to
-        << WorkerProto::Op::CollectGarbage << options.action;
-    WorkerProto::write(*this, *conn, options.pathsToDelete);
-    conn->to << options.ignoreLiveness
+        << WorkerProto::Op::CollectGarbage << action;
+    WorkerProto::write(*this, *conn, pathsToDelete);
+    conn->to << ignoreLiveness
         << options.maxFreed
         /* removed options */
         << 0 << 0 << 0;
+
+    if (GET_PROTOCOL_MINOR(conn->daemonVersion) >= 31) {
+        conn->to << recursive;
+    }
 
     conn.processStderr();
 

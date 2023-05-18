@@ -9,14 +9,20 @@ using namespace nix;
 
 struct CmdStoreDelete : StorePathsCommand
 {
-    GCOptions options { .action = GCOptions::gcDeleteDead };
+    GCDelete deleteOpts{.pathsToDelete = GCPathsToDelete{}};
 
     CmdStoreDelete()
     {
         addFlag({
             .longName = "ignore-liveness",
-            .description = "Do not check whether the paths are reachable from a root.",
-            .handler = {&options.ignoreLiveness, true}
+            .description = "Delete all provided paths, even if they are alive (reachable from a garbage collection root).",
+            .handler = {&deleteOpts.ignoreLiveness, true}
+        });
+        addFlag({
+            .longName = "skip-alive",
+            .shortName = 's',
+            .description = "Skip paths that are still alive (referenced by a garbage collection root), instead of exiting with a non-zero exit code.",
+            .handler = {&deleteOpts.pathsToDelete->skipAlive, true}
         });
     }
 
@@ -37,8 +43,10 @@ struct CmdStoreDelete : StorePathsCommand
         auto & gcStore = require<GcStore>(*store);
 
         for (auto & path : storePaths)
-            options.pathsToDelete.insert(path);
+            deleteOpts.pathsToDelete->paths.insert(path);
 
+
+        GCOptions options {GCAction{deleteOpts}};
         GCResults results;
         PrintFreed freed(true, results);
         gcStore.collectGarbage(options, results);

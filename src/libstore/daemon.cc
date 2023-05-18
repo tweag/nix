@@ -718,18 +718,36 @@ static void performOp(TunnelLogger * logger, ref<Store> store,
 
     case WorkerProto::Op::CollectGarbage: {
         GCOptions options;
-        options.action = (GCOptions::GCAction) readInt(from);
-        options.pathsToDelete = WorkerProto::Serialise<StorePathSet>::read(*store, rconn);
-        from >> options.ignoreLiveness >> options.maxFreed;
+        int action;
+        bool ignoreLiveness;
+        StorePathSet pathsToDelete;
+        bool skipAlive {false};
+        action = readInt(from);
+        pathsToDelete = WorkerProto::Serialise<StorePathSet>::read(*store, rconn);
+        from >> ignoreLiveness >> options.maxFreed;
         // obsolete fields
         readInt(from);
         readInt(from);
         readInt(from);
+        if (GET_PROTOCOL_MINOR(clientVersion) >= 31) {
+            from >> recursive;
+        };
+
+        switch (action) {
+            case 0:
+                options.action = GCReturn::Live; break;
+            case 1:
+                options.action = GCReturn::Dead; break;
+            case 2:
+                options.action = GCDelete { .pathsToDelete = std::nullopt, .ignoreLiveness = ignoreLiveness }; break;
+            case 3:
+                options.action = GCDelete { .pathsToDelete = GCPathsToDelete { .paths = pathsToDelete, .skipAlive = skipAlive }, .ignoreLiveness = ignoreLiveness, }; break;
+        };
 
         GCResults results;
 
         logger->startWork();
-        if (options.ignoreLiveness)
+        if (ignoreLiveness)
             throw Error("you are not allowed to ignore liveness");
         auto & gcStore = require<GcStore>(*store);
         gcStore.collectGarbage(options, results);

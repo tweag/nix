@@ -9,51 +9,45 @@ namespace nix {
 
 typedef std::unordered_map<StorePath, std::unordered_set<std::string>> Roots;
 
+/**
+ * Return either live (reachable) or dead (unreachable) paths 
+ */
+enum class GCReturn { Live, Dead };
 
-struct GCOptions
-{
-    /**
-     * Garbage collector operation:
-     *
-     * - `gcReturnLive`: return the set of paths reachable from
-     *   (i.e. in the closure of) the roots.
-     *
-     * - `gcReturnDead`: return the set of paths not reachable from
-     *   the roots.
-     *
-     * - `gcDeleteDead`: actually delete the latter set.
-     *
-     * - `gcDeleteSpecific`: delete the paths listed in
-     *    `pathsToDelete`, insofar as they are not reachable.
-     */
-    typedef enum {
-        gcReturnLive,
-        gcReturnDead,
-        gcDeleteDead,
-        gcDeleteSpecific,
-    } GCAction;
-
-    GCAction action{gcDeleteDead};
-
-    /**
-     * If `ignoreLiveness` is set, then reachability from the roots is
-     * ignored (dangerous!).  However, the paths must still be
-     * unreferenced *within* the store (i.e., there can be no other
-     * store paths that depend on them).
-     */
-    bool ignoreLiveness{false};
-
-    /**
-     * For `gcDeleteSpecific`, the paths to delete.
-     */
-    StorePathSet pathsToDelete;
-
-    /**
-     * Stop after at least `maxFreed` bytes have been freed.
-     */
-    uint64_t maxFreed{std::numeric_limits<uint64_t>::max()};
+/**
+ * Set of paths to delete, and whether to skip paths which are alive
+ */
+struct GCPathsToDelete {
+   StorePathSet paths;
+   bool skipAlive;
 };
 
+/**
+ Delete either a given set of paths, or all dead paths
+ */
+struct GCDelete {
+   /* Delete this set, or all dead paths if it is std::nullopt */
+   std::optional<GCPathsToDelete> pathsToDelete;
+   /* If `ignoreLiveness' is set, then reachability from the roots is
+      ignored (dangerous!).  However, the paths must still be
+      unreferenced *within* the store (i.e., there can be no other
+      store paths that depend on them). */
+   bool ignoreLiveness{false};
+};
+
+/**
+ * Garbage collection action: either return paths, or delete them
+ */
+using GCAction = std::variant<GCReturn, GCDelete>;
+
+/**
+ * Options for the garbage collector
+ */
+struct GCOptions {
+   GCAction action;
+   /* Stop after at least `maxFreed' bytes have been freed. */
+   uint64_t maxFreed{std::numeric_limits<uint64_t>::max()};
+};
 
 struct GCResults
 {
@@ -64,8 +58,7 @@ struct GCResults
     PathSet paths;
 
     /**
-     * For `gcReturnDead`, `gcDeleteDead` and `gcDeleteSpecific`, the
-     * number of bytes that would be or was freed.
+     * For `GCDelete', the number of bytes that would be or was freed.
      */
     uint64_t bytesFreed = 0;
 };

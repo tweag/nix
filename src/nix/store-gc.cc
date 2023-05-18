@@ -37,9 +37,12 @@ struct CmdStoreGC : StoreCommand, MixDryRun
     {
         auto & gcStore = require<GcStore>(*store);
 
-        options.action = dryRun ? GCOptions::gcReturnDead : GCOptions::gcDeleteDead;
+        if (dryRun)
+            options.action = GCReturn::Dead;
+        else
+            options.action = GCDelete{};
         GCResults results;
-        PrintFreed freed(options.action == GCOptions::gcDeleteDead, results);
+        PrintFreed freed(!dryRun, results);
         gcStore.collectGarbage(options, results);
     }
 };

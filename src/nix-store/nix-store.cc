@@ -616,15 +616,15 @@ static void opGC(Strings opFlags, Strings opArgs)
 {
     bool printRoots = false;
     GCOptions options;
-    options.action = GCOptions::gcDeleteDead;
+    options.action = GCAction{GCDelete{}};
 
     GCResults results;
 
     /* Do what? */
     for (auto i = opFlags.begin(); i != opFlags.end(); ++i)
         if (*i == "--print-roots") printRoots = true;
-        else if (*i == "--print-live") options.action = GCOptions::gcReturnLive;
-        else if (*i == "--print-dead") options.action = GCOptions::gcReturnDead;
+        else if (*i == "--print-live") options.action = GCAction{GCReturn::Live};
+        else if (*i == "--print-dead") options.action = GCAction{GCReturn::Dead};
         else if (*i == "--max-freed")
             options.maxFreed = std::max(getIntArg<int64_t>(*i, i, opFlags.end(), true), (int64_t) 0);
         else throw UsageError("bad sub-operation '%1%' in GC", *i);
@@ -645,10 +645,10 @@ static void opGC(Strings opFlags, Strings opArgs)
     }
 
     else {
-        PrintFreed freed(options.action == GCOptions::gcDeleteDead, results);
+        PrintFreed freed(std::holds_alternative<GCDelete>(options.action), results);
         gcStore.collectGarbage(options, results);
 
-        if (options.action != GCOptions::gcDeleteDead)
+        if (!std::holds_alternative<GCDelete>(options.action))
             for (auto & i : results.paths)
                 cout << i << std::endl;
     }
@@ -660,18 +660,19 @@ static void opGC(Strings opFlags, Strings opArgs)
    roots). */
 static void opDelete(Strings opFlags, Strings opArgs)
 {
-    GCOptions options;
-    options.action = GCOptions::gcDeleteSpecific;
+    GCDelete del = GCDelete{.pathsToDelete = GCPathsToDelete{}};
 
     for (auto & i : opFlags)
-        if (i == "--ignore-liveness") options.ignoreLiveness = true;
+        if (i == "--ignore-liveness") del.ignoreLiveness = true;
         else throw UsageError("unknown flag '%1%'", i);
 
     for (auto & i : opArgs)
-        options.pathsToDelete.insert(store->followLinksToStorePath(i));
+        del.pathsToDelete->paths.insert(store->followLinksToStorePath(i));
+
 
     auto & gcStore = require<GcStore>(*store);
 
+    GCOptions options{GCAction{del}};
     GCResults results;
     PrintFreed freed(true, results);
     gcStore.collectGarbage(options, results);

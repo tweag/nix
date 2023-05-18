@@ -52,3 +52,13 @@ EOF
 if isDaemonNewer "2.12pre0"; then
     issue_6572_dependent_outputs
 fi
+
+nix_store_delete_best_effort() {
+    p=$(nix build -f multiple-outputs.nix use-a --no-link --print-out-paths)
+
+    # Check that nix store delete --recursive is best-effort (doesn't fail when some paths in the closure are alive)
+    nix store delete --recursive "$p"
+    ! stat "$p"
+}
+
+nix_store_delete_best_effort
