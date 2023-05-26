@@ -7,6 +7,7 @@
 #include "nix_api_util.h"
 #include "nix_api_expr.h"
 #include "nix_api_value.h"
+#include "nix_api_util_internal.h"
 
 struct State {
     nix::EvalState state;

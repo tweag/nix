@@ -12,6 +12,7 @@
 #include "nix_api_store.h"
 #include "nix_api_expr.h"
 #include "nix_api_store_internal.h"
+#include "nix_api_util_internal.h"
 
 struct GCRef {
     std::shared_ptr<void> ptr;
@@ -31,61 +32,38 @@ nix_err nix_libexpr_init() {
     }
     try {
         nix::initGC();
-        return NIX_OK;
-    } catch (const std::exception& e) {
-        nix_set_err_msg(e.what());
-        return NIX_ERR_UNKNOWN;
-    }
+    } NIXC_CATCH_ERRS
 }
 
 Expr* nix_parse_expr_from_string(State* state, const char* expr, const char* path) {
     try {
         return state->state.parseExprFromString(expr, state->state.rootPath(nix::CanonPath(path)));
-    } catch (const std::exception& e) {
-        nix_set_err_msg(e.what());
-        return nullptr;
-    }
+    } NIXC_CATCH_ERRS_NULL
 }
 
 nix_err nix_expr_eval(State* state, Expr* expr, Value* value) {
     try {
         state->state.eval((nix::Expr*)expr, *(nix::Value*)value);
-    } catch (const std::exception& e) {
-        nix_set_err_msg(e.what());
-        return NIX_ERR_UNKNOWN;
-    }
-    return NIX_OK;
+    } NIXC_CATCH_ERRS
 }
 
 
 nix_err nix_value_call(State* state, Value* fn, Value* arg, Value* value) {
     try {
         state->state.callFunction(*(nix::Value*)fn, *(nix::Value*) arg, *(nix::Value*)value, nix::noPos);
-    } catch (const std::exception& e) {
-        nix_set_err_msg(e.what());
-        return NIX_ERR_UNKNOWN;
-    }
-    return NIX_OK;
+    } NIXC_CATCH_ERRS
 }
 
 nix_err nix_value_force(State* state, Value* value) {
     try {
         state->state.forceValue(*(nix::Value*)value, nix::noPos);
-    } catch (const std::exception& e) {
-        nix_set_err_msg(e.what());
-        return NIX_ERR_UNKNOWN;
-    }
-    return NIX_OK;
+    } NIXC_CATCH_ERRS
 }
 
 nix_err nix_value_force_deep(State* state, Value* value) {
     try {
         state->state.forceValueDeep(*(nix::Value*)value);
-    } catch (const std::exception& e) {
-        nix_set_err_msg(e.what());
-        return NIX_ERR_UNKNOWN;
-    }
-    return NIX_OK;
+    } NIXC_CATCH_ERRS
 }
 
 State* nix_state_create(const char** searchPath_c, Store* store) {
@@ -96,10 +74,7 @@ State* nix_state_create(const char** searchPath_c, Store* store) {
                 searchPath.push_back(searchPath_c[i]);
 
         return new State{nix::EvalState(searchPath, store->ptr)};
-    } catch (const std::exception& e) {
-        nix_set_err_msg(e.what());
-        return nullptr;
-    }
+    } NIXC_CATCH_ERRS_NULL
 }
 
 void nix_state_free(State* state) {
@@ -113,10 +88,7 @@ GCRef* nix_gc_ref(void* obj) {
 #else
         return new GCRef{std::make_shared<void*>(obj)};
 #endif
-    } catch (const std::exception& e) {
-        nix_set_err_msg(e.what());
-        return nullptr;
-    }
+    } NIXC_CATCH_ERRS_NULL
 }
 
 void nix_gc_free(GCRef* ref) {

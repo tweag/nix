@@ -10,6 +10,7 @@ extern "C" {
 #define NIX_ERR_UNKNOWN -1
 #define NIX_ERR_OVERFLOW -2
 #define NIX_ERR_KEY -3
+#define NIX_ERR_NIX_ERROR -4
 
 // Type definitions
 typedef int nix_err;
@@ -71,16 +72,7 @@ const char* nix_version_get();
  */
 const char* nix_err_msg(unsigned int* n);
 
-/**
- * Internal use only.
- *
- * Sets the most recent error message.
- * 
- * TODO: Move to nix_api_util_internal.h
- * 
- * @param msg The error message to set.
- */
-void nix_set_err_msg(const char* msg);
+nix_err nix_err_info_msg(char* value, int n);
 
 // cffi end
 #ifdef __cplusplus

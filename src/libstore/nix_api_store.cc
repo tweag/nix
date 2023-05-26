@@ -1,6 +1,7 @@
 #include "nix_api_util.h"
 #include "nix_api_store.h"
 #include "nix_api_store_internal.h"
+#include "nix_api_util_internal.h"
 
 #include "store-api.hh"
 
@@ -10,24 +11,10 @@ struct StorePath {
     nix::StorePath path;
 };
 
-static nix_err export_std_string(std::string& str, char* dest, unsigned int n) {
-    size_t i = str.copy(dest, n-1);
-    dest[i] = 0;
-    if (i == n - 1) {
-        nix_set_err_msg("Provided buffer too short");
-        return NIX_ERR_UNKNOWN;
-    } else
-        return NIX_OK;
-}
-
 nix_err nix_libstore_init() {
     try {
         nix::initLibStore();
-        return NIX_OK;
-    } catch (const std::exception& e) {
-        nix_set_err_msg(e.what());
-        return NIX_ERR_UNKNOWN;
-    }
+    } NIXC_CATCH_ERRS
 }
 
 Store* nix_store_open(const char* uri, const char*** params) {
@@ -45,10 +32,7 @@ Store* nix_store_open(const char* uri, const char*** params) {
             }
             return new Store{nix::openStore(uri_str, params_map)};
         }
-    } catch (const std::exception& e) {
-        nix_set_err_msg(e.what());
-        return nullptr;
-    }
+    } NIXC_CATCH_ERRS_NULL
 }
 
 void nix_store_unref(Store* store) {
@@ -57,13 +41,13 @@ void nix_store_unref(Store* store) {
 
 nix_err nix_store_get_uri(Store* store, char* dest, unsigned int n) {
     auto res = store->ptr->getUri();
-    return export_std_string(res, dest, n);
+    return nix_export_std_string(res, dest, n);
 }
 
 nix_err nix_store_get_version(Store* store, char* dest, unsigned int n) {
     auto res = store->ptr->getVersion();
     if (res) {
-        return export_std_string(*res, dest, n);
+        return nix_export_std_string(*res, dest, n);
     } else {
         nix_set_err_msg("store does not have a version");
         return NIX_ERR_UNKNOWN;
@@ -78,10 +62,7 @@ StorePath* nix_store_parse_path(Store* store, const char* path) {
     try {
         nix::StorePath s = store->ptr->parseStorePath(path);
         return new StorePath{std::move(s)};
-    } catch (const std::exception& e) {
-        nix_set_err_msg(e.what());
-        return nullptr;
-    }
+    } NIXC_CATCH_ERRS_NULL
 }
 
 
@@ -99,11 +80,7 @@ nix_err nix_store_build(Store* store, StorePath* path, void (*iter)(const char*,
               iter(outputName.c_str(), op.c_str());
           }
       }
-      return NIX_OK;
-    } catch (const std::exception& e) {
-        nix_set_err_msg(e.what());
-        return NIX_ERR_UNKNOWN;
-    }
+    } NIXC_CATCH_ERRS
 }
 
 void nix_store_path_free(StorePath* sp) {
