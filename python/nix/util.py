@@ -34,8 +34,7 @@ def nix_util_init() -> None:
 
 
 def nix_err_msg() -> str:
-    msg = ffi.new("char[1024]")
-    lib.nix_err_msg(msg, len(msg))
+    msg = lib.nix_err_msg(ffi.NULL)
     return ffi.string(msg).decode("utf-8", errors="replace")
 
 

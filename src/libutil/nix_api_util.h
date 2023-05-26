@@ -65,10 +65,11 @@ const char* nix_version_get();
  *
  * This function should only be called after a previous nix function has returned an error.
  * 
- * @param msg A pointer to a buffer where the error message will be stored.
- * @param n The size of the buffer pointed to by msg.
+ * @param n optional: a pointer to an unsigned int that is set to the length of the error.
+ * @return nullptr if no error message was ever set,
+ *         a borrowed pointer to the error message otherwise.
  */
-void nix_err_msg(char* msg, int n);
+const char* nix_err_msg(unsigned int* n);
 
 /**
  * Internal use only.

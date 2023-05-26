@@ -3,15 +3,13 @@
 #include "util.hh"
 
 
-// Error buffer
-static thread_local char g_error_buffer[1024];
+// Pointer to error buffer. Kept small in case nobody uses the C api
+static thread_local std::unique_ptr<std::string> error_buffer;
 
 // Helper function to set error message
 void nix_set_err_msg(const char* msg) {
-    strncpy(g_error_buffer, msg, sizeof(g_error_buffer) - 1);
-    g_error_buffer[sizeof(g_error_buffer) - 1] = '\0';
+    error_buffer = std::make_unique<std::string>(msg);
 }
-
 
 const char* nix_version_get() {
     return PACKAGE_VERSION;
@@ -59,7 +57,9 @@ nix_err nix_libutil_init() {
     }
 }
 
-void nix_err_msg(char* msg, int n) {
-    strncpy(msg, g_error_buffer, n - 1);
-    msg[n - 1] = '\0';
+const char* nix_err_msg(unsigned int* n) {
+    if (!error_buffer) return nullptr;
+    if (n != nullptr) *n = error_buffer->size();
+    return error_buffer->c_str();
 }
+
