@@ -1,7 +1,8 @@
 from typing import Any, TypeAlias, Callable, TypeVar
 
 class CData:
-    def __len__(self) -> int: pass
+    def __len__(self) -> int:
+        pass
 
 R = TypeVar("R")
 
@@ -9,8 +10,7 @@ class ffi:
     CData: TypeAlias = CData
     NULL: CData = ...
     @classmethod
-    def string(cls, x: CData) -> bytes:
-        ...
+    def string(cls, x: CData) -> bytes: ...
     @classmethod
     def new(cls, x: str, y: bytes | list[CData] | None = None) -> CData: ...
     @classmethod

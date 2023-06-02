@@ -15,8 +15,16 @@ extern "C" {
 // Type definitions
 typedef int nix_err;
 
+/**
+ * This object stores error state and API config.
+ * Optional, passing NULL will throw a C++ exception in case of errors.
+ */
+typedef struct nix_c_context nix_c_context;
+
 // Function prototypes
 
+nix_c_context* nix_c_context_create();
+void nix_c_context_free(nix_c_context* context);
 /**
  * Initializes nix_libutil and its dependencies.
  *
@@ -24,7 +32,7 @@ typedef int nix_err;
  * 
  * @return NIX_OK if the initialization is successful, or an error code otherwise.
  */
-nix_err nix_libutil_init();
+nix_err nix_libutil_init(nix_c_context*);
 
 /**
  * Retrieves a setting from the nix global configuration.
@@ -37,7 +45,7 @@ nix_err nix_libutil_init();
  * @return NIX_ERR_KEY if the setting is unknown, NIX_ERR_OVERFLOW if the provided buffer is too short,
  *         or NIX_OK if the setting was retrieved successfully.
  */
-nix_err nix_setting_get(const char* key, char* value, int n);
+nix_err nix_setting_get(nix_c_context*, const char* key, char* value, int n);
 
 /**
  * Sets a setting in the nix global configuration.
@@ -50,7 +58,7 @@ nix_err nix_setting_get(const char* key, char* value, int n);
  * @param value The value to set for the setting.
  * @return NIX_ERR_KEY if the setting is unknown, or NIX_OK if the setting was set successfully.
  */
-nix_err nix_setting_set(const char* key, const char* value);
+nix_err nix_setting_set(nix_c_context*, const char* key, const char* value);
 
 // todo: nix_plugins_init()
   
@@ -70,9 +78,9 @@ const char* nix_version_get();
  * @return nullptr if no error message was ever set,
  *         a borrowed pointer to the error message otherwise.
  */
-const char* nix_err_msg(unsigned int* n);
+const char* nix_err_msg(nix_c_context*, unsigned int* n);
 
-nix_err nix_err_info_msg(char* value, int n);
+nix_err nix_err_info_msg(nix_c_context*, char* value, int n);
 
 // cffi end
 #ifdef __cplusplus

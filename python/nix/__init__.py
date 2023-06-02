@@ -9,7 +9,8 @@ __all__ = ["util", "store", "expr", "eval"]
 _state = None
 _store = None
 
-def eval(string: str, path: str=".") -> Value:
+
+def eval(string: str, path: str = ".") -> Value:
     from .store import Store
     from .expr import State
 

@@ -21,13 +21,13 @@ struct State {
     nix::EvalState state;
 };
 
-nix_err nix_libexpr_init() {
+nix_err nix_libexpr_init(nix_c_context* context) {
     {
-        auto ret = nix_libutil_init();
+        auto ret = nix_libutil_init(context);
         if (ret != NIX_OK) return ret;
     }
     {
-        auto ret = nix_libstore_init();
+        auto ret = nix_libstore_init(context);
         if (ret != NIX_OK) return ret;
     }
     try {
@@ -35,38 +35,38 @@ nix_err nix_libexpr_init() {
     } NIXC_CATCH_ERRS
 }
 
-Expr* nix_parse_expr_from_string(State* state, const char* expr, const char* path) {
+Expr* nix_parse_expr_from_string(nix_c_context* context, State* state, const char* expr, const char* path) {
     try {
         return state->state.parseExprFromString(expr, state->state.rootPath(nix::CanonPath(path)));
     } NIXC_CATCH_ERRS_NULL
 }
 
-nix_err nix_expr_eval(State* state, Expr* expr, Value* value) {
+nix_err nix_expr_eval(nix_c_context* context, State* state, Expr* expr, Value* value) {
     try {
         state->state.eval((nix::Expr*)expr, *(nix::Value*)value);
     } NIXC_CATCH_ERRS
 }
 
 
-nix_err nix_value_call(State* state, Value* fn, Value* arg, Value* value) {
+nix_err nix_value_call(nix_c_context* context, State* state, Value* fn, Value* arg, Value* value) {
     try {
         state->state.callFunction(*(nix::Value*)fn, *(nix::Value*) arg, *(nix::Value*)value, nix::noPos);
     } NIXC_CATCH_ERRS
 }
 
-nix_err nix_value_force(State* state, Value* value) {
+nix_err nix_value_force(nix_c_context* context, State* state, Value* value) {
     try {
         state->state.forceValue(*(nix::Value*)value, nix::noPos);
     } NIXC_CATCH_ERRS
 }
 
-nix_err nix_value_force_deep(State* state, Value* value) {
+nix_err nix_value_force_deep(nix_c_context* context, State* state, Value* value) {
     try {
         state->state.forceValueDeep(*(nix::Value*)value);
     } NIXC_CATCH_ERRS
 }
 
-State* nix_state_create(const char** searchPath_c, Store* store) {
+State* nix_state_create(nix_c_context* context, const char** searchPath_c, Store* store) {
     try {
         nix::Strings searchPath;
         if (searchPath_c != nullptr)
@@ -81,7 +81,7 @@ void nix_state_free(State* state) {
     delete state;
 }
 
-GCRef* nix_gc_ref(void* obj) {
+GCRef* nix_gc_ref(nix_c_context* context, void* obj) {
     try {
 #if HAVE_BOEHMGC
         return new GCRef{std::allocate_shared<void*>(traceable_allocator<void*>(), obj)};

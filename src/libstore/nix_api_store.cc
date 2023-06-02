@@ -11,13 +11,13 @@ struct StorePath {
     nix::StorePath path;
 };
 
-nix_err nix_libstore_init() {
+nix_err nix_libstore_init(nix_c_context* context) {
     try {
         nix::initLibStore();
     } NIXC_CATCH_ERRS
 }
 
-Store* nix_store_open(const char* uri, const char*** params) {
+Store* nix_store_open(nix_c_context* context, const char* uri, const char*** params) {
     try {
         if (!uri) {
             return new Store{nix::openStore()};
@@ -39,18 +39,17 @@ void nix_store_unref(Store* store) {
     delete store;
 }
 
-nix_err nix_store_get_uri(Store* store, char* dest, unsigned int n) {
+nix_err nix_store_get_uri(nix_c_context* context, Store* store, char* dest, unsigned int n) {
     auto res = store->ptr->getUri();
-    return nix_export_std_string(res, dest, n);
+    return nix_export_std_string(context, res, dest, n);
 }
 
-nix_err nix_store_get_version(Store* store, char* dest, unsigned int n) {
+nix_err nix_store_get_version(nix_c_context* context, Store* store, char* dest, unsigned int n) {
     auto res = store->ptr->getVersion();
     if (res) {
-        return nix_export_std_string(*res, dest, n);
+        return nix_export_std_string(context, *res, dest, n);
     } else {
-        nix_set_err_msg("store does not have a version");
-        return NIX_ERR_UNKNOWN;
+        return nix_set_err_msg(context, NIX_ERR_UNKNOWN, "store does not have a version");
     }
 }
 
@@ -58,7 +57,7 @@ bool nix_store_is_valid_path(Store* store, StorePath* path) {
     return store->ptr->isValidPath(path->path);
 }
 
-StorePath* nix_store_parse_path(Store* store, const char* path) {
+StorePath* nix_store_parse_path(nix_c_context* context, Store* store, const char* path) {
     try {
         nix::StorePath s = store->ptr->parseStorePath(path);
         return new StorePath{std::move(s)};
@@ -66,7 +65,7 @@ StorePath* nix_store_parse_path(Store* store, const char* path) {
 }
 
 
-nix_err nix_store_build(Store* store, StorePath* path, void (*iter)(const char*, const char*)) {
+nix_err nix_store_build(nix_c_context* context, Store* store, StorePath* path, void (*iter)(const char*, const char*)) {
     try {
       store->ptr->buildPaths({
           nix::DerivedPath::Built{

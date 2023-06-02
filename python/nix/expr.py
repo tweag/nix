@@ -7,7 +7,7 @@ import typing
 from collections.abc import Callable, Iterator
 from typing import Any, TypeAlias, Union
 
-from .util import err_check, null_check, settings, NixAPIError
+from .util import ctx, settings, NixAPIError
 from .store import Store
 from ._nix_api_expr import ffi, lib
 
@@ -17,11 +17,11 @@ CData: TypeAlias = ffi.CData
 # todo: estimate size for ffi.gc calls
 class GCpin:
     def __init__(self, ptr: ffi.CData) -> None:
-        self._ref = ffi.gc(lib.nix_gc_ref(ptr), lib.nix_gc_free)
+        self._ref = ffi.gc(ctx().null_check(lib.nix_gc_ref, ptr), lib.nix_gc_free)
 
 
 def nix_expr_init() -> None:
-    err_check(lib.nix_libexpr_init())
+    ctx().err_check(lib.nix_libexpr_init)
 
 
 class Expr:
@@ -32,7 +32,7 @@ class Expr:
 
     def eval(self) -> Value:
         value = Value(self._state._state)
-        err_check(lib.nix_expr_eval(self._state._state, self._expr, value._value))
+        ctx().err_check(lib.nix_expr_eval, self._state._state, self._expr, value._value)
 
         return value
 
@@ -44,17 +44,18 @@ class State:
         search_path_c.append(ffi.NULL)
         search_path_ptr = ffi.new("char*[]", search_path_c)
         self._state = ffi.gc(
-            lib.nix_state_create(search_path_ptr, store_wrapper._store),
+            ctx().null_check(
+                lib.nix_state_create, search_path_ptr, store_wrapper._store
+            ),
             lib.nix_state_free,
         )
 
     def parse_expr_from_string(self, expr_string: str, path: str) -> Expr:
-        expr = null_check(
-            lib.nix_parse_expr_from_string(
-                self._state,
-                expr_string.encode(),
-                path.encode(),
-            )
+        expr = ctx().null_check(
+            lib.nix_parse_expr_from_string,
+            self._state,
+            expr_string.encode(),
+            path.encode(),
         )
         return Expr(self, expr)
 
@@ -101,10 +102,12 @@ class Function:
             arg2.set(arg)
             arg = arg2
         res = Value(self.value._state)
-        err_check(
-            lib.nix_value_call(
-                self.value._state, self.value._value, arg._value, res._value
-            )
+        ctx().err_check(
+            lib.nix_value_call,
+            self.value._state,
+            self.value._value,
+            arg._value,
+            res._value,
         )
         return res
 
@@ -157,9 +160,9 @@ class Value:
 
     def _force(self, deep: bool = False) -> None:
         if deep:
-            err_check(lib.nix_value_force_deep(self._state, self._value))
+            ctx().err_check(lib.nix_value_force_deep, self._state, self._value)
         else:
-            err_check(lib.nix_value_force(self._state, self._value))
+            ctx().err_check(lib.nix_value_force, self._state, self._value)
 
     def __repr__(self) -> str:
         t = self._get_type()
@@ -226,13 +229,13 @@ class Value:
         return str(ffi.string(lib.nix_get_typename(self._value)).decode())
 
     def get_list_byid(self, ix: int) -> Value:
-        value_ptr = null_check(lib.nix_get_list_byid(self._value, ix))
+        # todo null_check
+        value_ptr = lib.nix_get_list_byid(self._value, ix)
         return Value(self._state, value_ptr)
 
     def get_attr_byname(self, name: str) -> Value:
-        value_ptr = null_check(
-            lib.nix_get_attr_byname(self._value, self._state, name.encode())
-        )
+        # todo null_check
+        value_ptr = lib.nix_get_attr_byname(self._value, self._state, name.encode())
         return Value(self._state, value_ptr)
 
     def get_attr_iterate(self, iter_func: Callable[[str, Value], None]) -> None:
