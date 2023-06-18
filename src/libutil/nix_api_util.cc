@@ -29,8 +29,7 @@ nix_err nix_context_error(nix_c_context* context) {
     try {
         throw;
     } catch (nix::Error& e) {
-        /*  We can't store this exception since we can't clone it polymorphically. */
-        /* Take what we need here. */
+        /* Storing this exception is annoying, take what we need here */
         context->last_err = e.what();
         context->info = e.info();
         int status;
