@@ -21,10 +21,8 @@ nix_err nix_context_error(nix_c_context* context);
  */
 nix_err nix_set_err_msg(nix_c_context* context, nix_err err, const char* msg);
 
-nix_err nix_export_std_string(nix_c_context* context, std::string& str, char* dest, unsigned int n);
+nix_err nix_export_std_string(nix_c_context* context, const std::string_view str, char* dest, unsigned int n);
 
-// todo: nix::ThrownError
-// todo: currentExceptionTypeName
 #define NIXC_CATCH_ERRS_NULL catch (...) {      \
         nix_context_error(context);             \
         return nullptr;                         \

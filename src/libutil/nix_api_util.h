@@ -82,6 +82,9 @@ const char* nix_err_msg(nix_c_context*, unsigned int* n);
 
 nix_err nix_err_info_msg(nix_c_context*, char* value, int n);
 
+nix_err nix_err_name(nix_c_context* context, char* value, int n);
+nix_err nix_err_code(nix_c_context* context);
+
 // cffi end
 #ifdef __cplusplus
 }

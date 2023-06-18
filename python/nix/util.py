@@ -19,12 +19,16 @@ class Context:
         msg = lib.nix_err_msg(self._ctx, ffi.NULL)
         return ffi.string(msg).decode("utf-8", errors="replace")
 
+    def nix_err_name(self) -> str:
+        value = ffi.new("char[128]")
+        lib.nix_err_name(self._ctx, value, len(value))
+        return ffi.string(value).decode("utf-8", errors="replace")
+
     def nix_err_info_msg(self) -> str:
         value = ffi.new("char[1024]")
         self._err_check(lib.nix_err_info_msg(self._ctx, value, len(value)))
         return ffi.string(value).decode()
 
-    # todo type
     def err_check(
         self,
         fn: Callable[Concatenate[ffi.CData, P], int],
@@ -35,14 +39,17 @@ class Context:
 
     def _err_check(self, err_code: int) -> None:
         if err_code == lib.NIX_ERR_NIX_ERROR:
-            msg = self.nix_err_info_msg()
-            err = NixError(self.nix_err_msg())
-            err.msg = msg
+            name = self.nix_err_name()
+            if name in ERR_MAP:
+                err = ERR_MAP[name](self.nix_err_msg())
+            else:
+                err = NixError(self.nix_err_msg())
+            err.name = name
+            err.msg = self.nix_err_info_msg()
             raise err
         if err_code != lib.NIX_OK:
             raise NixAPIError(self.nix_err_msg())
 
-    # todo type
     def null_check(
         self,
         fn: Callable[Concatenate[ffi.CData, P], ffi.CData],
@@ -51,11 +58,13 @@ class Context:
     ) -> ffi.CData:
         return self._null_check(fn(self._ctx, *rest, **kwrest))
 
-    # todo: implement nix_context_err_code getter
-    # todo: how to find out the error type from this?
+    def err_code(self) -> int:
+        res: int = lib.nix_err_code(self._ctx)
+        return res
+    
     def _null_check(self, obj: ffi.CData) -> ffi.CData:
         if not obj:
-            raise NixAPIError(self.nix_err_msg())
+            self._err_check(self.err_code())
         return obj
 
 
@@ -65,7 +74,23 @@ class NixAPIError(Exception):
 
 class NixError(NixAPIError):
     msg: Optional[str]
+    name: Optional[str]
 
+
+class ThrownError(NixError):
+    def __repr__(self) -> str:
+        if self.msg:
+            return 'ThrownError("' + self.msg + '")'
+        else:
+            return super().__repr__()
+
+class AssertionError(NixError):
+    pass
+
+ERR_MAP = {
+    "nix::ThrownError": ThrownError,
+    "nix::AssertionError": AssertionError
+}
 
 class Settings:
     def __init__(self) -> None:

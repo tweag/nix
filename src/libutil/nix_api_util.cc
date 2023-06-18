@@ -4,9 +4,13 @@
 #include "config.hh"
 #include "util.hh"
 
+#include <typeinfo>
+#include <cxxabi.h>
 
 struct nix_c_context {
-    std::variant<std::nullopt_t, std::string, nix::Error> last_err = std::nullopt;
+    std::optional<std::string> last_err = {};
+    std::optional<nix::ErrorInfo> info = {};
+    std::string name = "";
     nix_err last_err_code = NIX_OK;
 };
 
@@ -25,7 +29,18 @@ nix_err nix_context_error(nix_c_context* context) {
     try {
         throw;
     } catch (nix::Error& e) {
-        context->last_err = e;
+        /*  We can't store this exception since we can't clone it polymorphically. */
+        /* Take what we need here. */
+        context->last_err = e.what();
+        context->info = e.info();
+        int status;
+        const char* demangled = abi::__cxa_demangle(typeid(e).name(), 0, 0, &status);
+        if (demangled) {
+            context->name = demangled;
+            // todo: free(demangled);
+        } else {
+            context->name = typeid(e).name();
+        }
         context->last_err_code = NIX_ERR_NIX_ERROR;
         return context->last_err_code;
     } catch (const std::exception& e) {
@@ -33,7 +48,7 @@ nix_err nix_context_error(nix_c_context* context) {
         context->last_err_code = NIX_ERR_UNKNOWN;
         return context->last_err_code;
     }
-    asm("unreachable\n");
+    // unreachable
 }
 
 nix_err nix_set_err_msg(nix_c_context* context, nix_err err, const char* msg) {
@@ -79,29 +94,32 @@ nix_err nix_libutil_init(nix_c_context* context) {
 }
 
 const char* nix_err_msg(nix_c_context* context, unsigned int* n) {
-    std::string* error_buffer = std::get_if<std::string>(&context->last_err);
-    if (!error_buffer) {
-        nix::Error* err = std::get_if<nix::Error>(&context->last_err);
-        if (err) {
-            // todo
-            error_buffer = new std::string(err->what());
-        } else return nullptr;
+    if (context->last_err) {
+        if (n) *n = context->last_err->size();
+        return context->last_err->c_str();
     }
-    if (n != nullptr) *n = error_buffer->size();
-    return error_buffer->c_str();
+    return nullptr;
+}
+
+nix_err nix_err_name(nix_c_context* context, char* value, int n) {
+    if (context->last_err_code != NIX_ERR_NIX_ERROR) {
+        return nix_set_err_msg(context, NIX_ERR_UNKNOWN, "Last error was not a nix error");
+    }
+    return nix_export_std_string(context, context->name, value, n);
 }
 
 nix_err nix_err_info_msg(nix_c_context* context, char* value, int n) {
     if (context->last_err_code != NIX_ERR_NIX_ERROR) {
         return nix_set_err_msg(context, NIX_ERR_UNKNOWN, "Last error was not a nix error");
     }
-    nix::Error& e = std::get<nix::Error>(context->last_err);
-    std::string msg = e.info().msg.str();
-    return nix_export_std_string(context, msg, value, n);
+    return nix_export_std_string(context, context->info->msg.str(), value, n);
 }
 
+nix_err nix_err_code(nix_c_context* context) {
+    return context->last_err_code;
+}
 
-nix_err nix_export_std_string(nix_c_context* context, std::string& str, char* dest, unsigned int n) {
+nix_err nix_export_std_string(nix_c_context* context, const std::string_view str, char* dest, unsigned int n) {
     size_t i = str.copy(dest, n-1);
     dest[i] = 0;
     if (i == n - 1) {
