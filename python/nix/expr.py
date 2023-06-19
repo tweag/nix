@@ -24,10 +24,15 @@ class GCpin:
 
 
 class Expr:
-    def __init__(self, state_wrapper: State, expr: ffi.CData) -> None:
+    def __init__(
+        self,
+        state_wrapper: State,
+        expr: ffi.CData,
+        gcpin: GCpin | None = None,
+    ) -> None:
         self._state = state_wrapper
         self._expr = expr
-        self._gc = GCpin(self._expr)
+        self._gc = GCpin(self._expr) if gcpin is None else gcpin
 
     def eval(self) -> Value:
         value = Value(self._state._state)
@@ -48,8 +53,9 @@ class State:
         )
 
     def parse_expr_from_string(self, expr_string: str, path: str) -> Expr:
+        pin = GCpin()
         expr = lib.nix_parse_expr_from_string(
-            self._state, expr_string.encode(), path.encode()
+            self._state, expr_string.encode(), path.encode(), pin.ref
         )
         return Expr(self, expr)
 

@@ -13,18 +13,12 @@
 #include "nix_api_expr.h"
 #include "nix_api_store_internal.h"
 #include "nix_api_util_internal.h"
+#include "nix_api_expr_internal.h"
 
 #ifdef HAVE_BOEHMGC
 #define GC_INCLUDE_NEW 1
 #include "gc_cpp.h"
 #endif
-
-struct GCRef {
-    void* ptr;
-};
-struct State {
-    nix::EvalState state;
-};
 
 nix_err nix_libexpr_init(nix_c_context* context) {
     {
@@ -40,9 +34,11 @@ nix_err nix_libexpr_init(nix_c_context* context) {
     } NIXC_CATCH_ERRS
 }
 
-Expr* nix_parse_expr_from_string(nix_c_context* context, State* state, const char* expr, const char* path) {
+Expr* nix_parse_expr_from_string(nix_c_context* context, State* state, const char* expr, const char* path, GCRef* ref) {
     try {
-        return state->state.parseExprFromString(expr, state->state.rootPath(nix::CanonPath(path)));
+        Expr* result = state->state.parseExprFromString(expr, state->state.rootPath(nix::CanonPath(path)));
+        if (ref) ref->ptr = result;
+        return result;
     } NIXC_CATCH_ERRS_NULL
 }
 

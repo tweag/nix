@@ -28,9 +28,16 @@ nix_err nix_export_std_string(nix_c_context* context, const std::string_view str
         return nullptr;                         \
     }
 #define NIXC_CATCH_ERRS catch (...) { \
-        return nix_context_error(context);             \
+        return nix_context_error(context);      \
     }                                           \
     return NIX_OK;
 
+
+
+#define NIXC_CATCH_ERRS_RES(def) catch (...) {     \
+        nix_err res2 = nix_context_error(context); \
+        if (res) *res = res2;                      \
+        return def;                                \
+    }
 
 #endif // NIX_API_UTIL_INTERNAL_H

@@ -8,22 +8,8 @@
 #include "nix_api_expr.h"
 #include "nix_api_value.h"
 #include "nix_api_util_internal.h"
+#include "nix_api_expr_internal.h"
 
-#define NIXC_CATCH_ERRS_RES(def) catch (...) { \
-        nix_err res2 = nix_context_error(context); \
-        if (res) *res = res2;                      \
-        return def;                                \
-    }
-
-// todo nix_api_expr_internal
-struct State {
-    nix::EvalState state;
-};
-
-// todo nix_api_expr_internal
-struct GCRef {
-    void* ptr;
-};
 // Helper function to throw an exception if value is null
 static const nix::Value& check_value_not_null(const Value* value) {
     if (!value) {

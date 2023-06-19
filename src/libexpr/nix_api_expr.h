@@ -19,7 +19,7 @@ typedef struct GCRef GCRef; // std::shared_ptr<void>
 nix_err nix_libexpr_init(nix_c_context*);
 
 // returns: GC'd Expr
-Expr* nix_parse_expr_from_string(nix_c_context*, State* state, const char* expr, const char* path);
+Expr* nix_parse_expr_from_string(nix_c_context*, State* state, const char* expr, const char* path, GCRef* ref);
 nix_err nix_expr_eval(nix_c_context*, State* state, Expr* expr, Value* value);
 nix_err nix_value_call(nix_c_context*, State* state, Value* fn, Value* arg, Value* value);
 nix_err nix_value_force(nix_c_context*, State* state, Value* value);
@@ -37,4 +37,4 @@ void nix_gc_free(GCRef* ref);
 }
 #endif
 
-#endif // NIX_API_STORE_H
+#endif // NIX_API_EXPR_H
