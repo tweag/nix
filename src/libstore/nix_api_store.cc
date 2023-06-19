@@ -40,21 +40,28 @@ void nix_store_unref(Store* store) {
 }
 
 nix_err nix_store_get_uri(nix_c_context* context, Store* store, char* dest, unsigned int n) {
-    auto res = store->ptr->getUri();
-    return nix_export_std_string(context, res, dest, n);
+    try {
+        auto res = store->ptr->getUri();
+        return nix_export_std_string(context, res, dest, n);
+    } NIXC_CATCH_ERRS
 }
 
 nix_err nix_store_get_version(nix_c_context* context, Store* store, char* dest, unsigned int n) {
-    auto res = store->ptr->getVersion();
-    if (res) {
-        return nix_export_std_string(context, *res, dest, n);
-    } else {
-        return nix_set_err_msg(context, NIX_ERR_UNKNOWN, "store does not have a version");
-    }
+    try {
+        auto res = store->ptr->getVersion();
+        if (res) {
+            return nix_export_std_string(context, *res, dest, n);
+        } else {
+            return nix_set_err_msg(context, NIX_ERR_UNKNOWN, "store does not have a version");
+        }
+    } NIXC_CATCH_ERRS
 }
 
-bool nix_store_is_valid_path(Store* store, StorePath* path) {
-    return store->ptr->isValidPath(path->path);
+bool nix_store_is_valid_path(nix_c_context* context, nix_err* res, Store* store, StorePath* path) {
+    if (res) *res = NIX_OK;
+    try {
+        return store->ptr->isValidPath(path->path);
+    } NIXC_CATCH_ERRS_RES(false);
 }
 
 StorePath* nix_store_parse_path(nix_c_context* context, Store* store, const char* path) {

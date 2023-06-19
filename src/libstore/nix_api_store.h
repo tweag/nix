@@ -25,10 +25,9 @@ nix_err nix_store_get_uri(nix_c_context*, Store* store, char* dest, unsigned int
 StorePath* nix_store_parse_path(nix_c_context*, Store* store, const char* path);
 void nix_store_path_free(StorePath*);
 
-// todo error handling
-bool nix_store_is_valid_path(Store*, StorePath*);
-//void nix_store_ensure(Store*, const char*);
-//  void nix_store_build_paths(Store*);
+bool nix_store_is_valid_path(nix_c_context*, nix_err* res, Store*, StorePath*);
+// nix_err nix_store_ensure(Store*, const char*);
+// nix_err nix_store_build_paths(Store*);
 
 nix_err nix_store_build(nix_c_context*, Store* store, StorePath* path, void (*cb)(const char*, const char*));
 nix_err nix_store_get_version(nix_c_context*, Store* store, char* dest, unsigned int n);

@@ -25,7 +25,10 @@ def wrap_ffi(f: Callable[..., Any] | int) -> Callable[P, Any] | int:
         raise TypeError("couldn't parse to-be-wrapped function")
     sig = f.__doc__.split("\n")[0]
     func, argstr = sig.split("(", 1)
-    tp = re.match(r"((struct )?[a-zA-Z0-9_]+[ \*]*)", func)[0].strip()
+    mtch = re.match(r"((struct )?[a-zA-Z0-9_]+[ \*]*)", func)
+    if not mtch:
+        raise RuntimeError("invalid function sig " + sig)
+    tp = mtch[0].strip()
     args = argstr[:-2].split(", ")
     if tp == "void":
         return f
