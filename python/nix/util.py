@@ -29,6 +29,17 @@ class Context:
         self._err_check(lib.nix_err_info_msg(self._ctx, value, len(value)))
         return ffi.string(value).decode()
 
+    def res_check(
+        self,
+        fn: Callable[Concatenate[ffi.CData, ffi.CData, P], R],
+        *rest: P.args,
+        **kwrest: P.kwargs,
+    ) -> R:
+        return_code = ffi.new("nix_err*")
+        res = fn(self._ctx, return_code, *rest, **kwrest)
+        self._err_check(return_code[0])
+        return res
+
     def err_check(
         self,
         fn: Callable[Concatenate[ffi.CData, P], int],
@@ -38,17 +49,22 @@ class Context:
         return self._err_check(fn(self._ctx, *rest, **kwrest))
 
     def _err_check(self, err_code: int) -> None:
-        if err_code == lib.NIX_ERR_NIX_ERROR:
-            name = self.nix_err_name()
-            if name in ERR_MAP:
-                err = ERR_MAP[name](self.nix_err_msg())
-            else:
-                err = NixError(self.nix_err_msg())
-            err.name = name
-            err.msg = self.nix_err_info_msg()
-            raise err
-        if err_code != lib.NIX_OK:
-            raise NixAPIError(self.nix_err_msg())
+        match err_code:
+            case lib.NIX_OK:
+                return
+            case lib.NIX_ERR_NIX_ERROR:
+                name = self.nix_err_name()
+                if name in ERR_MAP:
+                    err = ERR_MAP[name](self.nix_err_msg())
+                else:
+                    err = NixError(self.nix_err_msg())
+                    err.name = name
+                    err.msg = self.nix_err_info_msg()
+                raise err
+            case lib.NIX_ERR_KEY:
+                raise KeyError(self.nix_err_msg())
+            case _:
+                raise NixAPIError(self.nix_err_msg())
 
     def null_check(
         self,
@@ -61,7 +77,7 @@ class Context:
     def err_code(self) -> int:
         res: int = lib.nix_err_code(self._ctx)
         return res
-    
+
     def _null_check(self, obj: ffi.CData) -> ffi.CData:
         if not obj:
             self._err_check(self.err_code())
@@ -84,13 +100,13 @@ class ThrownError(NixError):
         else:
             return super().__repr__()
 
+
 class AssertionError(NixError):
     pass
 
-ERR_MAP = {
-    "nix::ThrownError": ThrownError,
-    "nix::AssertionError": AssertionError
-}
+
+ERR_MAP = {"nix::ThrownError": ThrownError, "nix::AssertionError": AssertionError}
+
 
 class Settings:
     def __init__(self) -> None:

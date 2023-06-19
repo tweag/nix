@@ -14,8 +14,13 @@
 #include "nix_api_store_internal.h"
 #include "nix_api_util_internal.h"
 
+#ifdef HAVE_BOEHMGC
+#define GC_INCLUDE_NEW 1
+#include "gc_cpp.h"
+#endif
+
 struct GCRef {
-    std::shared_ptr<void> ptr;
+    void* ptr;
 };
 struct State {
     nix::EvalState state;
@@ -49,6 +54,7 @@ nix_err nix_expr_eval(nix_c_context* context, State* state, Expr* expr, Value* v
 
 
 nix_err nix_value_call(nix_c_context* context, State* state, Value* fn, Value* arg, Value* value) {
+    // todo functors
     try {
         state->state.callFunction(*(nix::Value*)fn, *(nix::Value*) arg, *(nix::Value*)value, nix::noPos);
     } NIXC_CATCH_ERRS
@@ -84,13 +90,17 @@ void nix_state_free(State* state) {
 GCRef* nix_gc_ref(nix_c_context* context, void* obj) {
     try {
 #if HAVE_BOEHMGC
-        return new GCRef{std::allocate_shared<void*>(traceable_allocator<void*>(), obj)};
+        return new (NoGC) GCRef{obj};
 #else
-        return new GCRef{std::make_shared<void*>(obj)};
+        return new GCRef{obj};
 #endif
     } NIXC_CATCH_ERRS_NULL
 }
 
 void nix_gc_free(GCRef* ref) {
+#if HAVE_BOEHMGC
+    GC_FREE(ref);
+#else
     delete ref;
+#endif
 }

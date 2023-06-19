@@ -3,6 +3,8 @@ from typing import Any, TypeAlias, Callable, TypeVar
 class CData:
     def __len__(self) -> int:
         pass
+    def __getitem__(self, i: int) -> Any:
+        pass
 
 R = TypeVar("R")
 
