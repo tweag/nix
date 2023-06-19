@@ -30,7 +30,7 @@ bool nix_store_is_valid_path(Store*, StorePath*);
 //void nix_store_ensure(Store*, const char*);
 //  void nix_store_build_paths(Store*);
 
-nix_err nix_store_build(nix_c_context*, Store* store, StorePath* path, void (*iter)(const char*, const char*));
+nix_err nix_store_build(nix_c_context*, Store* store, StorePath* path, void (*cb)(const char*, const char*));
 nix_err nix_store_get_version(nix_c_context*, Store* store, char* dest, unsigned int n);
 
 // cffi end

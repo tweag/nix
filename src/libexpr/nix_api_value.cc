@@ -90,7 +90,7 @@ int64_t nix_get_int(const Value* value) {
     return v.integer;
 }
 
-Value* nix_get_list_byid(const Value* value, unsigned int ix) {
+Value* nix_get_list_byidx(const Value* value, unsigned int ix) {
     check_value_not_null(value);
     const nix::Value &v = *(const nix::Value*)value;
     assert(v.type() == nix::nList);
@@ -118,17 +118,12 @@ bool nix_has_attr_byname(const Value* value, State* state, const char* name) {
     return false;
 }
 
-Value* nix_get_attr_iterate(const Value* value, const State* state, void (*iter)(const char*, Value*, void*), void* data) {
-    check_value_not_null(value);
+Value* nix_get_attr_byidx(const Value* value, State* state, unsigned int i, const char** name) {
     const nix::Value &v = *(const nix::Value*)value;
-    assert(v.type() == nix::nAttrs);
-    for (nix::Attr& a : *v.attrs) {
-        const std::string& name = (const std::string&)state->state.symbols[a.name];
-        iter(name.c_str(), a.value, data);
-    }
-    return nullptr;
+    const nix::Attr& a = (*v.attrs)[i];
+    *name = ((const std::string&)(state->state.symbols[a.name])).c_str();
+    return a.value;
 }
-
 
 void nix_set_bool(Value* value, bool b) {
     check_value_not_null(value);
@@ -167,7 +162,7 @@ void nix_make_list(State* s, Value* value, unsigned int size) {
     s->state.mkList(v, size);
 }
 
-void nix_set_list_byid(Value* value, unsigned int ix, Value* elem) {
+void nix_set_list_byidx(Value* value, unsigned int ix, Value* elem) {
     check_value_not_null(value);
     check_value_not_null(elem);
     // todo: assert that this is a list
@@ -190,12 +185,14 @@ BindingsBuilder* nix_make_bindings_builder(State* state, size_t capacity) {
     *res = std::allocate_shared<nix::BindingsBuilder>(traceable_allocator<nix::BindingsBuilder>(), bb);
     return res;
 }
+
 void nix_bindings_builder_insert(BindingsBuilder* b, const char* name, Value* value) {
     nix::BindingsBuilder& builder = **(BindingsBuilder_Inner*)b;
     nix::Value &v = *(nix::Value*)value;
     nix::Symbol s = builder.state.symbols.create(name);
     builder.insert(s, &v);
 }
+
 void nix_bindings_builder_unref(BindingsBuilder* bb) {
     delete (BindingsBuilder_Inner*)bb;
 }

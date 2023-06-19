@@ -228,9 +228,9 @@ class Value:
     def get_typename(self) -> str:
         return str(ffi.string(lib.nix_get_typename(self._value)).decode())
 
-    def get_list_byid(self, ix: int) -> Value:
+    def get_list_byidx(self, ix: int) -> Value:
         # todo null_check
-        value_ptr = lib.nix_get_list_byid(self._value, ix)
+        value_ptr = lib.nix_get_list_byidx(self._value, ix)
         return Value(self._state, value_ptr)
 
     def get_attr_byname(self, name: str) -> Value:
@@ -239,11 +239,11 @@ class Value:
         return Value(self._state, value_ptr)
 
     def get_attr_iterate(self, iter_func: Callable[[str, Value], None]) -> None:
-        @ffi.callback("void(char*, Value*, void*)")
-        def iter_callback(name: CData, value_ptr: CData, data: CData) -> None:
-            iter_func(ffi.string(name).decode(), Value(self._state, value_ptr))
-
-        lib.nix_get_attr_iterate(self._value, self._state, iter_callback, ffi.NULL)
+        name_ptr = ffi.new("char**")
+        for i in range(len(self)):
+            val = lib.nix_get_attr_byidx(self._value, self._state, i, name_ptr)
+            name = ffi.string(name_ptr[0]).decode()
+            iter_func(name, Value(self._state, val))
 
     def __iter__(self) -> typing.Any:
         match self.force_type(dict | list):
@@ -302,7 +302,7 @@ class Value:
                     raise TypeError("key should be a integer")
                 if i >= len(self):
                     raise IndexError("list index out of range")
-                return self.get_list_byid(i % len(self))
+                return self.get_list_byidx(i % len(self))
             case _:
                 raise RuntimeError
 
@@ -339,7 +339,7 @@ class Value:
             for i in range(len(py_val)):
                 v = Value(self._state)
                 v.set(py_val[i])
-                lib.nix_set_list_byid(self._value, i, v._value)
+                lib.nix_set_list_byidx(self._value, i, v._value)
         elif isinstance(py_val, dict):
             bb = ffi.gc(
                 lib.nix_make_bindings_builder(self._state, len(py_val)),

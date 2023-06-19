@@ -38,10 +38,11 @@ unsigned int nix_get_attrs_size(const Value* value);
 double nix_get_double(const Value* value);
 int64_t nix_get_int(const Value* value);
 
-Value* nix_get_list_byid(const Value* value, unsigned int ix);
+Value* nix_get_list_byidx(const Value* value, unsigned int ix);
 Value* nix_get_attr_byname(const Value* value, State* state, const char* name);
 bool nix_has_attr_byname(const Value* value, State* state, const char* name);
-Value* nix_get_attr_iterate(const Value* value, const State* state, void (*iter)(const char*, Value*, void*), void* data);
+
+Value* nix_get_attr_byidx(const Value* value, State* state, unsigned int i, const char** name);
 
 void nix_set_bool(Value* value, bool b);
 void nix_set_string(Value* value, const char* str);
@@ -49,7 +50,7 @@ void nix_set_double(Value* value, double d);
 void nix_set_int(Value* value, int64_t i);
 void nix_set_null(Value* value);
 void nix_make_list(State* s, Value* value, unsigned int size);
-void nix_set_list_byid(Value* value, unsigned int ix, Value* elem);
+void nix_set_list_byidx(Value* value, unsigned int ix, Value* elem);
 void nix_make_attrs(Value* value, BindingsBuilder* b);
 
 // owned ref
