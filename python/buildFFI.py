@@ -8,8 +8,10 @@ def extract_cffi(fname):
         contents = f.read()
         return contents[contents.index("// cffi start"):contents.index("// cffi end")]
 
-def make_ffi(name, headers, libraries, includes=[]):
+def make_ffi(name, headers, libraries, includes=[], extra_header=""):
     header_content = "\n".join([extract_cffi("../src/" + p) for p in headers])
+    if extra_header:
+        header_content += "\n" + extra_header
 
     ffi = FFI()
 
@@ -33,7 +35,9 @@ def make_ffi(name, headers, libraries, includes=[]):
 
 libutil = make_ffi("nix._nix_api_util", ["libutil/nix_api_util.h"], ["nixutil"])
 libstore = make_ffi("nix._nix_api_store", ["libstore/nix_api_store.h"], ["nixstore"], [libutil])
-libexpr = make_ffi("nix._nix_api_expr", ["libexpr/nix_api_expr.h", "libexpr/nix_api_value.h"], ["nixexpr"], [libutil, libstore])
+libexpr = make_ffi("nix._nix_api_expr", ["libexpr/nix_api_expr.h", "libexpr/nix_api_value.h"], ["nixexpr"], [libutil, libstore], """
+extern "Python" void py_nix_primop_base(struct State*, int, void**, void*);
+""")
 
 # Compile the CFFI extension
 if __name__ == '__main__':

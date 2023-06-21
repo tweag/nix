@@ -144,37 +144,52 @@ class Function:
 
 T = typing.TypeVar("T")
 
-# todo: you need to keep this alive forever
+# all primops use this code. first argument is secretly the primop handle
+@ffi.def_extern()
+def py_nix_primop_base(st: CData, pos: int, args: CData, v: CData) -> None:
+    op = ffi.from_handle(ffi.cast('void*', int(Value(st, args[0]))))
+    assert type(op) is PrimOp
+    argv = []
+    for i in range(op.arity):
+        pin = GCpin(args[i+1])
+        argv.append(Value(st, args[i+1], pin))
+    result = Value(st, v)
+    try:
+        res = op.func(*argv)
+        result.set(res)
+    except Exception as e:
+        print("Error in callback")
+        print(e)
+        # todo: return nix throw
+        result.set(None)
+
+
+# todo: you need to keep this alive forever until I implement gc
 class PrimOp:
+    func: Callable[..., Evaluated | Value]
+    arity: int
+    _docs: CData
+    _primop: CData
+    handle: CData
     def __init__(self, cb: Callable[..., Evaluated | Value]) -> None:
         args, varargs, varkw, defaults = inspect.getargspec(cb)
         if varargs is not None or varkw is not None or defaults is not None:
             raise TypeError("only simple methods can be primops now")
         arity = len(args)
+        args = ["py_primop"] + args
         argnames_c = [ffi.new("char[]", path.encode()) for path in args]
         argnames_c.append(ffi.NULL)
+
         argnames_ptr = ffi.new("char*[]", argnames_c)
-        docs = cb.__doc__.encode() if cb.__doc__ is not None else ffi.NULL
-        @ffi.callback("void(struct State*, int, void**, void*)")
-        def myfunc(st: CData, pos: int, args: CData, v: CData):
-            argv = []
-            for i in range(arity):
-                pin = GCpin(args[i])
-                argv.append(Value(st, args[i], pin))
-            result = Value(st, v)
-            try:
-                res = cb(*argv)
-                result.set(res)
-            except Exception as e:
-                print("Error in callback")
-                print(e)
-                # todo: return nix throw
-                result.set(None)
-                
-        self._func = myfunc
-        self._primop = ffi.gc(lib.nix_alloc_primop(myfunc, arity, cb.__name__.encode(), argnames_ptr, docs), lib.nix_free_primop)
+
+        self._docs = ffi.new("char[]", cb.__doc__.encode()) if cb.__doc__ is not None else ffi.NULL
+
+        self.func = cb
+        self.arity = arity
+        self._primop = ffi.gc(lib.nix_alloc_primop(lib_unwrapped.py_nix_primop_base, arity + 1, cb.__name__.encode(), argnames_ptr, self._docs), lib.nix_free_primop)
+        self.handle = ffi.new_handle(self)
         
-primops = []
+primops: list[PrimOp] = []
 
 class Value:
     def __init__(
@@ -385,8 +400,6 @@ class Value:
             raise NotImplementedError
         elif isinstance(py_val, Value):
             lib.nix_copy_value(self._value, py_val._value)
-        elif isinstance(py_val, PrimOp):
-            lib.nix_set_primop(self._value, py_val._primop)
         elif isinstance(py_val, bool):
             lib.nix_set_bool(self._value, py_val)
         elif isinstance(py_val, str):
@@ -416,10 +429,15 @@ class Value:
                 lib.nix_bindings_builder_insert(bb, k.encode(), v._value)
             lib.nix_make_attrs(self._value, bb)
         elif callable(py_val):
+            # primops will give us a dispatcher, need to call it
             p = PrimOp(py_val)
             # hack: need to keep primops alive forever
             primops.append(p)
-            self.set(p)
+            lib.nix_set_primop(self._value, p._primop)
+            # now call this thing, replace self
+            arg = Value(self._state)
+            arg.set(int(ffi.cast("unsigned long", p.handle)))
+            lib.nix_value_call(self._state, self._value, arg._value, self._value)
         else:
             raise TypeError("tried to convert unknown type to nix")
 
