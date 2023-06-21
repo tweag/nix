@@ -251,6 +251,14 @@ nix_err nix_set_primop(nix_c_context* context, Value* value, PrimOp* p) {
     } NIXC_CATCH_ERRS
 }
 
+nix_err nix_copy_value(nix_c_context* context, Value* value, Value* source) {
+    try {
+        auto& v = check_value_not_null(value);
+        auto& s = check_value_not_null(source);
+        v = s;
+    } NIXC_CATCH_ERRS
+}
+
 typedef std::shared_ptr<nix::BindingsBuilder> BindingsBuilder_Inner;
 
 nix_err nix_make_attrs(nix_c_context* context, Value* value, BindingsBuilder* b) {

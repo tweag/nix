@@ -6,7 +6,7 @@ import re
 from collections.abc import Callable
 from typing import Any, Concatenate
 
-from .util import ctx, CData
+from .util import Ctx, CData
 
 if typing.TYPE_CHECKING:
     from ._nix_api_types import Lib
@@ -41,7 +41,8 @@ def wrap_ffi(
         g = typing.cast(Callable[Concatenate[CData, P], Any], f)
 
         def wrap_null(*args: P.args, **kwargs: P.kwargs) -> Any:
-            return ctx().null_check(g, *args, **kwargs)
+            with Ctx() as ctx:
+                return ctx.null_check(g, *args, **kwargs)
 
         return wrap_null
     elif tp != "int" and args[1] == "int *":
@@ -49,7 +50,8 @@ def wrap_ffi(
         h = typing.cast(Callable[Concatenate[CData, CData, P], Any], f)
 
         def wrap_res(*args: P.args, **kwargs: P.kwargs) -> Any:
-            return ctx().res_check(h, *args, **kwargs)
+            with Ctx() as ctx:
+                return ctx.res_check(h, *args, **kwargs)
 
         return wrap_res
     else:
@@ -57,7 +59,8 @@ def wrap_ffi(
         i = typing.cast(Callable[Concatenate[CData, P], Any], f)
 
         def wrap_err(*args: P.args, **kwargs: P.kwargs) -> None:
-            ctx().err_check(i, *args, **kwargs)
+            with Ctx() as ctx:
+                ctx.err_check(i, *args, **kwargs)
 
         return wrap_err
 

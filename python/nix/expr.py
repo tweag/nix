@@ -5,7 +5,9 @@ import typing
 from collections.abc import Callable, Iterator
 from typing import Any, TypeAlias, Union
 import enum
+import inspect
 from pathlib import PurePath
+import sys
 
 from .util import settings, NixAPIError
 from .store import Store
@@ -142,15 +144,37 @@ class Function:
 
 T = typing.TypeVar("T")
 
-
-class Returns(typing.Generic[T]):
-    if not typing.TYPE_CHECKING:
-
-        def __class_getitem__(cls, item: object) -> object:
-            """Called when Returns is used as an Annotation at runtime.
-            We just return the type we're given"""
-            return item
-
+# todo: you need to keep this alive forever
+class PrimOp:
+    def __init__(self, cb: Callable[..., Evaluated | Value]) -> None:
+        args, varargs, varkw, defaults = inspect.getargspec(cb)
+        if varargs is not None or varkw is not None or defaults is not None:
+            raise TypeError("only simple methods can be primops now")
+        arity = len(args)
+        argnames_c = [ffi.new("char[]", path.encode()) for path in args]
+        argnames_c.append(ffi.NULL)
+        argnames_ptr = ffi.new("char*[]", argnames_c)
+        docs = cb.__doc__.encode() if cb.__doc__ is not None else ffi.NULL
+        @ffi.callback("void(struct State*, int, void**, void*)")
+        def myfunc(st: CData, pos: int, args: CData, v: CData):
+            argv = []
+            for i in range(arity):
+                pin = GCpin(args[i])
+                argv.append(Value(st, args[i], pin))
+            result = Value(st, v)
+            try:
+                res = cb(*argv)
+                result.set(res)
+            except Exception as e:
+                print("Error in callback")
+                print(e)
+                # todo: return nix throw
+                result.set(None)
+                
+        self._func = myfunc
+        self._primop = ffi.gc(lib.nix_alloc_primop(myfunc, arity, cb.__name__.encode(), argnames_ptr, docs), lib.nix_free_primop)
+        
+primops = []
 
 class Value:
     def __init__(
@@ -159,6 +183,7 @@ class Value:
         value_ptr: CData | None = None,
         gcpin: GCpin | None = None,
     ) -> None:
+        # todo: called with value_ptr but not gcpin
         self._gc = GCpin() if gcpin is None else gcpin
         self._state = state_ptr
         if value_ptr is None:
@@ -359,7 +384,9 @@ class Value:
         if isinstance(py_val, Function):
             raise NotImplementedError
         elif isinstance(py_val, Value):
-            raise NotImplementedError
+            lib.nix_copy_value(self._value, py_val._value)
+        elif isinstance(py_val, PrimOp):
+            lib.nix_set_primop(self._value, py_val._primop)
         elif isinstance(py_val, bool):
             lib.nix_set_bool(self._value, py_val)
         elif isinstance(py_val, str):
@@ -388,6 +415,11 @@ class Value:
                 v.set(dv)
                 lib.nix_bindings_builder_insert(bb, k.encode(), v._value)
             lib.nix_make_attrs(self._value, bb)
+        elif callable(py_val):
+            p = PrimOp(py_val)
+            # hack: need to keep primops alive forever
+            primops.append(p)
+            self.set(p)
         else:
             raise TypeError("tried to convert unknown type to nix")
 

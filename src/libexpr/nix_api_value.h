@@ -68,6 +68,7 @@ nix_err nix_make_list(nix_c_context*, State* s, Value* value, unsigned int size)
 nix_err nix_set_list_byidx(nix_c_context*, Value* value, unsigned int ix, Value* elem);
 nix_err nix_make_attrs(nix_c_context*, Value* value, BindingsBuilder* b);
 nix_err nix_set_primop(nix_c_context*, Value* value, PrimOp* op);
+nix_err nix_copy_value(nix_c_context*, Value* value, Value* source);
 
 // owned ref
 BindingsBuilder* nix_make_bindings_builder(nix_c_context*, State* state, size_t capacity);

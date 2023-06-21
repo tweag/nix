@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TypeAlias, TypeVar, Optional, Callable
+from typing import TypeAlias, TypeVar, Optional, Callable, Any
 from typing import Concatenate, ParamSpec
 
 from ._nix_api_util import lib, ffi
@@ -113,22 +113,26 @@ class Settings:
         pass
 
     def __setitem__(self, key: str, value: str) -> None:
-        return ctx().err_check(lib.nix_setting_set, key.encode(), value.encode())
+        with Ctx() as ctx:
+            return ctx.err_check(lib.nix_setting_set, key.encode(), value.encode())
 
     def __getitem__(self, key: str) -> str:
         value = ffi.new("char[1024]")
-        ctx().err_check(lib.nix_setting_get, key.encode(), value, len(value))
+        with Ctx() as ctx:
+            ctx.err_check(lib.nix_setting_get, key.encode(), value, len(value))
         return ffi.string(value).decode()
 
 
-err_context: Optional[Context] = None
-
-
-def ctx() -> Context:
-    global err_context
-    if err_context is None:
-        err_context = Context()
-    return err_context
+class Ctx:
+    err_contexts: list[Context] = []
+    ctx_level: int = 0
+    def __enter__(self) -> Context:
+        self.ctx_level += 1
+        if len(self.err_contexts) < self.ctx_level:
+            self.err_contexts.append(Context())
+        return self.err_contexts[self.ctx_level - 1]
+    def __exit__(self, type: Any, value: Any, traceback: Any) -> None:
+        self.ctx_level -= 1
 
 
 settings = Settings()
@@ -137,4 +141,5 @@ version = ffi.string(lib.nix_version_get()).decode()
 
 
 def nix_util_init() -> None:
-    ctx().err_check(lib.nix_libutil_init)
+    with Ctx() as ctx:
+        ctx.err_check(lib.nix_libutil_init)
