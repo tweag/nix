@@ -1,8 +1,6 @@
 from __future__ import annotations
 
-import builtins
 import collections.abc
-import types
 import typing
 from collections.abc import Callable, Iterator
 from typing import Any, TypeAlias, Union
@@ -11,6 +9,7 @@ from .util import settings, NixAPIError
 from .store import Store
 from ._nix_api_expr import ffi, lib as lib_unwrapped
 from .wrap import LibWrap
+import enum
 
 lib = LibWrap(lib_unwrapped)
 
@@ -89,6 +88,33 @@ DeepEvaluated = Union[
 ]
 
 
+class Type(enum.Enum):
+    thunk = lib.NIX_TYPE_THUNK
+    int = lib.NIX_TYPE_INT
+    float = lib.NIX_TYPE_FLOAT
+    bool = lib.NIX_TYPE_BOOL
+    string = lib.NIX_TYPE_STRING
+    path = lib.NIX_TYPE_PATH
+    null = lib.NIX_TYPE_NULL
+    attrs = lib.NIX_TYPE_ATTRS
+    list = lib.NIX_TYPE_LIST
+    function = lib.NIX_TYPE_FUNCTION
+    external = lib.NIX_TYPE_EXTERNAL
+
+
+evaluated_types = {
+    Type.int,
+    Type.float,
+    Type.bool,
+    Type.string,
+    Type.path,
+    Type.null,
+    Type.attrs,
+    Type.list,
+    Type.function,
+}
+
+
 class Function:
     def __init__(self, val: Value) -> None:
         self.value = val
@@ -111,11 +137,16 @@ class Function:
         return res
 
 
-class X:
-    Function = Function
-
-
 T = typing.TypeVar("T")
+
+
+class Returns(typing.Generic[T]):
+    if not typing.TYPE_CHECKING:
+
+        def __class_getitem__(cls, item: object) -> object:
+            """Called when Returns is used as an Annotation at runtime.
+            We just return the type we're given"""
+            return item
 
 
 class Value:
@@ -132,35 +163,8 @@ class Value:
         else:
             self._value = value_ptr
 
-    def _get_type(self) -> int:
-        return int(lib.nix_get_type(self._value))
-
-    def get_type(self) -> type:
-        match self._get_type():
-            case lib.NIX_TYPE_THUNK:
-                return Value  # todo?
-            case lib.NIX_TYPE_INT:
-                return int
-            case lib.NIX_TYPE_FLOAT:
-                return float
-            case lib.NIX_TYPE_BOOL:
-                return bool
-            case lib.NIX_TYPE_STRING:
-                return str
-            case lib.NIX_TYPE_PATH:
-                return str  # todo
-            case lib.NIX_TYPE_NULL:
-                return types.NoneType
-            case lib.NIX_TYPE_ATTRS:
-                return dict
-            case lib.NIX_TYPE_LIST:
-                return list
-            case lib.NIX_TYPE_FUNCTION:
-                return Function
-            case lib.NIX_TYPE_EXTERNAL:
-                raise NotImplementedError
-            case _:
-                raise RuntimeError("invalid type from nix_get_type")
+    def get_type(self) -> Type:
+        return Type(lib.nix_get_type(self._value))
 
     def _force(self, deep: bool = False) -> None:
         if deep:
@@ -169,29 +173,25 @@ class Value:
             lib.nix_value_force(self._state, self._value)
 
     def __repr__(self) -> str:
-        t = self._get_type()
-        if (
-            t == lib.NIX_TYPE_ATTRS
-            and "type" in self
-            and self["type"].force() == "derivation"
-        ):
+        t = self.get_type()
+        if t == Type.attrs and "type" in self and self["type"].force() == "derivation":
             return "<Nix derivation {}>".format(self["drvPath"].force())
-        elif t not in [lib.NIX_TYPE_THUNK, lib.NIX_TYPE_FUNCTION, lib.NIX_TYPE_ATTRS]:
+        elif t not in {Type.thunk, Type.function, Type.attrs}:
             return f"<Nix: {self.force()}>"
         else:
             return f"<Nix Value ({self.get_typename()})>"
 
     def _to_python(self, deep: bool = False) -> Evaluated:
         match self.get_type():
-            case builtins.int:
+            case Type.int:
                 return int(lib.nix_get_int(self._value))
-            case builtins.float:
+            case Type.float:
                 return float(lib.nix_get_double(self._value))
-            case builtins.bool:
+            case Type.bool:
                 return bool(lib.nix_get_bool(self._value))
-            case builtins.str:
+            case Type.string:
                 return ffi.string(lib.nix_get_string(self._value)).decode()
-            case builtins.dict:
+            case Type.attrs:
                 res_dict: dict[str, Value | DeepEvaluated] = {}
                 if deep:
                     self.get_attr_iterate(
@@ -200,29 +200,30 @@ class Value:
                 else:
                     self.get_attr_iterate(lambda k, v: res_dict.__setitem__(k, v))
                 return res_dict
-            case builtins.list:
+            case Type.list:
                 res_list: list[Value] = list(self)
                 if deep:
                     # todo don't need another force call
                     return [x._to_python(deep=True) for x in res_list]
                 return res_list
-            case X.Function:
+            case Type.function:
                 return Function(self)
             case _:
                 raise NotImplementedError
 
     # https://github.com/python/mypy/issues/9773
-    def force(self, typeCheck: Any = Evaluated, deep: bool = False) -> typing.Any:
+    def force(self, typeCheck: Any = Evaluated, deep: bool = False) -> Evaluated:
         self.force_type(typeCheck, deep=deep)
         return self._to_python(deep)
 
-    def force_type(self, typeCheck: Any = Evaluated, deep: bool = False) -> type[Any]:
-        if isinstance(typeCheck, types.FunctionType):
-            typeCheck = typeCheck()
-
+    def force_type(
+        self, typeCheck: set[Type] | Type = evaluated_types, deep: bool = False
+    ) -> Type:
         self._force(deep=deep)
         tp = self.get_type()
-        if not issubclass(tp, typeCheck):
+        if not isinstance(typeCheck, set):
+            typeCheck = {typeCheck}
+        if tp not in typeCheck:
             raise TypeError(
                 f"nix value is {self.get_typename()} while {str(typeCheck)} was expected"
             )
@@ -253,58 +254,66 @@ class Value:
             iter_func(name, Value(self._state, val, pin))
 
     def __iter__(self) -> typing.Any:
-        match self.force_type(dict | list):
-            case builtins.list:
+        match self.force_type({Type.attrs, Type.list}):
+            case Type.list:
                 return collections.abc.Sequence.__iter__(
                     typing.cast(collections.abc.Sequence[Value], self)
                 )
-            case builtins.dict:
-                return iter(self.force())
+            case Type.attrs:
+                return iter(typing.cast(dict[str, Evaluated], self.force()))
 
     def __int__(self) -> int:
-        return int(self.force(int | float | str))
+        return int(
+            typing.cast(
+                int | float | str, self.force({Type.int, Type.float, Type.string})
+            )
+        )
 
     def __str__(self) -> str:
-        return str(self.force(float | int | str | None))
+        return str(self.force({Type.float, Type.int, Type.string, Type.null}))
 
     def __float__(self) -> float:
-        return float(self.force(float | int | str))
+        return float(
+            typing.cast(
+                int | float | str, self.force({Type.int, Type.float, Type.string})
+            )
+        )
 
     def __bool__(self) -> bool:
         match self.force_type():
-            case builtins.dict | builtins.list:
+            case Type.attrs | Type.list:
                 return bool(len(self))
             case _:
                 return bool(self._to_python())
 
     def __len__(self) -> int:
-        match self.force_type(dict | list):
-            case builtins.dict:
+        match self.force_type({Type.attrs, Type.list}):
+            case Type.attrs:
                 return int(lib.nix_get_attrs_size(self._value))
-            case builtins.list:
+            case Type.list:
                 return int(lib.nix_get_list_size(self._value))
             case _:
                 raise RuntimeError
 
     def __contains__(self, i: int | str) -> bool:
-        match self.force_type(dict | list):
-            case builtins.dict:
+        match self.force_type({Type.attrs, Type.list}):
+            case Type.attrs:
                 assert type(i) == str
                 return bool(
                     lib.nix_has_attr_byname(self._value, self._state, i.encode())
                 )
-            case builtins.list:
+            case Type.list:
                 return i in list(self)
             case _:
                 raise RuntimeError
 
     def __getitem__(self, i: int | str) -> Value:
-        match self.force_type(dict | list):
-            case builtins.dict:
+        match self.force_type({Type.attrs, Type.list}):
+            case Type.attrs:
                 if not isinstance(i, str):
                     raise TypeError("key should be a string")
                 return self.get_attr_byname(i)
-            case builtins.list:
+            case Type.list:
                 if not isinstance(i, int):
                     raise TypeError("key should be a integer")
                 if i >= len(self):
@@ -314,17 +323,28 @@ class Value:
                 raise RuntimeError
 
     def keys(self) -> Iterator[str]:
-        self.force_type(dict)
+        self.force_type(Type.attrs)
         return iter(self)
 
     def build(self, store: Store) -> dict[str, str]:
-        self.force_type(dict)
+        self.force_type(Type.attrs)
         if "type" in self and self["type"].force() == "derivation":
             return store.build(str(self["drvPath"]))
         raise TypeError("nix value is not a derivation")
 
-    def __call__(self, x: Value | Evaluated) -> Value:
-        return typing.cast(Function, self.force(Function))(x)
+    def __call__(self, arg: Value | Evaluated) -> Value:
+        if not isinstance(arg, Value):
+            arg2 = Value(self._state)
+            arg2.set(arg)
+            arg = arg2
+        res = Value(self._state)
+        lib.nix_value_call(
+            self._state,
+            self._value,
+            arg._value,
+            res._value,
+        )
+        return res
 
     def set(self, py_val: Value | DeepEvaluated) -> None:
         if isinstance(py_val, Function):

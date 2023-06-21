@@ -4,9 +4,9 @@ import typing
 import re
 
 from collections.abc import Callable
-from typing import Any
+from typing import Any, Concatenate
 
-from .util import ctx
+from .util import ctx, CData
 
 if typing.TYPE_CHECKING:
     from ._nix_api_types import Lib
@@ -15,9 +15,13 @@ if typing.TYPE_CHECKING:
 P = typing.ParamSpec("P")
 
 
-# todo: type this better
-def wrap_ffi(f: Callable[..., Any] | int) -> Callable[P, Any] | int:
-    """Wrap an ffi.lib object for nix error checking"""
+def wrap_ffi(
+    f: Callable[Concatenate[CData, P], Any]
+    | Callable[Concatenate[CData, CData, P], Any]
+    | Callable[P, Any]
+    | int
+) -> Callable[P, Any] | int:
+    """Wrap an ffi.lib member for nix error checking"""
     if isinstance(f, int):
         return f
 
@@ -31,31 +35,36 @@ def wrap_ffi(f: Callable[..., Any] | int) -> Callable[P, Any] | int:
     tp = mtch[0].strip()
     args = argstr[:-2].split(", ")
     if tp == "void":
-        return f
+        return typing.cast(Callable[P, Any], f)
     if "*" in tp:
+        # f is void* something(nix_context*, ...)
+        g = typing.cast(Callable[Concatenate[CData, P], Any], f)
 
         def wrap_null(*args: P.args, **kwargs: P.kwargs) -> Any:
-            assert not isinstance(f, int)
-            return ctx().null_check(f, *args, **kwargs)
+            return ctx().null_check(g, *args, **kwargs)
 
         return wrap_null
     elif tp != "int" and args[1] == "int *":
+        # f is foo something(nix_context*, nix_err *res, ...)
+        h = typing.cast(Callable[Concatenate[CData, CData, P], Any], f)
 
         def wrap_res(*args: P.args, **kwargs: P.kwargs) -> Any:
-            assert not isinstance(f, int)
-            return ctx().res_check(f, *args, **kwargs)
+            return ctx().res_check(h, *args, **kwargs)
 
         return wrap_res
     else:
+        # f is nix_err something(nix_context*, ...)
+        i = typing.cast(Callable[Concatenate[CData, P], Any], f)
 
         def wrap_err(*args: P.args, **kwargs: P.kwargs) -> None:
-            assert not isinstance(f, int)
-            ctx().err_check(f, *args, **kwargs)
+            ctx().err_check(i, *args, **kwargs)
 
         return wrap_err
 
 
 class LibWrap:
+    """Wrap an ffi.lib for nix error checking"""
+
     def __init__(self, thing: Lib):
         self._thing = thing
 
