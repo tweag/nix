@@ -286,6 +286,7 @@ public:
     }
 
     void mkPath(const SourcePath & path);
+    void mkPath(std::string_view path);
 
     inline void mkPath(const char * path)
     {

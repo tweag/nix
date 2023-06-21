@@ -80,6 +80,14 @@ const char* nix_get_string(nix_c_context* context, const Value* value) {
     } NIXC_CATCH_ERRS_NULL
 }
 
+const char* nix_get_path_string(nix_c_context* context, const Value* value) {
+    try {
+        auto& v = check_value_not_null(value);
+        assert(v.type() == nix::nPath);
+        return v._path;
+    } NIXC_CATCH_ERRS_NULL
+}
+
 unsigned int nix_get_list_size(nix_c_context* context, nix_err* res, const Value* value) {
     if (res) *res = NIX_OK;
     try {
@@ -173,6 +181,14 @@ nix_err nix_set_string(nix_c_context* context, Value* value, const char* str) {
     try {
         auto& v = check_value_not_null(value);
         v.mkString(std::string_view(str));
+    } NIXC_CATCH_ERRS
+}
+
+
+nix_err nix_set_path_string(nix_c_context* context, Value* value, const char* str) {
+    try {
+        auto& v = check_value_not_null(value);
+        v.mkPath(std::string_view(str));
     } NIXC_CATCH_ERRS
 }
 

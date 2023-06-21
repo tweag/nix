@@ -4,12 +4,13 @@ import collections.abc
 import typing
 from collections.abc import Callable, Iterator
 from typing import Any, TypeAlias, Union
+import enum
+from pathlib import PurePath
 
 from .util import settings, NixAPIError
 from .store import Store
 from ._nix_api_expr import ffi, lib as lib_unwrapped
 from .wrap import LibWrap
-import enum
 
 lib = LibWrap(lib_unwrapped)
 
@@ -74,6 +75,7 @@ Evaluated: TypeAlias = Union[
     None,
     dict,
     list,
+    PurePath,
     "Function",  # | String
 ]
 DeepEvaluated = Union[
@@ -83,6 +85,7 @@ DeepEvaluated = Union[
     None,
     dict[str, "DeepEvaluated"],
     list["DeepEvaluated"],
+    PurePath,
     "Function",
     # string
 ]
@@ -208,11 +211,15 @@ class Value:
                 return res_list
             case Type.function:
                 return Function(self)
+            case Type.path:
+                return PurePath(
+                    ffi.string(lib.nix_get_path_string(self._value)).decode()
+                )
             case _:
                 raise NotImplementedError
 
     # https://github.com/python/mypy/issues/9773
-    def force(self, typeCheck: Any = Evaluated, deep: bool = False) -> Evaluated:
+    def force(self, typeCheck: Any = evaluated_types, deep: bool = False) -> Evaluated:
         self.force_type(typeCheck, deep=deep)
         return self._to_python(deep)
 
@@ -270,7 +277,9 @@ class Value:
         )
 
     def __str__(self) -> str:
-        return str(self.force({Type.float, Type.int, Type.string, Type.null}))
+        return str(
+            self.force({Type.float, Type.int, Type.string, Type.path, Type.null})
+        )
 
     def __float__(self) -> float:
         return float(
@@ -359,6 +368,8 @@ class Value:
             lib.nix_set_double(self._value, py_val)
         elif isinstance(py_val, int):
             lib.nix_set_int(self._value, py_val)
+        elif isinstance(py_val, PurePath):
+            lib.nix_set_path_string(self._value, str(py_val).encode())
         elif py_val is None:
             lib.nix_set_null(self._value)
         elif isinstance(py_val, list):

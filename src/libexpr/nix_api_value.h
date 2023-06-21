@@ -39,6 +39,7 @@ const char* nix_get_typename(nix_c_context*, const Value* value);
 
 bool nix_get_bool(nix_c_context*, nix_err*, const Value* value);
 const char* nix_get_string(nix_c_context*, const Value* value);
+const char* nix_get_path_string(nix_c_context*, const Value* value);
 unsigned int nix_get_list_size(nix_c_context*, nix_err*, const Value* value);
 unsigned int nix_get_attrs_size(nix_c_context*, nix_err*, const Value* value);
 double nix_get_double(nix_c_context*, nix_err*, const Value* value);
@@ -53,6 +54,7 @@ Value* nix_get_attr_byidx(nix_c_context*, const Value* value, State* state, unsi
 
 nix_err nix_set_bool(nix_c_context*, Value* value, bool b);
 nix_err nix_set_string(nix_c_context*, Value* value, const char* str);
+nix_err nix_set_path_string(nix_c_context*, Value* value, const char* str);
 nix_err nix_set_double(nix_c_context*, Value* value, double d);
 nix_err nix_set_int(nix_c_context*, Value* value, int64_t i);
 nix_err nix_set_null(nix_c_context*, Value* value);
