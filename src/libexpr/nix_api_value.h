@@ -30,6 +30,12 @@ typedef void Value;
 typedef void BindingsBuilder;
 typedef struct State State;
 typedef struct GCRef GCRef;
+typedef struct PrimOp PrimOp;
+
+typedef void (* PrimOpFun) (State*, int pos, Value ** args, Value* v);
+
+PrimOp* nix_alloc_primop(nix_c_context*, PrimOpFun fun, int arity, const char* name, const char** args, const char* doc);
+void nix_free_primop(PrimOp*);
 
 // Function prototypes
 
@@ -61,6 +67,7 @@ nix_err nix_set_null(nix_c_context*, Value* value);
 nix_err nix_make_list(nix_c_context*, State* s, Value* value, unsigned int size);
 nix_err nix_set_list_byidx(nix_c_context*, Value* value, unsigned int ix, Value* elem);
 nix_err nix_make_attrs(nix_c_context*, Value* value, BindingsBuilder* b);
+nix_err nix_set_primop(nix_c_context*, Value* value, PrimOp* op);
 
 // owned ref
 BindingsBuilder* nix_make_bindings_builder(nix_c_context*, State* state, size_t capacity);

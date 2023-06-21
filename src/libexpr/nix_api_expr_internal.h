@@ -10,7 +10,6 @@ struct State {
     nix::EvalState state;
 };
 
-// todo nix_api_expr_internal
 struct GCRef {
     void* ptr;
 };

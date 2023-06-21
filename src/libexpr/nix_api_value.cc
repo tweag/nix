@@ -23,6 +23,21 @@ static nix::Value& check_value_not_null(Value* value) {
         throw std::runtime_error("Value is null");
     }
     return *((nix::Value*)value);
+
+}
+
+PrimOp* nix_alloc_primop(nix_c_context* context, PrimOpFun fun, int arity, const char* name, const char** args, const char* doc) {
+    try {
+        auto fun2 = (nix::PrimOpFun)fun;
+        auto p = new nix::PrimOp{fun2, (size_t)arity, name, {}, doc};
+        if (args) for (size_t i = 0; args[i]; i++)
+                      p->args.emplace_back(*args);
+        return (PrimOp*)p;
+    } NIXC_CATCH_ERRS_NULL
+}
+
+void nix_free_primop(PrimOp* op) {
+    delete (nix::PrimOp*)op;
 }
 
 Value* nix_alloc_value(nix_c_context* context, State* state, GCRef* ref) {
@@ -226,6 +241,13 @@ nix_err nix_set_list_byidx(nix_c_context* context, Value* value, unsigned int ix
         auto& v = check_value_not_null(value);
         auto& e = check_value_not_null(elem);
         v.listElems()[ix] = &e;
+    } NIXC_CATCH_ERRS
+}
+
+nix_err nix_set_primop(nix_c_context* context, Value* value, PrimOp* p) {
+    try {
+        auto& v = check_value_not_null(value);
+        v.mkPrimOp((nix::PrimOp*)p);
     } NIXC_CATCH_ERRS
 }
 
