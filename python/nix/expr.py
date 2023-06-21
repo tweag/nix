@@ -3,11 +3,10 @@ from __future__ import annotations
 import collections.abc
 import typing
 from collections.abc import Callable, Iterator
-from typing import Any, TypeAlias, Union
+from typing import Any, TypeAlias, Union, Optional
 import enum
 import inspect
 from pathlib import PurePath
-import sys
 
 from .util import settings, NixAPIError
 from .store import Store
@@ -21,7 +20,9 @@ CData: TypeAlias = ffi.CData
 
 # todo: estimate size for ffi.gc calls
 class GCpin:
-    def __init__(self, ptr: ffi.CData = ffi.NULL) -> None:
+    def __init__(self, ptr: Optional[ffi.CData] = None) -> None:
+        if ptr is None:
+            ptr = ffi.NULL
         self.ref = ffi.gc(lib.nix_gc_ref(ptr), lib.nix_gc_free)
 
 
@@ -144,15 +145,32 @@ class Function:
 
 T = typing.TypeVar("T")
 
+# keep these alive for the python gc
+gc_refs: dict[CData, ReferenceGC] = {}
+
+
+@ffi.def_extern()
+def py_nix_finalizer(obj: CData, client_data: CData) -> None:
+    del gc_refs[obj]
+
+
+class ReferenceGC:
+    def __init__(self, obj: CData):
+        gc_refs[obj] = self
+        lib_unwrapped.nix_gc_register_finalizer(
+            obj, ffi.NULL, lib_unwrapped.py_nix_finalizer
+        )
+
+
 # all primops use this code. first argument is secretly the primop handle
 @ffi.def_extern()
 def py_nix_primop_base(st: CData, pos: int, args: CData, v: CData) -> None:
-    op = ffi.from_handle(ffi.cast('void*', int(Value(st, args[0]))))
+    op = ffi.from_handle(ffi.cast("void*", int(Value(st, args[0]))))
     assert type(op) is PrimOp
     argv = []
     for i in range(op.arity):
-        pin = GCpin(args[i+1])
-        argv.append(Value(st, args[i+1], pin))
+        pin = GCpin(args[i + 1])
+        argv.append(Value(st, args[i + 1], pin))
     result = Value(st, v)
     try:
         res = op.func(*argv)
@@ -164,14 +182,16 @@ def py_nix_primop_base(st: CData, pos: int, args: CData, v: CData) -> None:
         result.set(None)
 
 
-# todo: you need to keep this alive forever until I implement gc
-class PrimOp:
+class PrimOp(ReferenceGC):
     func: Callable[..., Evaluated | Value]
     arity: int
     _docs: CData
     _primop: CData
     handle: CData
-    def __init__(self, cb: Callable[..., Evaluated | Value]) -> None:
+
+    def __init__(self, cb: Callable[..., Evaluated | Value], pin: GCpin) -> None:
+        ffi.init_once(lib.nix_libexpr_init, "init_libexpr")
+
         args, varargs, varkw, defaults = inspect.getargspec(cb)
         if varargs is not None or varkw is not None or defaults is not None:
             raise TypeError("only simple methods can be primops now")
@@ -182,14 +202,25 @@ class PrimOp:
 
         argnames_ptr = ffi.new("char*[]", argnames_c)
 
-        self._docs = ffi.new("char[]", cb.__doc__.encode()) if cb.__doc__ is not None else ffi.NULL
+        self._docs = (
+            ffi.new("char[]", cb.__doc__.encode())
+            if cb.__doc__ is not None
+            else ffi.NULL
+        )
 
         self.func = cb
         self.arity = arity
-        self._primop = ffi.gc(lib.nix_alloc_primop(lib_unwrapped.py_nix_primop_base, arity + 1, cb.__name__.encode(), argnames_ptr, self._docs), lib.nix_free_primop)
+        self._primop = lib.nix_alloc_primop(
+            lib_unwrapped.py_nix_primop_base,
+            arity + 1,
+            cb.__name__.encode(),
+            argnames_ptr,
+            self._docs,
+            pin.ref,
+        )
         self.handle = ffi.new_handle(self)
-        
-primops: list[PrimOp] = []
+        super().__init__(self._primop)
+
 
 class Value:
     def __init__(
@@ -198,8 +229,7 @@ class Value:
         value_ptr: CData | None = None,
         gcpin: GCpin | None = None,
     ) -> None:
-        # todo: called with value_ptr but not gcpin
-        self._gc = GCpin() if gcpin is None else gcpin
+        self._gc = GCpin(value_ptr) if gcpin is None else gcpin
         self._state = state_ptr
         if value_ptr is None:
             self._value = lib.nix_alloc_value(state_ptr, self._gc.ref)
@@ -429,10 +459,9 @@ class Value:
                 lib.nix_bindings_builder_insert(bb, k.encode(), v._value)
             lib.nix_make_attrs(self._value, bb)
         elif callable(py_val):
+            pin = GCpin()
             # primops will give us a dispatcher, need to call it
-            p = PrimOp(py_val)
-            # hack: need to keep primops alive forever
-            primops.append(p)
+            p = PrimOp(py_val, pin)
             lib.nix_set_primop(self._value, p._primop)
             # now call this thing, replace self
             arg = Value(self._state)

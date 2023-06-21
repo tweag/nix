@@ -1,4 +1,5 @@
 #include "eval.hh"
+#include "gc/gc.h"
 #include "globals.hh"
 #include "config.hh"
 #include "value.hh"
@@ -9,6 +10,11 @@
 #include "nix_api_value.h"
 #include "nix_api_util_internal.h"
 #include "nix_api_expr_internal.h"
+
+#ifdef HAVE_BOEHMGC
+#define GC_INCLUDE_NEW 1
+#include "gc_cpp.h"
+#endif
 
 // Helper function to throw an exception if value is null
 static const nix::Value& check_value_not_null(const Value* value) {
@@ -26,18 +32,25 @@ static nix::Value& check_value_not_null(Value* value) {
 
 }
 
-PrimOp* nix_alloc_primop(nix_c_context* context, PrimOpFun fun, int arity, const char* name, const char** args, const char* doc) {
+PrimOp* nix_alloc_primop(nix_c_context* context, PrimOpFun fun, int arity, const char* name, const char** args, const char* doc, GCRef* ref) {
     try {
         auto fun2 = (nix::PrimOpFun)fun;
-        auto p = new nix::PrimOp{fun2, (size_t)arity, name, {}, doc};
+        auto p = new
+#ifdef HAVE_BOEHMGC
+            (GC)
+#endif
+            nix::PrimOp{fun2, (size_t)arity, name, {}, doc};
         if (args) for (size_t i = 0; args[i]; i++)
                       p->args.emplace_back(*args);
+        if (ref) ref->ptr = p;
         return (PrimOp*)p;
     } NIXC_CATCH_ERRS_NULL
 }
 
-void nix_free_primop(PrimOp* op) {
-    delete (nix::PrimOp*)op;
+void nix_gc_register_finalizer(void* obj, void* cd, void (*finalizer)(void* obj, void* cd)) {
+#ifdef HAVE_BOEHMGC
+    GC_REGISTER_FINALIZER(obj, finalizer, cd, 0, 0);
+#endif
 }
 
 Value* nix_alloc_value(nix_c_context* context, State* state, GCRef* ref) {

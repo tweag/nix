@@ -126,11 +126,13 @@ class Settings:
 class Ctx:
     err_contexts: list[Context] = []
     ctx_level: int = 0
+
     def __enter__(self) -> Context:
         self.ctx_level += 1
         if len(self.err_contexts) < self.ctx_level:
             self.err_contexts.append(Context())
         return self.err_contexts[self.ctx_level - 1]
+
     def __exit__(self, type: Any, value: Any, traceback: Any) -> None:
         self.ctx_level -= 1
 

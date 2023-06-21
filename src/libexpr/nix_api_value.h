@@ -34,8 +34,8 @@ typedef struct PrimOp PrimOp;
 
 typedef void (* PrimOpFun) (State*, int pos, Value ** args, Value* v);
 
-PrimOp* nix_alloc_primop(nix_c_context*, PrimOpFun fun, int arity, const char* name, const char** args, const char* doc);
-void nix_free_primop(PrimOp*);
+PrimOp* nix_alloc_primop(nix_c_context*, PrimOpFun fun, int arity, const char* name, const char** args, const char* doc, GCRef* ref);
+void nix_gc_register_finalizer(void* obj, void* cd, void (*finalizer)(void* obj, void* cd));
 
 // Function prototypes
 
