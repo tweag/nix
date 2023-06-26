@@ -12,23 +12,26 @@ nix_tests = \
   flakes/build-paths.sh \
   ca/gc.sh \
   gc.sh \
-  gc-external-daemon.sh \
+  gc-external-daemon/gc.sh \
   remote-store.sh \
   lang.sh \
   fetchMercurial.sh \
   gc-auto.sh \
+  gc-external-daemon/gc-auto.sh \
   user-envs.sh \
   binary-cache.sh \
   multiple-outputs.sh \
   ca/build.sh \
   nix-build.sh \
   gc-concurrent.sh \
+  gc-external-daemon/gc-concurrent.sh \
   repair.sh \
   fixed.sh \
   export-graph.sh \
   timeout.sh \
   fetchGitRefs.sh \
   gc-runtime.sh \
+  gc-external-daemon/gc-runtime.sh \
   tarball.sh \
   fetchGit.sh \
   fetchurl.sh \
