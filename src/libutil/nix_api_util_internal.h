@@ -7,6 +7,12 @@ namespace nix {
   class Error;
 };
 
+struct nix_c_context {
+    nix_err last_err_code = NIX_OK;
+    std::optional<std::string> last_err = {};
+    std::optional<nix::ErrorInfo> info = {};
+    std::string name = "";
+};
 
 nix_err nix_context_error(nix_c_context* context);
 /**
@@ -35,8 +41,7 @@ nix_err nix_export_std_string(nix_c_context* context, const std::string_view str
 
 
 #define NIXC_CATCH_ERRS_RES(def) catch (...) {     \
-        nix_err res2 = nix_context_error(context); \
-        if (res) *res = res2;                      \
+        nix_context_error(context);                \
         return def;                                \
     }
 

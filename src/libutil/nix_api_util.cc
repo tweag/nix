@@ -7,12 +7,6 @@
 #include <typeinfo>
 #include <cxxabi.h>
 
-struct nix_c_context {
-    std::optional<std::string> last_err = {};
-    std::optional<nix::ErrorInfo> info = {};
-    std::string name = "";
-    nix_err last_err_code = NIX_OK;
-};
 
 nix_c_context* nix_c_context_create() {
     return new nix_c_context();
@@ -66,6 +60,7 @@ const char* nix_version_get() {
 
 // Implementations
 nix_err nix_setting_get(nix_c_context* context, const char* key, char* value, int n) {
+    if (context) context->last_err_code = NIX_OK;
     try {
         std::map<std::string, nix::AbstractConfig::SettingInfo> settings;
         nix::globalConfig.getSettings(settings);
@@ -78,6 +73,7 @@ nix_err nix_setting_get(nix_c_context* context, const char* key, char* value, in
 }
 
 nix_err nix_setting_set(nix_c_context* context, const char* key, const char* value) {
+    if (context) context->last_err_code = NIX_OK;
     if (nix::globalConfig.set(key, value))
         return NIX_OK;
     else {
@@ -86,38 +82,45 @@ nix_err nix_setting_set(nix_c_context* context, const char* key, const char* val
 }
 
 nix_err nix_libutil_init(nix_c_context* context) {
+    if (context) context->last_err_code = NIX_OK;
     try {
         nix::initLibUtil();
         return NIX_OK;
     } NIXC_CATCH_ERRS
 }
 
-const char* nix_err_msg(nix_c_context* context, unsigned int* n) {
-    if (context->last_err) {
-        if (n) *n = context->last_err->size();
-        return context->last_err->c_str();
+const char* nix_err_msg(nix_c_context* context, const nix_c_context* read_context, unsigned int* n) {
+    if (context) context->last_err_code = NIX_OK;
+    if (read_context->last_err) {
+        if (n) *n = read_context->last_err->size();
+        return read_context->last_err->c_str();
     }
+    nix_set_err_msg(context, NIX_ERR_UNKNOWN, "No error message");
     return nullptr;
 }
 
-nix_err nix_err_name(nix_c_context* context, char* value, int n) {
-    if (context->last_err_code != NIX_ERR_NIX_ERROR) {
+nix_err nix_err_name(nix_c_context* context, const nix_c_context* read_context, char* value, int n) {
+    if (context) context->last_err_code = NIX_OK;
+    if (read_context->last_err_code != NIX_ERR_NIX_ERROR) {
         return nix_set_err_msg(context, NIX_ERR_UNKNOWN, "Last error was not a nix error");
     }
-    return nix_export_std_string(context, context->name, value, n);
+    return nix_export_std_string(context, read_context->name, value, n);
 }
 
-nix_err nix_err_info_msg(nix_c_context* context, char* value, int n) {
-    if (context->last_err_code != NIX_ERR_NIX_ERROR) {
+nix_err nix_err_info_msg(nix_c_context* context, const nix_c_context* read_context, char* value, int n) {
+    if (context) context->last_err_code = NIX_OK;
+    if (read_context->last_err_code != NIX_ERR_NIX_ERROR) {
         return nix_set_err_msg(context, NIX_ERR_UNKNOWN, "Last error was not a nix error");
     }
-    return nix_export_std_string(context, context->info->msg.str(), value, n);
+    return nix_export_std_string(context, read_context->info->msg.str(), value, n);
 }
 
-nix_err nix_err_code(nix_c_context* context) {
-    return context->last_err_code;
+nix_err nix_err_code(nix_c_context* context, const nix_c_context* read_context) {
+    if (context) context->last_err_code = NIX_OK;
+    return read_context->last_err_code;
 }
 
+// internal
 nix_err nix_export_std_string(nix_c_context* context, const std::string_view str, char* dest, unsigned int n) {
     size_t i = str.copy(dest, n-1);
     dest[i] = 0;

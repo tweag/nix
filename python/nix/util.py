@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import typing
 from typing import TypeAlias, TypeVar, Optional, Callable, Any
 from typing import Concatenate, ParamSpec
 
@@ -16,37 +17,35 @@ class Context:
         self._ctx = ffi.gc(lib.nix_c_context_create(), lib.nix_c_context_free)
 
     def nix_err_msg(self) -> str:
-        msg = lib.nix_err_msg(self._ctx, ffi.NULL)
+        with Ctx() as ctx:
+            msg = ctx.check(lib.nix_err_msg, self._ctx, ffi.NULL)
         return ffi.string(msg).decode("utf-8", errors="replace")
+
+    def nix_err_code(self) -> int:
+        """ read error code directly """
+        return typing.cast(int, ffi.cast("nix_err*", self._ctx)[0])
 
     def nix_err_name(self) -> str:
         value = ffi.new("char[128]")
-        lib.nix_err_name(self._ctx, value, len(value))
+        with Ctx() as ctx:
+            ctx.check(lib.nix_err_name, self._ctx, value, len(value))
         return ffi.string(value).decode("utf-8", errors="replace")
 
     def nix_err_info_msg(self) -> str:
         value = ffi.new("char[1024]")
-        self._err_check(lib.nix_err_info_msg(self._ctx, value, len(value)))
+        with Ctx() as ctx:
+            ctx.check(lib.nix_err_info_msg, self._ctx, value, len(value))
         return ffi.string(value).decode()
 
-    def res_check(
+    def check(
         self,
-        fn: Callable[Concatenate[ffi.CData, ffi.CData, P], R],
+        fn: Callable[Concatenate[ffi.CData, P], R],
         *rest: P.args,
         **kwrest: P.kwargs,
     ) -> R:
-        return_code = ffi.new("nix_err*")
-        res = fn(self._ctx, return_code, *rest, **kwrest)
-        self._err_check(return_code[0])
+        res = fn(self._ctx, *rest, **kwrest)
+        self._err_check(self.nix_err_code())
         return res
-
-    def err_check(
-        self,
-        fn: Callable[Concatenate[ffi.CData, P], int],
-        *rest: P.args,
-        **kwrest: P.kwargs,
-    ) -> None:
-        return self._err_check(fn(self._ctx, *rest, **kwrest))
 
     def _err_check(self, err_code: int) -> None:
         match err_code:
@@ -63,25 +62,10 @@ class Context:
                 raise err
             case lib.NIX_ERR_KEY:
                 raise KeyError(self.nix_err_msg())
-            case _:
+            case lib.NIX_ERR_UNKNOWN:
                 raise NixAPIError(self.nix_err_msg())
-
-    def null_check(
-        self,
-        fn: Callable[Concatenate[ffi.CData, P], ffi.CData],
-        *rest: P.args,
-        **kwrest: P.kwargs,
-    ) -> ffi.CData:
-        return self._null_check(fn(self._ctx, *rest, **kwrest))
-
-    def err_code(self) -> int:
-        res: int = lib.nix_err_code(self._ctx)
-        return res
-
-    def _null_check(self, obj: ffi.CData) -> ffi.CData:
-        if not obj:
-            self._err_check(self.err_code())
-        return obj
+            case _:
+                raise RuntimeError(self.nix_err_msg())
 
 
 class NixAPIError(Exception):
@@ -114,12 +98,12 @@ class Settings:
 
     def __setitem__(self, key: str, value: str) -> None:
         with Ctx() as ctx:
-            return ctx.err_check(lib.nix_setting_set, key.encode(), value.encode())
+            ctx.check(lib.nix_setting_set, key.encode(), value.encode())
 
     def __getitem__(self, key: str) -> str:
         value = ffi.new("char[1024]")
         with Ctx() as ctx:
-            ctx.err_check(lib.nix_setting_get, key.encode(), value, len(value))
+            ctx.check(lib.nix_setting_get, key.encode(), value, len(value))
         return ffi.string(value).decode()
 
 
@@ -128,13 +112,13 @@ class Ctx:
     ctx_level: int = 0
 
     def __enter__(self) -> Context:
-        self.ctx_level += 1
-        if len(self.err_contexts) < self.ctx_level:
-            self.err_contexts.append(Context())
-        return self.err_contexts[self.ctx_level - 1]
+        Ctx.ctx_level += 1
+        if len(Ctx.err_contexts) < Ctx.ctx_level:
+            Ctx.err_contexts.append(Context())
+        return Ctx.err_contexts[Ctx.ctx_level - 1]
 
     def __exit__(self, type: Any, value: Any, traceback: Any) -> None:
-        self.ctx_level -= 1
+        Ctx.ctx_level -= 1
 
 
 settings = Settings()
@@ -144,4 +128,4 @@ version = ffi.string(lib.nix_version_get()).decode()
 
 def nix_util_init() -> None:
     with Ctx() as ctx:
-        ctx.err_check(lib.nix_libutil_init)
+        ctx.check(lib.nix_libutil_init)

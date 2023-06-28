@@ -12,12 +12,14 @@ struct StorePath {
 };
 
 nix_err nix_libstore_init(nix_c_context* context) {
+    if (context) context->last_err_code = NIX_OK;
     try {
         nix::initLibStore();
     } NIXC_CATCH_ERRS
 }
 
 Store* nix_store_open(nix_c_context* context, const char* uri, const char*** params) {
+    if (context) context->last_err_code = NIX_OK;
     try {
         if (!uri) {
             return new Store{nix::openStore()};
@@ -40,6 +42,7 @@ void nix_store_unref(Store* store) {
 }
 
 nix_err nix_store_get_uri(nix_c_context* context, Store* store, char* dest, unsigned int n) {
+    if (context) context->last_err_code = NIX_OK;
     try {
         auto res = store->ptr->getUri();
         return nix_export_std_string(context, res, dest, n);
@@ -47,6 +50,7 @@ nix_err nix_store_get_uri(nix_c_context* context, Store* store, char* dest, unsi
 }
 
 nix_err nix_store_get_version(nix_c_context* context, Store* store, char* dest, unsigned int n) {
+    if (context) context->last_err_code = NIX_OK;
     try {
         auto res = store->ptr->getVersion();
         if (res) {
@@ -57,14 +61,15 @@ nix_err nix_store_get_version(nix_c_context* context, Store* store, char* dest, 
     } NIXC_CATCH_ERRS
 }
 
-bool nix_store_is_valid_path(nix_c_context* context, nix_err* res, Store* store, StorePath* path) {
-    if (res) *res = NIX_OK;
+bool nix_store_is_valid_path(nix_c_context* context, Store* store, StorePath* path) {
+    if (context) context->last_err_code = NIX_OK;
     try {
         return store->ptr->isValidPath(path->path);
     } NIXC_CATCH_ERRS_RES(false);
 }
 
 StorePath* nix_store_parse_path(nix_c_context* context, Store* store, const char* path) {
+    if (context) context->last_err_code = NIX_OK;
     try {
         nix::StorePath s = store->ptr->parseStorePath(path);
         return new StorePath{std::move(s)};
@@ -73,6 +78,7 @@ StorePath* nix_store_parse_path(nix_c_context* context, Store* store, const char
 
 
 nix_err nix_store_build(nix_c_context* context, Store* store, StorePath* path, void (*iter)(const char*, const char*)) {
+    if (context) context->last_err_code = NIX_OK;
     try {
       store->ptr->buildPaths({
           nix::DerivedPath::Built{

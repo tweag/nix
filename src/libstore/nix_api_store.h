@@ -25,7 +25,7 @@ nix_err nix_store_get_uri(nix_c_context*, Store* store, char* dest, unsigned int
 StorePath* nix_store_parse_path(nix_c_context*, Store* store, const char* path);
 void nix_store_path_free(StorePath*);
 
-bool nix_store_is_valid_path(nix_c_context*, nix_err* res, Store*, StorePath*);
+bool nix_store_is_valid_path(nix_c_context*, Store*, StorePath*);
 // nix_err nix_store_ensure(Store*, const char*);
 // nix_err nix_store_build_paths(Store*);
 

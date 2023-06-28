@@ -40,21 +40,21 @@ void nix_gc_register_finalizer(void* obj, void* cd, void (*finalizer)(void* obj,
 // Function prototypes
 
 Value* nix_alloc_value(nix_c_context*, State* state, GCRef* ref);
-ValueType nix_get_type(nix_c_context*, nix_err*, const Value* value);
+ValueType nix_get_type(nix_c_context*, const Value* value);
 const char* nix_get_typename(nix_c_context*, const Value* value);
 
-bool nix_get_bool(nix_c_context*, nix_err*, const Value* value);
+bool nix_get_bool(nix_c_context*, const Value* value);
 const char* nix_get_string(nix_c_context*, const Value* value);
 const char* nix_get_path_string(nix_c_context*, const Value* value);
-unsigned int nix_get_list_size(nix_c_context*, nix_err*, const Value* value);
-unsigned int nix_get_attrs_size(nix_c_context*, nix_err*, const Value* value);
-double nix_get_double(nix_c_context*, nix_err*, const Value* value);
-int64_t nix_get_int(nix_c_context*, nix_err*, const Value* value);
+unsigned int nix_get_list_size(nix_c_context*, const Value* value);
+unsigned int nix_get_attrs_size(nix_c_context*, const Value* value);
+double nix_get_double(nix_c_context*, const Value* value);
+int64_t nix_get_int(nix_c_context*, const Value* value);
 
 Value* nix_get_list_byidx(nix_c_context*, const Value* value, unsigned int ix, GCRef* ref);
 Value* nix_get_attr_byname(nix_c_context*, const Value* value, State* state, const char* name, GCRef* ref);
 
-bool nix_has_attr_byname(nix_c_context*, nix_err*, const Value* value, State* state, const char* name);
+bool nix_has_attr_byname(nix_c_context*, const Value* value, State* state, const char* name);
 
 Value* nix_get_attr_byidx(nix_c_context*, const Value* value, State* state, unsigned int i, const char** name, GCRef* ref);
 

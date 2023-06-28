@@ -78,12 +78,12 @@ const char* nix_version_get();
  * @return nullptr if no error message was ever set,
  *         a borrowed pointer to the error message otherwise.
  */
-const char* nix_err_msg(nix_c_context*, unsigned int* n);
+const char* nix_err_msg(nix_c_context*, const nix_c_context*, unsigned int* n);
 
-nix_err nix_err_info_msg(nix_c_context*, char* value, int n);
+nix_err nix_err_info_msg(nix_c_context*, const nix_c_context*, char* value, int n);
 
-nix_err nix_err_name(nix_c_context* context, char* value, int n);
-nix_err nix_err_code(nix_c_context* context);
+nix_err nix_err_name(nix_c_context* context, const nix_c_context*, char* value, int n);
+nix_err nix_err_code(nix_c_context* context, const nix_c_context*);
 
 // cffi end
 #ifdef __cplusplus

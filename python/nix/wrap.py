@@ -17,7 +17,6 @@ P = typing.ParamSpec("P")
 
 def wrap_ffi(
     f: Callable[Concatenate[CData, P], Any]
-    | Callable[Concatenate[CData, CData, P], Any]
     | Callable[P, Any]
     | int
 ) -> Callable[P, Any] | int:
@@ -27,42 +26,25 @@ def wrap_ffi(
 
     if not f.__doc__:
         raise TypeError("couldn't parse to-be-wrapped function")
+
+    # todo: should we parse the signature?
     sig = f.__doc__.split("\n")[0]
     func, argstr = sig.split("(", 1)
     mtch = re.match(r"((struct )?[a-zA-Z0-9_]+[ \*]*)", func)
     if not mtch:
         raise RuntimeError("invalid function sig " + sig)
     tp = mtch[0].strip()
-    args = argstr[:-2].split(", ")
     if tp == "void":
         return typing.cast(Callable[P, Any], f)
-    if "*" in tp:
-        # f is void* something(nix_context*, ...)
-        g = typing.cast(Callable[Concatenate[CData, P], Any], f)
 
-        def wrap_null(*args: P.args, **kwargs: P.kwargs) -> Any:
-            with Ctx() as ctx:
-                return ctx.null_check(g, *args, **kwargs)
+    # f is foo something(nix_context*, ...)
+    g = typing.cast(Callable[Concatenate[CData, P], Any], f)
 
-        return wrap_null
-    elif tp != "int" and args[1] == "int *":
-        # f is foo something(nix_context*, nix_err *res, ...)
-        h = typing.cast(Callable[Concatenate[CData, CData, P], Any], f)
+    def wrap_null(*args: P.args, **kwargs: P.kwargs) -> Any:
+        with Ctx() as ctx:
+            return ctx.check(g, *args, **kwargs)
 
-        def wrap_res(*args: P.args, **kwargs: P.kwargs) -> Any:
-            with Ctx() as ctx:
-                return ctx.res_check(h, *args, **kwargs)
-
-        return wrap_res
-    else:
-        # f is nix_err something(nix_context*, ...)
-        i = typing.cast(Callable[Concatenate[CData, P], Any], f)
-
-        def wrap_err(*args: P.args, **kwargs: P.kwargs) -> None:
-            with Ctx() as ctx:
-                ctx.err_check(i, *args, **kwargs)
-
-        return wrap_err
+    return wrap_null
 
 
 class LibWrap:
