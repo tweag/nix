@@ -157,6 +157,15 @@ int64_t nix_get_int(nix_c_context* context, const Value* value) {
     } NIXC_CATCH_ERRS_RES(0);
 }
 
+ExternalValue* nix_get_external(nix_c_context* context, Value* value) {
+    if (context) context->last_err_code = NIX_OK;
+    try {
+        auto& v = check_value_not_null(value);
+        assert(v.type() == nix::nExternal);
+        return (ExternalValue*)v.external;
+    } NIXC_CATCH_ERRS_NULL;
+}
+
 Value* nix_get_list_byidx(nix_c_context* context, const Value* value, unsigned int ix, GCRef* ref) {
     if (context) context->last_err_code = NIX_OK;
     try {
@@ -252,6 +261,15 @@ nix_err nix_set_null(nix_c_context* context, Value* value) {
     try {
         auto& v = check_value_not_null(value);
         v.mkNull();
+    } NIXC_CATCH_ERRS
+}
+
+nix_err nix_set_external(nix_c_context* context, Value* value, ExternalValue* val) {
+    if (context) context->last_err_code = NIX_OK;
+    try {
+        auto& v = check_value_not_null(value);
+        auto r = (nix::ExternalValueBase*)val;
+        v.mkExternal(r);
     } NIXC_CATCH_ERRS
 }
 
