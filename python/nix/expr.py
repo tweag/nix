@@ -3,34 +3,23 @@ from __future__ import annotations
 import collections.abc
 import typing
 from collections.abc import Callable, Iterator
-from typing import Any, TypeAlias, Union, Optional
+from typing import Any, TypeAlias, Union
 import enum
 import inspect
 from pathlib import PurePath
 
 from .util import settings, NixAPIError
 from .store import Store
-from ._nix_api_expr import ffi, lib as lib_unwrapped
-from .wrap import LibWrap
+from .expr_util import ffi, lib, lib_unwrapped, CData, GCpin, ReferenceGC
+from .external import ExternalValue
 
-lib = LibWrap(lib_unwrapped)
-
-CData: TypeAlias = ffi.CData
-
-
-# todo: estimate size for ffi.gc calls
-class GCpin:
-    def __init__(self, ptr: Optional[ffi.CData] = None) -> None:
-        if ptr is None:
-            ptr = ffi.NULL
-        self.ref = ffi.gc(lib.nix_gc_ref(ptr), lib.nix_gc_free)
-
+__all__ = ["ExternalValue", "Expr", "State", "Value", "Type", "Function", "PrimOp"]
 
 class Expr:
     def __init__(
         self,
         state_wrapper: State,
-        expr: ffi.CData,
+        expr: CData,
         gcpin: GCpin | None = None,
     ) -> None:
         self._state = state_wrapper
@@ -80,6 +69,7 @@ Evaluated: TypeAlias = Union[
     list,
     PurePath,
     "Function",  # | String
+    "ExternalValue",
 ]
 DeepEvaluated = Union[
     int,
@@ -90,6 +80,7 @@ DeepEvaluated = Union[
     list["DeepEvaluated"],
     PurePath,
     "Function",
+    "ExternalValue",
     # string
 ]
 
@@ -118,6 +109,7 @@ evaluated_types = {
     Type.attrs,
     Type.list,
     Type.function,
+    Type.external,
 }
 
 
@@ -144,22 +136,6 @@ class Function:
 
 
 T = typing.TypeVar("T")
-
-# keep these alive for the python gc
-gc_refs: dict[CData, ReferenceGC] = {}
-
-
-@ffi.def_extern()
-def py_nix_finalizer(obj: CData, client_data: CData) -> None:
-    del gc_refs[obj]
-
-
-class ReferenceGC:
-    def __init__(self, obj: CData):
-        gc_refs[obj] = self
-        lib_unwrapped.nix_gc_register_finalizer(
-            obj, ffi.NULL, lib_unwrapped.py_nix_finalizer
-        )
 
 
 # all primops use this code. first argument is secretly the primop handle
@@ -285,6 +261,12 @@ class Value:
                 return PurePath(
                     ffi.string(lib.nix_get_path_string(self._value)).decode()
                 )
+            case Type.external:
+                ev = lib.nix_get_external(self._value)
+                handle = lib.nix_get_external_value_content(ev)
+                if handle == ffi.NULL:
+                    raise RuntimeError("Unknown external value")
+                return ExternalValue.from_handle(handle)
             case _:
                 raise NotImplementedError
 
@@ -348,7 +330,9 @@ class Value:
 
     def __str__(self) -> str:
         return str(
-            self.force({Type.float, Type.int, Type.string, Type.path, Type.null})
+            self.force(
+                {Type.float, Type.int, Type.string, Type.path, Type.null, Type.external}
+            )
         )
 
     def __float__(self) -> float:
@@ -442,6 +426,8 @@ class Value:
             lib.nix_set_path_string(self._value, str(py_val).encode())
         elif py_val is None:
             lib.nix_set_null(self._value)
+        elif isinstance(py_val, ExternalValue):
+            lib.nix_set_external(self._value, py_val._ref)
         elif isinstance(py_val, list):
             lib.nix_make_list(self._state, self._value, len(py_val))
             for i in range(len(py_val)):
@@ -469,22 +455,3 @@ class Value:
             lib.nix_value_call(self._state, self._value, arg._value, self._value)
         else:
             raise TypeError("tried to convert unknown type to nix")
-
-
-# Example usage:
-if __name__ == "__main__":
-    settings["extra-experimental-features"] = "flakes"
-
-    try:
-        store = Store()
-        state = State([], store)
-        e = state.parse_expr_from_string("((x: [1 2 x]) 1)", ".")
-        v = e.eval()
-
-    except NixAPIError as e:
-        print(f"Error: {e}")
-
-
-def nix(expr: str) -> Value:
-    e = state.parse_expr_from_string(expr, ".")
-    return e.eval()

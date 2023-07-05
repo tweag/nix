@@ -16,9 +16,7 @@ P = typing.ParamSpec("P")
 
 
 def wrap_ffi(
-    f: Callable[Concatenate[CData, P], Any]
-    | Callable[P, Any]
-    | int
+    f: Callable[Concatenate[CData, P], Any] | Callable[P, Any] | int
 ) -> Callable[P, Any] | int:
     """Wrap an ffi.lib member for nix error checking"""
     if isinstance(f, int):

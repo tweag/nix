@@ -22,7 +22,7 @@ class Context:
         return ffi.string(msg).decode("utf-8", errors="replace")
 
     def nix_err_code(self) -> int:
-        """ read error code directly """
+        """read error code directly"""
         return typing.cast(int, ffi.cast("nix_err*", self._ctx)[0])
 
     def nix_err_name(self) -> str:

@@ -38,7 +38,14 @@ libstore = make_ffi("nix._nix_api_store", ["libstore/nix_api_store.h"], ["nixsto
 libexpr = make_ffi("nix._nix_api_expr", ["libexpr/nix_api_expr.h", "libexpr/nix_api_value.h"], ["nixexpr"], [libutil, libstore], """
 extern "Python" void py_nix_primop_base(struct State*, int, void**, void*);
 extern "Python" void py_nix_finalizer(void*, void*);
+extern "Python" void py_nix_external_print(void*, nix_printer*);
+extern "Python" nix_returned_string* py_nix_external_toString(void*);
+extern "Python" nix_returned_string* py_nix_external_showType(void*);
+extern "Python" nix_returned_string* py_nix_external_typeOf(void*);
+extern "Python" nix_returned_string* py_nix_external_coerceToString(void*, nix_string_context*, int, int);
+extern "Python" int py_nix_external_equal(void*, void*);
 """)
+
 
 # Compile the CFFI extension
 if __name__ == '__main__':
