@@ -32,6 +32,11 @@ class Expr:
 
         return value
 
+    def thunk(self) -> Value:
+        value = Value(self._state._state)
+        lib.nix_set_thunk(self._state._state, value._value, self._expr)
+        return value
+
 
 class State:
     def __init__(self, search_path: list[str], store_wrapper: Store) -> None:
