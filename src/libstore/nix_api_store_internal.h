@@ -3,7 +3,6 @@
 #include "store-api.hh"
 
 struct Store {
-    nix::ref<nix::Store> ptr;
+  nix::ref<nix::Store> ptr;
 };
 #endif
-

@@ -2,16 +2,16 @@
 #define NIX_API_EXPR_INTERNAL_H
 
 namespace nix {
-  class EvalState;
+class EvalState;
 };
 
 // todo nix_api_expr_internal
 struct State {
-    nix::EvalState state;
+  nix::EvalState state;
 };
 
 struct GCRef {
-    void* ptr;
+  void *ptr;
 };
 
 #endif // NIX_API_EXPR_INTERNAL_H
