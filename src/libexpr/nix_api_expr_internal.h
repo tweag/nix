@@ -5,7 +5,6 @@ namespace nix {
 class EvalState;
 };
 
-// todo nix_api_expr_internal
 struct State {
   nix::EvalState state;
 };
