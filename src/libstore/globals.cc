@@ -363,6 +363,7 @@ void assertLibStoreInitialized() {
 }
 
 void initLibStore() {
+    if (initLibStoreDone) return;
 
     initLibUtil();
 
