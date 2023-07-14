@@ -42,7 +42,7 @@ PrimOp *nix_alloc_primop(nix_c_context *context, PrimOpFun fun, int arity,
 #ifdef HAVE_BOEHMGC
         (GC)
 #endif
-            nix::PrimOp{fun2, (size_t)arity, name, {}, doc};
+            nix::PrimOp{.name = name, .args = {}, .doc = doc, .fun = fun2};
     if (args)
       for (size_t i = 0; args[i]; i++)
         p->args.emplace_back(*args);

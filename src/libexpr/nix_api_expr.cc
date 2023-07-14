@@ -104,7 +104,8 @@ State *nix_state_create(nix_c_context *context, const char **searchPath_c,
       for (size_t i = 0; searchPath_c[i] != nullptr; i++)
         searchPath.push_back(searchPath_c[i]);
 
-    return new State{nix::EvalState(searchPath, store->ptr)};
+    return new State{
+        nix::EvalState(nix::SearchPath::parse(searchPath), store->ptr)};
   }
   NIXC_CATCH_ERRS_NULL
 }
