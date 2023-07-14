@@ -272,8 +272,10 @@ class Value:
                 if handle == ffi.NULL:
                     raise RuntimeError("Unknown external value")
                 return ExternalValue.from_handle(handle)
+            case Type.null:
+                return None
             case _:
-                raise NotImplementedError
+                raise NotImplementedError("can't convert", self.get_type())
 
     # https://github.com/python/mypy/issues/9773
     def force(self, typeCheck: Any = evaluated_types, deep: bool = False) -> Evaluated:
