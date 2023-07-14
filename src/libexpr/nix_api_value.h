@@ -65,12 +65,37 @@ typedef struct ExternalValue ExternalValue;
  */
 typedef void (*PrimOpFun)(State *state, int pos, Value **args, Value *v);
 
+/** @brief Allocate a primop
+ *
+ * Owned by the GC
+ * Pass a gcref to keep a reference.
+ *
+ * @param[out] context Optional, stores error information
+ * @param[in] fun callback
+ * @param[in] arity expected amount of function arguments
+ * @param[in] name function name
+ * @param[in] args array of argument names
+ * @param[in] doc optional, documentation for this primop
+ * @param[out] ref Optional, will store a reference to the returned value.
+ * @return primop, or null in case of errors
+ * @see nix_set_primop
+ */
 PrimOp *nix_alloc_primop(nix_c_context *context, PrimOpFun fun, int arity,
                          const char *name, const char **args, const char *doc,
                          GCRef *ref);
 
 // Function prototypes
 
+/** @brief Allocate a Nix value
+ *
+ * Owned by the GC
+ * Pass a gcref to keep a reference.
+ * @param[out] context Optional, stores error information
+ * @param[in] state nix evaluator state
+ * @param[out] ref Optional, will store a reference to the returned value.
+ * @return value, or null in case of errors
+ *
+ */
 Value *nix_alloc_value(nix_c_context *context, State *state, GCRef *ref);
 /** @name Getters
  */
