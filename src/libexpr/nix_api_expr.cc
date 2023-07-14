@@ -131,3 +131,10 @@ void nix_gc_free(GCRef *ref) {
   delete ref;
 #endif
 }
+
+void nix_gc_register_finalizer(void *obj, void *cd,
+                               void (*finalizer)(void *obj, void *cd)) {
+#ifdef HAVE_BOEHMGC
+  GC_REGISTER_FINALIZER(obj, finalizer, cd, 0, 0);
+#endif
+}

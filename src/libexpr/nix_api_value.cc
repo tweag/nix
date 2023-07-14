@@ -53,13 +53,6 @@ PrimOp *nix_alloc_primop(nix_c_context *context, PrimOpFun fun, int arity,
   NIXC_CATCH_ERRS_NULL
 }
 
-void nix_gc_register_finalizer(void *obj, void *cd,
-                               void (*finalizer)(void *obj, void *cd)) {
-#ifdef HAVE_BOEHMGC
-  GC_REGISTER_FINALIZER(obj, finalizer, cd, 0, 0);
-#endif
-}
-
 Value *nix_alloc_value(nix_c_context *context, State *state, GCRef *ref) {
   if (context)
     context->last_err_code = NIX_OK;
@@ -390,7 +383,7 @@ nix_err nix_copy_value(nix_c_context *context, Value *value, Value *source) {
 }
 
 nix_err nix_set_thunk(nix_c_context *context, State *s, Value *value,
-                      void *expr) {
+                      Expr *expr) {
   if (context)
     context->last_err_code = NIX_OK;
   try {

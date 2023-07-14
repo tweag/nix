@@ -27,6 +27,7 @@ def make_ffi(name, headers, libraries, includes=[], extra_header=""):
     #include "nix_api_store.h"
     #include "nix_api_expr.h"
     #include "nix_api_value.h"
+    #include "nix_api_external.h"
     ''',
                    libraries=["nixutil", "nixstore", "nixexpr"],
                    library_dirs=["../outputs/out/lib"],
@@ -35,7 +36,7 @@ def make_ffi(name, headers, libraries, includes=[], extra_header=""):
 
 libutil = make_ffi("nix._nix_api_util", ["libutil/nix_api_util.h"], ["nixutil"])
 libstore = make_ffi("nix._nix_api_store", ["libstore/nix_api_store.h"], ["nixstore"], [libutil])
-libexpr = make_ffi("nix._nix_api_expr", ["libexpr/nix_api_expr.h", "libexpr/nix_api_value.h"], ["nixexpr"], [libutil, libstore], """
+libexpr = make_ffi("nix._nix_api_expr", ["libexpr/nix_api_expr.h", "libexpr/nix_api_value.h", "libexpr/nix_api_external.h"], ["nixexpr"], [libutil, libstore], """
 extern "Python" void py_nix_primop_base(struct State*, int, void**, void*);
 extern "Python" void py_nix_finalizer(void*, void*);
 extern "Python" void py_nix_external_print(void*, nix_printer*);

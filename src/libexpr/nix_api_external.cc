@@ -7,6 +7,7 @@
 
 #include "nix_api_expr.h"
 #include "nix_api_expr_internal.h"
+#include "nix_api_external.h"
 #include "nix_api_util.h"
 #include "nix_api_util_internal.h"
 #include "nix_api_value.h"
@@ -34,6 +35,7 @@ struct nix_string_context {
 nix_returned_string *nix_external_alloc_string(const char *c) {
   return new nix_returned_string{c};
 }
+void nix_external_dealloc_string(nix_returned_string *str) { delete str; }
 
 nix_err nix_external_print(nix_c_context *context, nix_printer *printer,
                            const char *c) {
@@ -77,20 +79,16 @@ public:
    * Return a simple string describing the type
    */
   virtual std::string showType() const override {
-    auto r = desc.showType(v);
-    std::string res = std::move(r->str);
-    delete r;
-    return res;
+    std::unique_ptr<nix_returned_string> r(desc.showType(v));
+    return std::move(r->str);
   }
 
   /**
    * Return a string to be used in builtins.typeOf
    */
   virtual std::string typeOf() const override {
-    auto r = desc.typeOf(v);
-    std::string res = std::move(r->str);
-    delete r;
-    return res;
+    std::unique_ptr<nix_returned_string> r(desc.typeOf(v));
+    return std::move(r->str);
   }
 
   /**
@@ -106,10 +104,13 @@ public:
     }
     nix_string_context ctx{context};
     // todo: pos, errors
-    auto r = desc.coerceToString(v, &ctx, copyMore, copyToStore);
-    std::string res = std::move(r->str);
-    delete r;
-    return res;
+    std::unique_ptr<nix_returned_string> r(
+        desc.coerceToString(v, &ctx, copyMore, copyToStore));
+    if (!r) {
+      return nix::ExternalValueBase::coerceToString(pos, context, copyMore,
+                                                    copyToStore);
+    }
+    return std::move(r->str);
   }
 
   /**
@@ -120,6 +121,8 @@ public:
       return false;
     }
     auto r = dynamic_cast<const NixCExternalValue *>(&b);
+    if (!r)
+      return false;
     return desc.equal(v, r->v);
   }
 
@@ -135,10 +138,13 @@ public:
                                                       copyToStore);
     }
     nix_string_context ctx{context};
-    auto r = desc.printValueAsJSON((State *)&state, strict, &ctx, copyToStore);
-    auto res = nlohmann::json::parse(r->str);
-    delete r;
-    return res;
+    std::unique_ptr<nix_returned_string> r(
+        desc.printValueAsJSON((State *)&state, strict, &ctx, copyToStore));
+    if (!r) {
+      return nix::ExternalValueBase::printValueAsJSON(state, strict, context,
+                                                      copyToStore);
+    }
+    return nlohmann::json::parse(r->str);
   }
 
   /**

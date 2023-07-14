@@ -1,6 +1,7 @@
 #ifndef NIX_API_EXPR_INTERNAL_H
 #define NIX_API_EXPR_INTERNAL_H
 
+// forward declaration
 namespace nix {
 class EvalState;
 };
