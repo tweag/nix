@@ -184,6 +184,11 @@ AC_ARG_ENABLE(internal_api_docs, AS_HELP_STRING([--enable-internal-api-docs],[Bu
   internal_api_docs=$enableval, internal_api_docs=no)
 AC_SUBST(internal_api_docs)
 
+# Build external API docs by default
+AC_ARG_ENABLE(external_api_docs, AS_HELP_STRING([--enable-external-api-docs],[Build API docs for Nix's C interface]),
+  external_api_docs=$enableval, external_api_docs=yes)
+AC_SUBST(external_api_docs)
+
 # LTO is currently broken with clang for unknown reasons; ld segfaults in the llvm plugin
 AC_ARG_ENABLE(lto, AS_HELP_STRING([--enable-lto],[Enable LTO (only supported with GCC) [default=no]]),
   lto=$enableval, lto=no)

@@ -174,6 +174,7 @@
 
         internalApiDocsConfigureFlags = [
           "--enable-internal-api-docs"
+          "--enable-external-api-docs" # todo: not the right place
         ];
 
         changelog-d = pkgs.buildPackages.changelog-d;
