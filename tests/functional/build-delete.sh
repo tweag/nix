@@ -54,11 +54,18 @@ if isDaemonNewer "2.12pre0"; then
 fi
 
 nix_store_delete_best_effort() {
+    clearStore
+    nix build -f multiple-outputs.nix a --out-link $TEST_ROOT/a
+    a_second=$(realpath $TEST_ROOT/a-second)
+    a_first=$(realpath $TEST_ROOT/a-first)
+    rm $TEST_ROOT/a-second
     p=$(nix build -f multiple-outputs.nix use-a --no-link --print-out-paths)
 
     # Check that nix store delete --recursive is best-effort (doesn't fail when some paths in the closure are alive)
     nix store delete --recursive "$p"
-    ! stat "$p"
+    [[ -e "$a_first" ]] || fail "a.first is a gc root, shouldn't have been deleted"
+    expect 1 [[ -e "$a_second" ]] || fail "a.second is not a gc root and is part of use-a's closure, it should have been deleted"
+    expect 1 [[ -e "$p" ]] || fail "use-a should have been deleted"
 }
 
 nix_store_delete_best_effort
