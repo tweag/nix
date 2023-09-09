@@ -649,7 +649,7 @@
           hardeningDisable = [ "pie" ];
         };
 
-        inherit (nixpkgsFor.${system}.static) nix-find-roots;
+        inherit (nixpkgsFor.${system}.pkgsStatic) nix-find-roots;
 
         dockerImage =
           let
