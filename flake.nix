@@ -441,6 +441,8 @@
 
         buildNoGc = nixpkgs.lib.genAttrs systems (system: self.packages.${system}.nix.overrideAttrs (a: { configureFlags = (a.configureFlags or []) ++ ["--enable-gc=no"];}));
 
+        buildFindRoots = nixpkgs.lib.genAttrs linux64BitSystems (system: self.packages.${system}.nix-find-roots);
+
         # Perl bindings for various platforms.
         perlBindings = nixpkgs.lib.genAttrs systems (system: self.packages.${system}.nix.perl-bindings);
 
@@ -589,6 +591,7 @@
       checks = forAllSystems (system: {
         binaryTarball = self.hydraJobs.binaryTarball.${system};
         perlBindings = self.hydraJobs.perlBindings.${system};
+        nix-find-roots = self.hydraJobs.nix-find-roots.${system};
         installTests = self.hydraJobs.installTests.${system};
         nixpkgsLibTests = self.hydraJobs.tests.nixpkgsLibTests.${system};
       } // (nixpkgs.lib.optionalAttrs (builtins.elem system linux64BitSystems)) {
