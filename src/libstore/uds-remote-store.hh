@@ -35,6 +35,9 @@ public:
     static std::set<std::string> uriSchemes()
     { return {"unix"}; }
 
+    bool sameMachine() override
+    { return true; }
+
     ref<SourceAccessor> getFSAccessor(bool requireValidPath) override
     { return LocalFSStore::getFSAccessor(requireValidPath); }
 
