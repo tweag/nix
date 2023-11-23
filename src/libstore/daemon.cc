@@ -10,6 +10,7 @@
 #include "indirect-root-store.hh"
 #include "path-with-outputs.hh"
 #include "finally.hh"
+#include "affinity.hh"
 #include "archive.hh"
 #include "derivations.hh"
 #include "args.hh"
@@ -1036,8 +1037,8 @@ void processConnection(
     });
 
     if (GET_PROTOCOL_MINOR(clientVersion) >= 14 && readInt(from)) {
-        // Obsolete CPU affinity.
-        readInt(from);
+        auto affinity = readInt(from);
+        setAffinityTo(affinity);
     }
 
     if (GET_PROTOCOL_MINOR(clientVersion) >= 11)

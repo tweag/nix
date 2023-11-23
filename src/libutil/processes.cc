@@ -1,3 +1,4 @@
+#include "affinity.hh"
 #include "current-process.hh"
 #include "environment-variables.hh"
 #include "signals.hh"
@@ -205,6 +206,7 @@ pid_t startProcess(std::function<void()> fun, const ProcessOptions & options)
             if (options.dieWithParent && prctl(PR_SET_PDEATHSIG, SIGKILL) == -1)
                 throw SysError("setting death signal");
 #endif
+            restoreAffinity();
             fun();
         } catch (std::exception & e) {
             try {

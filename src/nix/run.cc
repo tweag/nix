@@ -9,6 +9,7 @@
 #include "finally.hh"
 #include "source-accessor.hh"
 #include "progress-bar.hh"
+#include "affinity.hh"
 #include "eval.hh"
 #include "build/personality.hh"
 

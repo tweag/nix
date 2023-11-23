@@ -71,6 +71,7 @@ void restoreProcessContext(bool restoreMounts)
     if (restoreMounts) {
         restoreMountNamespace();
     }
+    restoreAffinity();
 
     #if __linux__
     if (savedStackSize) {

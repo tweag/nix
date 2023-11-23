@@ -6,6 +6,7 @@
 #include "store-api.hh"
 #include "outputs-spec.hh"
 #include "derivations.hh"
+#include "affinity.hh"
 #include "progress-bar.hh"
 #include "run.hh"
 
