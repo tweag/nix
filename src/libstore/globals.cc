@@ -60,7 +60,7 @@ Settings::Settings()
     , nixDaemonSocketFile(canonPath(getEnvNonEmpty("NIX_DAEMON_SOCKET_PATH").value_or(nixStateDir + DEFAULT_SOCKET_PATH)))
 {
     buildUsersGroup = getuid() == 0 ? "nixbld" : "";
-    lockCPU = getEnv("NIX_AFFINITY_HACK") == "1";
+    lockCPU = getEnv("NIX_AFFINITY_HACK").value_or("1") == "1";
     allowSymlinkedStore = getEnv("NIX_IGNORE_SYMLINK_STORE") == "1";
 
     auto sslOverride = getEnv("NIX_SSL_CERT_FILE").value_or(getEnv("SSL_CERT_FILE").value_or(""));

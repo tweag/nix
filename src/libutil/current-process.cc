@@ -1,3 +1,4 @@
+#include "affinity.hh"
 #include "current-process.hh"
 #include "namespaces.hh"
 #include "util.hh"

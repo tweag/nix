@@ -31,7 +31,7 @@ void setAffinityTo(int cpu)
 #if __linux__
     if (sched_getaffinity(0, sizeof(cpu_set_t), &savedAffinity) == -1) return;
     didSaveAffinity = true;
-    debug(format("locking this thread to CPU %1%") % cpu);
+    debug("locking this thread to CPU %", cpu);
     cpu_set_t newAffinity;
     CPU_ZERO(&newAffinity);
     CPU_SET(cpu, &newAffinity);
