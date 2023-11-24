@@ -238,7 +238,87 @@ let
       sudo -u test nix-build ${runtime_dep_no_perm} --no-out-link
     """)
  '';
-    in
+
+  # A private package only root can access
+  private-package = builtins.toFile "private.nix" ''
+    with import <nixpkgs> {};
+    stdenvNoCC.mkDerivation {
+      name = "private";
+      privateSource = builtins.path {
+        path = /tmp/secret;
+        permissions = {
+          protected = true;
+          users = ["root"];
+        };
+      };
+      buildCommand = "cat $privateSource > $out";
+      allowSubstitutes = false;
+      __permissions = {
+        outputs.out = { protected = true; users = ["root"]; };
+        drv = { protected = true; users = ["root"]; groups = ["root"]; };
+        log.protected = true;
+        log.users = ["root"];
+      };
+    }
+  '';
+
+  # Test depending on a private output, which should fail.
+  depend-on-private = builtins.toFile "depend_on_private.nix" ''
+    with import <nixpkgs> {};
+    let private = import ${private-package}; in
+    stdenvNoCC.mkDerivation {
+      name = "public";
+      buildCommand = "cat ''${private} > $out ";
+      allowSubstitutes = false;
+      __permissions = {
+        outputs.out = { protected = true; users = ["test"]; };
+        drv = { protected = true; users = ["test"]; };
+        log.protected = true;
+      };
+    }
+  '';
+
+  # Test adding a private runtime dependency, which should fail.
+  runtime-depend-on-private = builtins.toFile "depend_on_private.nix" ''
+    with import <nixpkgs> {};
+    let private = import ${private-package}; in
+    stdenvNoCC.mkDerivation {
+      name = "public";
+      buildCommand = "echo ''${private} > $out ";
+      allowSubstitutes = false;
+      __permissions = {
+        outputs.out = { protected = true; users = ["test"]; };
+        drv = { protected = true; users = ["test"]; };
+        log.protected = true;
+      };
+    }
+  '';
+
+
+  # Only root can access /tmp/secret and the output of the private-package.
+  # The `test` user cannot read it nor depend on it in a derivation
+  testDependOnPrivate = ''
+    # fmt: off
+    machine.succeed("""echo "secret_string" > /tmp/secret""");
+
+    private_output = machine.succeed("""
+      sudo nix-build ${private-package} --no-out-link
+    """)
+
+    machine.succeed(f"""cat {private_output}""")
+
+    machine.fail(f"""sudo -u test cat {private_output}""")
+
+    machine.fail("""
+      sudo -u test nix-build ${depend-on-private} --no-out-link
+    """)
+
+    machine.fail("""
+      sudo -u test nix-build ${runtime-depend-on-private} --no-out-link
+    """)
+
+  '';
+in
 {
   name = "acls";
 
@@ -259,6 +339,7 @@ let
       testCli
       testFoo
       testExamples
+      testDependOnPrivate
       # [TODO] uncomment once access to the runtime closure is unforced
       # testRuntimeDepNoPermScript
     ];
