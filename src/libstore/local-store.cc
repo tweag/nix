@@ -922,9 +922,6 @@ void LocalStore::queryPathInfoUncached(const StorePath & path,
 
 std::shared_ptr<const ValidPathInfo> LocalStore::queryPathInfoInternal(State & state, const StorePath & path)
 {
-    if (!canAccess(path))
-        throw AccessDenied("Access Denied");
-
     /* Get the path info. */
     auto useQueryPathInfo(state.stmts->QueryPathInfo.use()(printStorePath(path)));
 
