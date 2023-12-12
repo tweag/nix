@@ -137,6 +137,10 @@ let
     def assert_info(path, expected, when):
       got = info(path)
       assert(got == expected),f"Path info {got} is not as expected {expected} for path {path} {when}"
+
+    def assert_in_last_line(expected, output):
+      last_line = output.splitlines()[-1]
+      assert(expected in last_line),f"last line ({last_line}) does not contain string ({expected})"
   '';
 
  testCli =''
@@ -375,16 +379,20 @@ let
 
     machine.fail(f"""sudo -u test cat {private_output}""")
 
-    machine.fail("""
-      sudo -u test nix-build ${depend-on-private} --no-out-link
+    depend_on_private_output = machine.fail("""
+      sudo -u test nix-build ${depend-on-private} --no-out-link 2>&1
     """)
 
-    machine.fail(f"""sudo -u test cat {private_output}""")
-    machine.fail("""
-      sudo -u test nix-build ${runtime-depend-on-private} --no-out-link
-    """)
+    assert_in_last_line("error: test (uid 1000) does not have access to path", depend_on_private_output)
 
     machine.fail(f"""sudo -u test cat {private_output}""")
+    runtime_depend_on_private_output = machine.fail("""
+      sudo -u test nix-build ${runtime-depend-on-private} --no-out-link 2>&1
+    """)
+    assert_in_last_line("error: test (uid 1000) does not have access to path", runtime_depend_on_private_output)
+
+    machine.fail(f"""sudo -u test cat {private_output}""")
+
     # Root builds the derivation to give access to test
     public_output = machine.succeed("""
       sudo nix-build ${depend-on-private} --no-out-link
@@ -438,6 +446,20 @@ let
     machine.succeed(f"""
      sudo -u test2 nix store access grant --user test3 {userPrivatePath}
     """)
+
+    # test2 cannot add itself to the permissions of /tmp/test_secret
+    machine.fail("""
+     sudo -u test2 nix-build ${test-user-private-2} --no-out-link
+    """)
+
+    inputPath1 = machine.succeed(f"""
+     sudo -u test2 head -n 1 {userPrivatePath}
+    """)
+
+    machine.fail(f"""
+     sudo -u test2 cat {inputPath1}
+    """)
+
   '';
 
 in
