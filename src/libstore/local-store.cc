@@ -961,6 +961,11 @@ StorePathSet LocalStore::querySubstitutablePaths(const StorePathSet & paths)
     return res;
 }
 
+void LocalStore::syncPathPermissions(StorePath path) {
+  if (futurePermissions.contains(path)) {
+      setCurrentAccessStatus(Store::toRealPath(path), futurePermissions[path]);
+  }
+}
 void LocalStore::syncPathPermissions(const ValidPathInfo & info)
 {
     if (experimentalFeatureSettings.isEnabled(Xp::ACLs)) {

@@ -1453,6 +1453,7 @@ std::pair<bool, SingleDrvOutputs> DerivationGoal::checkPathValidity()
                 // So we can assume that the path exists here.
                 if (auto aclStore = dynamic_cast<LocalStore *>(&worker.store)){
                   // Todo: to cast to LocalGranularAccessStore instead of LocalStore we need to implement shouldSyncPermissions for the remote store.
+                    aclStore->syncPathPermissions(outputPath);
                     canAccess = aclStore->canAccess(outputPath, false);
                 }
             info.known = {
@@ -1473,7 +1474,8 @@ std::pair<bool, SingleDrvOutputs> DerivationGoal::checkPathValidity()
                 if (experimentalFeatureSettings.isEnabled(Xp::ACLs))
                     if (auto aclStore = dynamic_cast<LocalStore *>(&worker.store)){
                         // Todo: to cast to LocalGranularAccessStore instead of LocalStore we need to implement shouldSyncPermissions for the remote store.
-                        // Todo: do we need to check for the path existence here before calling shouldSyncPermissions ?
+                        // Todo: do we need to check for the path existence here ?
+                        aclStore->syncPathPermissions(real->outPath);
                         canAccess = aclStore->canAccess(real->outPath, false);
                     }
                 info.known = {

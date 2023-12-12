@@ -125,6 +125,7 @@ private:
      * Sync path permissions from futurePermissions to a real path in store
      */
     void syncPathPermissions(const ValidPathInfo & info);
+    void syncPathPermissions(StorePath path);
 
 public:
 
