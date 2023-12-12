@@ -331,7 +331,7 @@ let
   '';
 
   # Test adding a private runtime dependency, which should fail.
-  runtime-depend-on-private = builtins.toFile "depend_on_private.nix" ''
+  runtime-depend-on-private = builtins.toFile "runtime_depend_on_private.nix" ''
     with import <nixpkgs> {};
     let private = import ${private-package}; in
     stdenvNoCC.mkDerivation {
@@ -401,10 +401,19 @@ let
     print(machine.succeed(f"""sudo -u test cat {public_output}"""))
     print(machine.succeed(f"""getfacl {public_output}"""))
     print(machine.succeed(f"""getfacl {private_output}"""))
+
+    machine.fail(f"""sudo -u test cat {private_output}""")
+
+    machine.succeed(f"""sudo -u test cat {public_output}""")
+
+    # Test can depend on the values that were made public, even if it these have private build time dependencies.
+    machine.succeed("""
+      sudo -u test nix-build ${depend-on-public} --no-out-link
+    """)
   '';
 
   # Non trusted user gives permission to another one.
-  test-user-private = builtins.toFile "private.nix" ''
+  test-user-private = builtins.toFile "test-user-private.nix" ''
     with import <nixpkgs> {};
     stdenvNoCC.mkDerivation {
       name = "test-user-private";
@@ -416,10 +425,34 @@ let
           users = ["test"];
         };
       };
-      buildCommand = "cat $privateSource > $out";
+      # buildCommand = "cat $privateSource > $out";
+      buildCommand = "echo $privateSource > $out && echo Example >> $out";
       allowSubstitutes = false;
       __permissions = {
         outputs.out = { protected = true; users = ["test" "test2"]; };
+        drv = { protected = true; users = ["test" "test2"]; };
+        log.protected = true;
+        log.users = ["test" "test2"];
+      };
+    }
+  '';
+
+  test-user-private-2 = builtins.toFile "test-user-private-2.nix" ''
+    with import <nixpkgs> {};
+    stdenvNoCC.mkDerivation {
+      name = "test-user-private";
+      privateSource = builtins.path {
+        path = /tmp/test_secret;
+        sha256 = "f90af0f74a205cadaad0f17854805cae15652ba2afd7992b73c4823765961533";
+        permissions = {
+          protected = true;
+          users = ["test" "test2"];
+        };
+      };
+      buildCommand = "echo $privateSource > $out && echo Example >> $out";
+      allowSubstitutes = false;
+      __permissions = {
+        outputs.out = { protected = true; users = ["test" "test2" "test3"]; };
         drv = { protected = true; users = ["test" "test2"]; };
         log.protected = true;
         log.users = ["test" "test2"];
@@ -432,10 +465,21 @@ let
     # fmt: off
     machine.succeed("""sudo -u test bash -c 'echo secret_string > /tmp/test_secret'""");
     machine.succeed("""sudo -u test chmod 700 /tmp/test_secret""");
-    print(machine.succeed("""getfacl /tmp/test_secret"""));
+
+    # User test2 cannot build the derivation itself
+    machine.fail("""
+     sudo -u test2 nix-build ${test-user-private} --no-out-link
+    """)
+
+    # User test can do it to grant access to the outputs to test2
     userPrivatePath = machine.succeed("""
      sudo -u test nix-build ${test-user-private} --no-out-link
     """)
+
+    machine.succeed("""
+     sudo -u test2 nix-build ${test-user-private} --no-out-link
+    """)
+
     assert_info(userPrivatePath, {"exists": True, "protected": True, "users": ["test", "test2"], "groups": []}, "after nix-build test-user-private")
     machine.succeed(f"""
       sudo -u test2 cat {userPrivatePath}
