@@ -247,8 +247,10 @@ void LocalDerivationGoal::tryLocalBuild()
     if (experimentalFeatureSettings.isEnabled(Xp::ACLs))
         if (auto localStore = dynamic_cast<LocalStore*>(&worker.store)) {
             for (auto path : inputPaths) {
-                if (localStore->getCurrentAccessStatus(path).isProtected) {
-                    if (!localStore->canAccess(path, false))
+                std::optional<LocalStore::AccessStatus> futureStatusOpt = localStore->getFutureAccessStatusOpt(path);
+                auto status = futureStatusOpt.value_or(localStore->getCurrentAccessStatus(path));
+                if (status.isProtected) {
+                    if (!localStore->canAccess(path, (bool) futureStatusOpt))
                         throw AccessDenied(
                             "%s (uid %d) does not have access to path %s",
                             getUserName(localStore->effectiveUser->uid),
