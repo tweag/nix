@@ -35,6 +35,7 @@
 #include <dlfcn.h>
 
 #include <cmath>
+#include <fstream>
 
 namespace nix {
 
@@ -2342,16 +2343,33 @@ static void addPath(
                 .references = {},
             });
 
-        // Commented out because computeStorePathForPath needs reading access to the path.
-        // But this should not be needed if the path is already in the store and is fixed output derivation.
-        // For the case where the file is private but a public derivation depends on it.
-
-        // TODO: why is this needed ?
-        // if (accessStatus && !settings.readOnlyMode) {
-        //     StorePath dstPath = state.store->computeStorePathForPath(name, path, method, htSHA256, filter).first;
-        //     ensureAccess(&*accessStatus, state.store->printStorePath(dstPath));
-        //     require<LocalGranularAccessStore>(*state.store).setFutureAccessStatus(dstPath, *accessStatus);
-        // }
+        if (accessStatus && !settings.readOnlyMode) {
+          if (expectedStorePath) {
+            if (pathExists(state.store->toRealPath(*expectedStorePath))) {
+              auto curStatus = require<LocalGranularAccessStore>(*state.store).getCurrentAccessStatus(*expectedStorePath);
+              if (curStatus != *accessStatus && !require<LocalGranularAccessStore>(*state.store).canAccess(*expectedStorePath, false)) {
+                  // It's ok to update the permission of a store path if we have read access to the original file.
+                  std::ifstream path_file(path);
+                  if (!path_file) {
+                      throw Error(fmt("Could not access file (%s) permissions may be missing", path));
+                  }
+                  path_file.close();
+              }
+            }
+            require<LocalGranularAccessStore>(*state.store).setFutureAccessStatus(*expectedStorePath, *accessStatus);
+          } else {
+            // computeStorePathForPath should fail if we do not have access to the original path
+            //StorePath dstPath = state.store->computeStorePathForPath(name, path, method, htSHA256, filter) .first;
+            auto source = sinkToSource([&](Sink & sink) {
+                if (method == FileIngestionMethod::Recursive)
+                    dumpPath(path, sink, defaultPathFilter);
+                else
+                    readFile(path, sink);
+            });
+            StorePath dstPath = state.store->computeStorePathFromDump(*source, name, method, htSHA256).first;
+            require<LocalGranularAccessStore>(*state.store).setFutureAccessStatus(dstPath, *accessStatus);
+          }
+        }
 
         if (!expectedHash || !state.store->isValidPath(*expectedStorePath)) {
             auto dstPath = state.rootPath(CanonPath(path)).fetchToStore(state.store, name, method, &filter, state.repair);
