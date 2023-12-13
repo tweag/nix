@@ -174,6 +174,7 @@ public:
     void setFutureAccessStatus(const StoreObject & storeObject, const AccessStatus & status) override;
     AccessStatus getCurrentAccessStatus(const StoreObject & storeObject) override;
     AccessStatus getFutureAccessStatus(const StoreObject & storeObject) override;
+    std::optional<RemoteStore::AccessStatus> getFutureAccessStatusOpt(const StoreObject & storeObject) override;
 
     std::set<ACL::Group> getSubjectGroupsUncached(ACL::User user) override;
 

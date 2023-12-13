@@ -72,6 +72,29 @@ void WorkerProto::Serialise<AccessStatusFor<T>>::write(const Store & store, Work
     WorkerProto::Serialise<std::set<T>>::write(store, conn, status.entities);
 }
 
+template<typename T>
+std::optional<AccessStatusFor<T>> WorkerProto::Serialise<std::optional<AccessStatusFor<T>>>::read(const Store & store, WorkerProto::ReadConn conn) {
+    auto s = readNum<size_t>(conn.from);
+    if (s == 0){
+        return std::nullopt;
+    }
+    else {
+        return std::optional<AccessStatusFor<T>> {WorkerProto::Serialise<AccessStatusFor<T>>::read(store, conn)};
+    }
+}
+
+template<typename T>
+void WorkerProto::Serialise<std::optional<AccessStatusFor<T>>>::write(const Store & store, WorkerProto::WriteConn conn, const std::optional<AccessStatusFor<T>> & status)
+{
+    if (status){
+        conn.to << 1;
+        WorkerProto::Serialise<AccessStatusFor<T>>::write(store, conn, *status);
+    }
+    else {
+        conn.to << 0;
+    }
+}
+
 template<typename A, typename B>
 std::variant<A, B> WorkerProto::Serialise<std::variant<A, B>>::read(const Store & store, WorkerProto::ReadConn conn)
 {

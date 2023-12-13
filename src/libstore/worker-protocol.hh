@@ -174,6 +174,7 @@ enum struct WorkerProto::Op : uint64_t
     GetFutureAccessStatus = 49,
     SetCurrentAccessStatus = 50,
     SetFutureAccessStatus = 51,
+    GetFutureAccessStatusOpt = 52,
 };
 
 /**
@@ -236,6 +237,8 @@ template<>
 DECLARE_WORKER_SERIALISER(ACL::Group);
 template<typename T>
 DECLARE_WORKER_SERIALISER(AccessStatusFor<T>);
+template<typename T>
+DECLARE_WORKER_SERIALISER(std::optional<AccessStatusFor<T>>);
 template<>
 DECLARE_WORKER_SERIALISER(UnkeyedValidPathInfo);
 

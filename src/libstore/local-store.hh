@@ -305,7 +305,7 @@ public:
     void setCurrentAccessStatus(const StoreObject & storeObject, const AccessStatus & status) override;
     void setCurrentAccessStatus(const Path & path, const AccessStatus & status);
     AccessStatus getFutureAccessStatus(const StoreObject & storeObject) override;
-    std::optional<AccessStatus> getFutureAccessStatusOpt(const StoreObject & storeObject);
+    std::optional<AccessStatus> getFutureAccessStatusOpt(const StoreObject & storeObject) override;
     AccessStatus getCurrentAccessStatus(const Path & path);
     AccessStatus getCurrentAccessStatus(const StoreObject & storeObject) override;
     bool shouldSyncPermissions(const StoreObject &storeObject);

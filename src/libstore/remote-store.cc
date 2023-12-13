@@ -962,6 +962,16 @@ RemoteStore::AccessStatus RemoteStore::getFutureAccessStatus(const StoreObject &
     return status;
 }
 
+std::optional<RemoteStore::AccessStatus> RemoteStore::getFutureAccessStatusOpt(const StoreObject & storeObject)
+{
+    auto conn(getConnection());
+    conn->to << WorkerProto::Op::GetFutureAccessStatusOpt;
+    WorkerProto::Serialise<StoreObject>::write(*this, *conn, storeObject);
+    conn.processStderr();
+    auto status = WorkerProto::Serialise<std::optional<AccessStatus>>::read(*this, *conn);
+    return status;
+}
+
 std::set<ACL::Group> RemoteStore::getSubjectGroupsUncached(ACL::User user)
 {
     struct passwd * pw = getpwuid(user.uid);
