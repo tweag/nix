@@ -378,7 +378,7 @@ let
     private_output = machine.succeed("""
       sudo nix-build ${private-package} --no-out-link
     """)
-
+    assert_info(private_output, {"exists": True, "protected": True, "users": ["root"], "groups": []}, "after nix-build with dependencies")
     machine.succeed(f"""cat {private_output}""")
 
     machine.fail(f"""sudo -u test cat {private_output}""")
@@ -387,13 +387,20 @@ let
       sudo -u test nix-build ${depend-on-private} --no-out-link 2>&1
     """)
 
-    # assert_in_last_line("error: test (uid 1000) does not have access to path", depend_on_private_output)
+    assert_in_last_line(
+      "error: you (test) would not have access to build log of derivation",
+       machine.fail("""
+         sudo -u test nix-build ${depend-on-private} --no-out-link 2>&1
+       """)
+    )
 
     machine.fail(f"""sudo -u test cat {private_output}""")
-    runtime_depend_on_private_output = machine.fail("""
-      sudo -u test nix-build ${runtime-depend-on-private} --no-out-link 2>&1
-    """)
-    # assert_in_last_line("error: test (uid 1000) does not have access to path", runtime_depend_on_private_output)
+    assert_in_last_line(
+      "you (test) would not have access to build log of derivation" ,
+      machine.fail("""
+        sudo -u test nix-build ${runtime-depend-on-private} --no-out-link 2>&1
+      """)
+    )
 
     machine.fail(f"""sudo -u test cat {private_output}""")
 
@@ -401,19 +408,18 @@ let
     public_output = machine.succeed("""
       sudo nix-build ${depend-on-private} --no-out-link
     """)
-
-    print(machine.succeed(f"""sudo -u test cat {public_output}"""))
-    print(machine.succeed(f"""getfacl {public_output}"""))
-    print(machine.succeed(f"""getfacl {private_output}"""))
-
+    assert_info(public_output, {"exists": True, "protected": True, "users": ["root", "test"], "groups": []}, "after nix-build depend-on-private")
     machine.fail(f"""sudo -u test cat {private_output}""")
-
     machine.succeed(f"""sudo -u test cat {public_output}""")
 
     # Test can depend on the values that were made public, even if it these have private build time dependencies.
-    machine.succeed("""
-      sudo -u test nix-build ${depend-on-public} --no-out-link
-    """)
+    assert_info(
+      machine.succeed("""
+        sudo -u test nix-build ${depend-on-public} --no-out-link
+      """) ,
+      {"exists": True, "protected": True, "users": ["test"], "groups": []},
+      "after nix-build depend-on-public"
+    )
   '';
 
   # Non trusted user gives permission to another one.
@@ -508,6 +514,7 @@ let
     machine.succeed(f"""
      sudo -u test2 nix store access grant --user test3 {userPrivatePath}
     """)
+    assert_info(userPrivatePath, {"exists": True, "protected": True, "users": ["test", "test2", "test3"], "groups": []}, "after nix-build test-user-private")
 
     # test2 cannot add itself to the permissions of /tmp/test_secret
     assert_in_last_line(
