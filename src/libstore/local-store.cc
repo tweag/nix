@@ -1345,7 +1345,7 @@ void LocalStore::grantBuildUserAccess(const StorePath & storePath, const LocalSt
 {
     // The builder-permissions directory remembers permissions to remove at the end of the build.
     auto status = getAccessStatus(storePath);
-    if (! status.entities.contains(buildUser)){
+    if (!canAccess(storePath, {buildUser})){
         auto basePath = stateDir + "/acls/builder-permissions/" + storePath.to_string();
         std::visit(overloaded {
             [&](ACL::User u) { createDirs(basePath + "/users/" + std::to_string(u.uid)); },
