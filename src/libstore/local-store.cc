@@ -1614,7 +1614,7 @@ StorePath LocalStore::addToStoreFromDump(Source & source0, std::string_view name
        path. */
     bool inMemory = false;
 
-    bool protect = experimentalFeatureSettings.isEnabled(Xp::ACLs);
+    bool protect = experimentalFeatureSettings.isEnabled(Xp::ACLs) && settings.protectByDefault.get();
 
     std::string dump;
 
