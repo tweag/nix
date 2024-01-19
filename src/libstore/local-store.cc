@@ -1207,7 +1207,7 @@ void LocalStore::ensureAccess(const AccessStatus & accessStatus, const StoreObje
 void LocalStore::setAccessStatus(const StoreObject & storePathstoreObject, const AccessStatus & status, const bool & ensureAccessCheck)
 {
     if (ensureAccessCheck) ensureAccess(status, storePathstoreObject);
-    if (pathOfStoreObjectExists(storePathstoreObject)){
+    if (!futurePermissions.contains(storePathstoreObject) && pathOfStoreObjectExists(storePathstoreObject)){
         setCurrentAccessStatus(storePathstoreObject, status);
     }
     else {
