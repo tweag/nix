@@ -972,13 +972,15 @@ void LocalStore::syncPathPermissions(const ValidPathInfo & info)
             /* FIXME: we should erase the permissions to prevent memory leakage;
                However, it's not easy to only call this function once, so we end
                up resetting the permissions to the default ones */
-            // futurePermissions.erase(info.path);
-            if (info.accessStatus)
+            futurePermissions.erase(info.path);
+            if (info.accessStatus){
                 addAllowedEntities(info.path, info.accessStatus->entities);
+            }
         } else if (info.accessStatus) {
             setCurrentAccessStatus(realPath, *info.accessStatus);
-        } else {
-            // TODO: a mode where all new paths are protected by default
+        } else if (info.isContentAddressed(*this)){
+            // For content-adressed derivations the path is not known when we write to the future map.
+            // So we define the default permissions for these here.
             setCurrentAccessStatus(realPath, AccessStatus());
         }
     }
