@@ -51,7 +51,7 @@ mkDerivation {
 }
 EOF
 
-OUTPUT_PATH=$(nix-build "$TEST_ROOT/test-acls.nix")
+OUTPUT_PATH=$(nix-build "$TEST_ROOT/test-acls.nix" --no-out-link)
 cat "$OUTPUT_PATH"
 nix store access info "$OUTPUT_PATH" --json | grep '"users":\["'$USER'"\]'
 
