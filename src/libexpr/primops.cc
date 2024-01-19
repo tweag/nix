@@ -1433,16 +1433,18 @@ static void derivationStrictInternal(EvalState & state, const std::string & drvN
     if (experimentalFeatureSettings.isEnabled(Xp::ACLs)) {
         auto drvPath = writeDerivation(*state.store, drv, state.repair, true);
         attr = attrs->find(state.sPermissions);
+        auto drvStatus = LocalGranularAccessStore::AccessStatus();
         if (attr != attrs->end()) {
             state.forceAttrs(*attr->value, noPos,
                             "while evaluating the `__permissions` "
                             "attribute passed to builtins.derivationStrict");
             auto derivation = attr->value->attrs->find(state.sDrv);
             if (derivation != attr->value->attrs->end()) {
-                LocalGranularAccessStore::AccessStatus status;
-                readAccessStatus(state, *derivation, &status, "__permissions.drv", "builtins.derivationStrict");
-                require<LocalGranularAccessStore>(*state.store).setAccessStatus(drvPath, status, true);
+                readAccessStatus(state, *derivation, &drvStatus, "__permissions.drv", "builtins.derivationStrict");
             }
+        }
+        if (auto localStore = dynamic_cast<LocalGranularAccessStore*>(&*state.store)){
+            localStore->setAccessStatus(drvPath, drvStatus, true);
         }
     }
     /* Write the resulting term into the Nix store directory. */
@@ -1450,6 +1452,8 @@ static void derivationStrictInternal(EvalState & state, const std::string & drvN
     auto drvPathS = state.store->printStorePath(drvPath);
 
     if (experimentalFeatureSettings.isEnabled(Xp::ACLs)) {
+        StringSet outputsPermissionAlreadySet;
+        bool logPermissionAlreadySet = false;
         attr = attrs->find(state.sPermissions);
         if (attr != attrs->end()) {
             state.forceAttrs(*attr->value, noPos,
@@ -1469,13 +1473,32 @@ static void derivationStrictInternal(EvalState & state, const std::string & drvN
                     LocalGranularAccessStore::AccessStatus status;
                     readAccessStatus(state, output, &status, fmt("__permissions.outputs.%s", state.symbols[output.name]), "builtins.derivationStrict");
                     require<LocalGranularAccessStore>(*state.store).setAccessStatus(StoreObjectDerivationOutput {drvPath, std::string(state.symbols[{output.name}])}, status, true);
+                    outputsPermissionAlreadySet.insert(std::string(state.symbols[{output.name}]));
                 }
             }
             auto log = attr->value->attrs->find(state.sLog);
             if (log != attr->value->attrs->end()) {
                 LocalGranularAccessStore::AccessStatus status;
                 readAccessStatus(state, *log, &status, "__permissions.log", "builtins.derivationStrict");
-                require<LocalGranularAccessStore>(*state.store).setAccessStatus(StoreObjectDerivationLog {drvPath}, status, true);
+                if (auto localStore = dynamic_cast<LocalGranularAccessStore*>(&*state.store)){
+                    localStore->setAccessStatus(StoreObjectDerivationLog {drvPath}, status, true);
+                }
+                logPermissionAlreadySet = true;
+            }
+        }
+        // Set default permissions for outputs and log file
+        for (auto & output : outputs) {
+            if (!outputsPermissionAlreadySet.contains(output)){
+                LocalGranularAccessStore::AccessStatus status = LocalGranularAccessStore::AccessStatus(false, {});
+                if (auto localStore = dynamic_cast<LocalGranularAccessStore*>(&*state.store)){
+                    localStore->setAccessStatus(StoreObjectDerivationOutput {drvPath, output}, status, true);
+                }
+            }
+        }
+        if (!logPermissionAlreadySet){
+            LocalGranularAccessStore::AccessStatus logStatus = LocalGranularAccessStore::AccessStatus(false, {});
+            if (auto localStore = dynamic_cast<LocalGranularAccessStore*>(&*state.store)){
+                require<LocalGranularAccessStore>(*state.store).setAccessStatus(StoreObjectDerivationLog {drvPath}, logStatus, true);
             }
         }
     }
@@ -2166,6 +2189,12 @@ static void prim_toFile(EvalState & state, const PosIdx pos, Value * * args, Val
 
     /* Add the output of this to the allowed paths. */
     state.allowAndSetStorePathString(storePath, v);
+    if (experimentalFeatureSettings.isEnabled(Xp::ACLs)) {
+      auto accessStatus = LocalGranularAccessStore::AccessStatus();
+      if (auto localStore = dynamic_cast<LocalGranularAccessStore *>(&*state.store)) {
+        localStore->setAccessStatus(storePath, accessStatus, true);
+      }
+    }
 }
 
 static RegisterPrimOp primop_toFile({
@@ -2323,13 +2352,13 @@ static void addPath(
                 .references = {},
             });
 
-        if (accessStatus && !settings.readOnlyMode) {
+        if (!settings.readOnlyMode && experimentalFeatureSettings.isEnabled(Xp::ACLs)) {
+          if (!accessStatus) accessStatus = LocalGranularAccessStore::AccessStatus();
           if (expectedStorePath) {
             if (pathExists(state.store->toRealPath(*expectedStorePath))) {
               auto curStatus = require<LocalGranularAccessStore>(*state.store).getAccessStatus(*expectedStorePath);
               if (curStatus != *accessStatus && !require<LocalGranularAccessStore>(*state.store).canAccess(*expectedStorePath)) {
-                  // It's ok to update the permission of a store path if we have read access to the original file.
-
+                  // It's ok to update the permission of a store path if we have read access to all the original files.
                   if(std::filesystem::is_directory(path.path.abs())){
                     for (const auto& dirEntry : std::filesystem::recursive_directory_iterator(path.path.abs())){
                         if (std::filesystem::is_directory(dirEntry)) continue;
@@ -2341,11 +2370,9 @@ static void addPath(
                   }
               }
             }
-
             require<LocalGranularAccessStore>(*state.store).setAccessStatus(*expectedStorePath, *accessStatus, true);
           } else {
-            // computeStorePathForPath should fail if we do not have access to the original path
-            //StorePath dstPath = state.store->computeStorePathForPath(name, path, method, htSHA256, filter) .first;
+            // computeStorePathFromDump will fail if we do not have access to the original path
             auto source = sinkToSource([&](Sink & sink) {
                 if (method == FileIngestionMethod::Recursive)
                     dumpPath(path.path.abs(), sink, defaultPathFilter);

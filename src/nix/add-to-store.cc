@@ -90,6 +90,9 @@ struct CmdAddToStore : MixDryRun, MixProtect, StoreCommand
                 status.entities = {ACL::User(getuid())};
                 info.accessStatus = status;
             }
+            else {
+                info.accessStatus = LocalGranularAccessStore::AccessStatus ();
+            }
 
             auto source = StringSource(sink.s);
             store->addToStore(info, source);
