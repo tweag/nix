@@ -792,7 +792,11 @@ std::shared_ptr<const ValidPathInfo> LocalStore::queryPathInfoInternal(State & s
         info->references.insert(parseStorePath(useQueryReferences.getStr(0)));
 
     if (experimentalFeatureSettings.isEnabled(Xp::ACLs)){
-        info->accessStatus = getCurrentAccessStatus(path);
+        if (pathExists(Store::toRealPath(path))) {
+            info->accessStatus = getCurrentAccessStatus(path);
+        } else {
+            info->accessStatus = std::nullopt;
+        }
     }
 
     return info;
