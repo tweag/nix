@@ -1176,18 +1176,7 @@ void LocalStore::ensureAccess(const AccessStatus & accessStatus, const StoreObje
                 return fmt("path %s", printStorePath(p));
             },
             [&](StoreObjectDerivationOutput b) {
-                auto drv = readDerivation(b.drvPath);
-                auto outputHashes =
-                    staticOutputHashes(*this, drv);
-                auto drvOutputs = drv.outputsAndOptPaths(*this);
-                bool known = drvOutputs.contains(b.output) &&
-                                drvOutputs.at(b.output).second;
-                if (known) {
-                    auto realPath = printStorePath(*drvOutputs.at(b.output).second);
-                    return fmt("path %s", realPath);
-                } else {
                     return fmt("output %s of derivation %s", b.output, printStorePath(b.drvPath));
-                }
             },
             [&](StoreObjectDerivationLog l) {
                 return fmt("build log of derivation %s", printStorePath(l.drvPath));
@@ -1221,13 +1210,14 @@ void LocalStore::setAccessStatus(const StoreObject & storePathstoreObject, const
         std::visit(overloaded {
             [&](StorePath p) {},
             [&](StoreObjectDerivationOutput p) {
+                if (isValidPath(p.drvPath)){
                     auto drv = readDerivation(p.drvPath);
-                    auto outputHashes = staticOutputHashes(*this, drv);
                     auto drvOutputs = drv.outputsAndOptPaths(*this);
                     if (drvOutputs.contains(p.output) && drvOutputs.at(p.output).second) {
                         auto path = *drvOutputs.at(p.output).second;
                         futurePermissions[path] = status;
                     }
+                }
             },
             [&](StoreObjectDerivationLog l){}
         }, storePathstoreObject);
@@ -1398,17 +1388,16 @@ bool LocalStore::shouldSyncPermissions(const StoreObject &storeObject) {
 bool LocalStore::pathOfStoreObjectExists(const StoreObject & storeObject)
 {
     experimentalFeatureSettings.require(Xp::ACLs);
-
     return std::visit(overloaded {
         [&](StorePath p){
-            auto path = Store::toRealPath(p);
-            return pathExists(path);
+            return (isValidPath(p) && pathExists(Store::toRealPath(p)));
         },
         [&](StoreObjectDerivationOutput p) {
+            if (!isValidPath(p.drvPath)) return false;
             auto drv = readDerivation(p.drvPath);
-            auto outputHashes = staticOutputHashes(*this, drv);
             auto drvOutputs = drv.outputsAndOptPaths(*this);
             if (drvOutputs.contains(p.output) && drvOutputs.at(p.output).second) {
+                if (!isValidPath(*drvOutputs.at(p.output).second)) return false;
                 auto path = Store::toRealPath(*drvOutputs.at(p.output).second);
                 return pathExists(path);
                 }
