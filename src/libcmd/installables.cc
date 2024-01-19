@@ -621,17 +621,6 @@ std::vector<std::pair<ref<Installable>, BuiltPathWithResult>> Installable::build
         for (auto b : i->toDerivedPaths()) {
             pathsToBuild.push_back(b.path);
             backmap[b.path].push_back({.info = b.info, .installable = i});
-            if (protect) {
-                LocalStore::AccessStatus status {true, {ACL::User(getuid())}};
-                std::visit(overloaded {
-                    [&](DerivedPath::Opaque p){
-                        require<LocalGranularAccessStore>(*store).setAccessStatus(p.path, status, false);
-                    },
-                    [&](DerivedPath::Built b){
-                        require<LocalGranularAccessStore>(*store).setAccessStatus(b, status, false);
-                    }
-                }, b.path);
-            }
         }
     }
 
