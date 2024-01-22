@@ -1489,14 +1489,14 @@ static void derivationStrictInternal(EvalState & state, const std::string & drvN
         // Set default permissions for outputs and log file
         for (auto & output : outputs) {
             if (!outputsPermissionAlreadySet.contains(output)){
-                LocalGranularAccessStore::AccessStatus status = LocalGranularAccessStore::AccessStatus(false, {});
+                LocalGranularAccessStore::AccessStatus status;
                 if (auto localStore = dynamic_cast<LocalGranularAccessStore*>(&*state.store)){
                     localStore->setAccessStatus(StoreObjectDerivationOutput {drvPath, output}, status, true);
                 }
             }
         }
         if (!logPermissionAlreadySet){
-            LocalGranularAccessStore::AccessStatus logStatus = LocalGranularAccessStore::AccessStatus(false, {});
+            LocalGranularAccessStore::AccessStatus logStatus;
             if (auto localStore = dynamic_cast<LocalGranularAccessStore*>(&*state.store)){
                 require<LocalGranularAccessStore>(*state.store).setAccessStatus(StoreObjectDerivationLog {drvPath}, logStatus, true);
             }
