@@ -302,6 +302,8 @@ public:
         Callback<std::shared_ptr<const Realisation>> callback) noexcept override;
 
     void ensureAccess(const AccessStatus & accessStatus, const StoreObject & object);
+    AccessStatus defaultAccessStatus();
+    AccessStatus defaultAccessStatus(const StoreObject & storeObject) override;
     void setAccessStatus(const StoreObject & storeObject, const AccessStatus & status, const bool & ensureAccessCheck) override;
     void setCurrentAccessStatus(const StoreObject & storeObject, const AccessStatus & status);
     void setCurrentAccessStatus(const Path & path, const AccessStatus & status);

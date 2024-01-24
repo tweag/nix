@@ -21,6 +21,15 @@ struct AccessStatusFor {
         isProtected = settings.protectByDefault.get();
         entities = {};
     };
+    AccessStatusFor(uid_t uid){
+        isProtected = settings.protectByDefault.get();
+        if (settings.protectByDefault.get()) {
+            entities = {ACL::User(uid)};
+        }
+        else {
+            entities = {};
+        }
+    }
     AccessStatusFor(bool isProtected, std::set<AccessControlEntity> entities = {}) : isProtected(isProtected), entities(entities) {};
 
     nlohmann::json json() const {

@@ -1016,6 +1016,15 @@ static void performOp(TunnelLogger * logger, ref<Store> store,
         break;
     }
 
+    case WorkerProto::Op::DefaultAccessStatus: {
+        auto object = WorkerProto::Serialise<StoreObject>::read(*store, rconn);
+        logger->startWork();
+        auto status = require<LocalGranularAccessStore>(*store).defaultAccessStatus(object);
+        logger->stopWork();
+        WorkerProto::Serialise<LocalStore::AccessStatus>::write(*store, wconn, status);
+        break;
+    }
+
     case WorkerProto::Op::SetAccessStatus: {
         auto object = WorkerProto::Serialise<StoreObject>::read(*store, rconn);
         auto status = WorkerProto::Serialise<LocalStore::AccessStatus>::read(*store, rconn);

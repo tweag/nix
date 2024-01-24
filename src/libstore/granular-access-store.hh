@@ -55,6 +55,7 @@ struct GranularAccessStore : public virtual Store
 
 
     virtual void setAccessStatus(const StoreObject & storeObject, const AccessStatus & status, const bool & ensureAccessCheck) = 0;
+    virtual AccessStatus defaultAccessStatus(const StoreObject & storeObject) = 0;
     virtual AccessStatus getAccessStatus(const StoreObject & storeObject) = 0;
 
     virtual std::set<AccessControlGroup> getSubjectGroupsUncached(AccessControlSubject subject) = 0;

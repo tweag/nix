@@ -172,6 +172,7 @@ public:
 
     void setAccessStatus(const StoreObject & storeObject, const AccessStatus & status, const bool & ensureAccessCheck) override;
     AccessStatus getAccessStatus(const StoreObject & storeObject) override;
+    AccessStatus defaultAccessStatus(const StoreObject & storeObject) override;
 
     std::set<ACL::Group> getSubjectGroupsUncached(ACL::User user) override;
 

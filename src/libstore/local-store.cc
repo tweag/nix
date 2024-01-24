@@ -985,7 +985,7 @@ void LocalStore::syncPathPermissions(const ValidPathInfo & info)
         } else if (info.isContentAddressed(*this)){
             // For content-adressed derivations the path is not known when we write to the future map.
             // So we define the default permissions for these here.
-            setCurrentAccessStatus(realPath, AccessStatus());
+            setCurrentAccessStatus(realPath, defaultAccessStatus());
         }
     }
 }
@@ -1203,6 +1203,32 @@ void LocalStore::ensureAccess(const AccessStatus & accessStatus, const StoreObje
     throw AccessDenied("you (%s) would not have access to %s; ensure that you do by adding yourself or a group you're in to the list", getUserName(uid), description);
 }
 
+
+LocalStore::AccessStatus LocalStore::defaultAccessStatus() {
+    uid_t uid = getuid();
+    if (effectiveUser) uid = effectiveUser->uid;
+    return AccessStatus(uid);
+}
+
+LocalStore::AccessStatus LocalStore::defaultAccessStatus(const StoreObject & storeObject) {
+    if (settings.protectByDefault.get()){
+        uid_t uid = getuid();
+        if (effectiveUser) uid = effectiveUser->uid;
+        if (futurePermissions.contains(storeObject)) {
+          auto currentStatus = futurePermissions[storeObject];
+          if (currentStatus.isProtected) currentStatus.entities.insert(ACL::User(uid));
+          return currentStatus;
+        } else if (pathOfStoreObjectExists(storeObject)) {
+          auto currentStatus = getCurrentAccessStatus(storeObject);
+          if (currentStatus.isProtected) currentStatus.entities.insert(ACL::User(uid));
+          return currentStatus;
+        }
+        return AccessStatus(uid);
+      }
+    else {
+      return defaultAccessStatus();
+    }
+}
 
 void LocalStore::setAccessStatus(const StoreObject & storePathstoreObject, const AccessStatus & status, const bool & ensureAccessCheck)
 {
@@ -1676,7 +1702,8 @@ StorePath LocalStore::addToStoreFromDump(Source & source0, std::string_view name
 
     addTempRoot(dstPath);
 
-    if (repair || !isValidPath(dstPath)) {
+
+    if (repair || !isValidPath(dstPath) || !canAccess(dstPath)) {
 
         /* The first check above is an optimisation to prevent
            unnecessary lock acquisition. */
@@ -1685,7 +1712,7 @@ StorePath LocalStore::addToStoreFromDump(Source & source0, std::string_view name
 
         PathLocks outputLock({realPath});
 
-        if (repair || !isValidPath(dstPath)) {
+        if (repair || !isValidPath(dstPath) || !canAccess(dstPath)) {
 
             deletePath(realPath);
 

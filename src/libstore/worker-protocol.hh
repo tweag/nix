@@ -172,6 +172,7 @@ enum struct WorkerProto::Op : uint64_t
     AddPermRoot = 47,
     GetAccessStatus = 48,
     SetAccessStatus = 49,
+    DefaultAccessStatus = 50,
 };
 
 /**

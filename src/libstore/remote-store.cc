@@ -924,6 +924,16 @@ void RemoteStore::addBuildLog(const StorePath & drvPath, std::string_view log)
     readInt(conn->from);
 }
 
+RemoteStore::AccessStatus RemoteStore::defaultAccessStatus(const StoreObject & storeObject)
+{
+    auto conn(getConnection());
+    conn->to << WorkerProto::Op::DefaultAccessStatus;
+    WorkerProto::Serialise<StoreObject>::write(*this, *conn, storeObject);
+    conn.processStderr();
+    auto status = WorkerProto::Serialise<AccessStatus>::read(*this, *conn);
+    return status;
+}
+
 void RemoteStore::setAccessStatus(const StoreObject & storeObject, const RemoteStore::AccessStatus & status, const bool & ensureAccessCheck)
 {
     auto conn(getConnection());
