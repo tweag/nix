@@ -93,10 +93,16 @@ BuildResult Store::buildDerivation(const StorePath & drvPath, const BasicDerivat
 
 void Store::ensurePath(const StorePath & path)
 {
+    Worker worker(*this, *this);
+
+    /* If we do not have access to the path, try to build it again to update permissions */
+    if (auto localStore = dynamic_cast<LocalGranularAccessStore *>(&worker.store)){
+        if (!localStore->canAccess(path)) throw Error(fmt("ACLS: cannot access paths %s", printStorePath(path)));
+    }
+
     /* If the path is already valid, we're done. */
     if (isValidPath(path)) return;
 
-    Worker worker(*this, *this);
     GoalPtr goal = worker.makePathSubstitutionGoal(path);
     Goals goals = {goal};
 
