@@ -18,6 +18,4 @@ foo
 
 `nix store access unprotect` removes the ACL protection from a store path.
 
-<!-- FIXME moar docs -->
-
 )"

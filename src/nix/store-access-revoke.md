@@ -19,7 +19,10 @@ The following users have access to the path:
 
 `nix store access revoke` revokes users or groups access to store paths.
 
-<!-- FIXME moar docs -->
+## Options
+
+- `--user` specify a user to revoke access to.
+- `--group` specify a group to revoke access to.
 
 Note: revoking access to a user via the `--user` flag removes the user from the list of allowed users, it may still be able to access the path through the permission of its group.
 

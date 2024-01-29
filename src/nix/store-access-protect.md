@@ -20,6 +20,4 @@ cat: /nix/store/fzn8agjb9qmikbf97h1a5wlf3iifjgqz-foo: Permission denied
 
 You can use `nix store access grant` to grant users access to the path, and `nix store access unprotect` to remove the protection entirely.
 
-<!-- FIXME moar docs -->
-
 )"

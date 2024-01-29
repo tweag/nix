@@ -17,8 +17,11 @@ The following users have access to the path:
 
 # Description
 
-`nix store access grant` grants users access to store paths.
+`nix store access grant` grants users or groups access to store paths.
 
-<!-- FIXME moar docs -->
+## Options
+
+- `--user` specify a user to grant access to.
+- `--group` specify a group to grant access to.
 
 )"
