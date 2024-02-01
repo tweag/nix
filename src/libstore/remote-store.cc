@@ -110,6 +110,12 @@ void RemoteStore::initConnection(Connection & conn)
             // We don't know the answer; protocol to old.
             conn.remoteTrustsUs = std::nullopt;
         }
+        if (GET_PROTOCOL_MINOR(conn.daemonVersion) < 37) {
+            warn("Disabling the acls experimental feature as the daemon does not support it. Update your daemon to use ACLs.");
+            auto features = experimentalFeatureSettings.experimentalFeatures.get();
+            features.erase(Xp::ACLs);
+            experimentalFeatureSettings.experimentalFeatures.assign(features);
+        }
 
         auto ex = conn.processStderr();
         if (ex) std::rethrow_exception(ex);
@@ -927,6 +933,7 @@ void RemoteStore::addBuildLog(const StorePath & drvPath, std::string_view log)
 RemoteStore::AccessStatus RemoteStore::defaultAccessStatus(const StoreObject & storeObject)
 {
     auto conn(getConnection());
+    if (!experimentalFeatureSettings.isEnabled(Xp::ACLs)) return AccessStatus();
     conn->to << WorkerProto::Op::DefaultAccessStatus;
     WorkerProto::Serialise<StoreObject>::write(*this, *conn, storeObject);
     conn.processStderr();
@@ -937,6 +944,7 @@ RemoteStore::AccessStatus RemoteStore::defaultAccessStatus(const StoreObject & s
 void RemoteStore::setAccessStatus(const StoreObject & storeObject, const RemoteStore::AccessStatus & status, const bool & ensureAccessCheck)
 {
     auto conn(getConnection());
+    if (!experimentalFeatureSettings.isEnabled(Xp::ACLs)) return;
     conn->to << WorkerProto::Op::SetAccessStatus;
     WorkerProto::Serialise<StoreObject>::write(*this, *conn, storeObject);
     WorkerProto::Serialise<AccessStatus>::write(*this, *conn, status);
@@ -949,6 +957,7 @@ RemoteStore::AccessStatus RemoteStore::getAccessStatus(const StoreObject & store
 {
     auto conn(getConnection());
     conn->to << WorkerProto::Op::GetAccessStatus;
+    if (!experimentalFeatureSettings.isEnabled(Xp::ACLs)) return AccessStatus();
     WorkerProto::Serialise<StoreObject>::write(*this, *conn, storeObject);
     conn.processStderr();
     auto status = WorkerProto::Serialise<AccessStatus>::read(*this, *conn);

@@ -707,11 +707,11 @@
 
             # Disabled because the lastest version from unstable does not handle
             # the GetAccessStatus and SetAccessStatus protocol commands
-            # againstCurrentUnstable =
-            #   # FIXME: temporarily disable this on macOS because of #3605.
-            #   if system == "x86_64-linux"
-            #   then testNixVersions pkgs pkgs.nix pkgs.nixUnstable
-            #   else null;
+            againstCurrentUnstable =
+              # FIXME: temporarily disable this on macOS because of #3605.
+            if system == "x86_64-linux"
+              then testNixVersions pkgs pkgs.nix pkgs.nixUnstable
+              else null;
 
             # Disabled because the latest stable version doesn't handle
             # `NIX_DAEMON_SOCKET_PATH` which is required for the tests to work
