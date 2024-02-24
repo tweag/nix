@@ -25,7 +25,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">Nix<span id="projectnumber">&#160;2.20.0</span>
+   <div id="projectname">Nix<span id="projectnumber">&#160;2.21.0</span>
    </div>
    <div id="projectbrief">Nix, the purely functional package manager: C API (experimental)</div>
   </td>
@@ -165,40 +165,46 @@ Functions</h2></td></tr>
 <tr class="memdesc:ga16c4e7f4b32778bfb6521fbb91e55be4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get an attribute name by index in the sorted bindings.  <br /></td></tr>
 <tr class="separator:ga16c4e7f4b32778bfb6521fbb91e55be4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader">Setters</h2></td></tr>
-<tr class="memitem:gaadf7c3688869362f7b5869e0b65cb808"><td class="memItemLeft" align="right" valign="top"><a class="el" href="group__errors.html#ga76b77b272051ad446bd1d87f5d471081">nix_err</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__value__manip.html#gaadf7c3688869362f7b5869e0b65cb808">nix_set_bool</a> (<a class="el" href="structnix__c__context.html">nix_c_context</a> *context, <a class="el" href="structValue.html">Value</a> *value, bool b)</td></tr>
-<tr class="memdesc:gaadf7c3688869362f7b5869e0b65cb808"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set boolean value.  <br /></td></tr>
-<tr class="separator:gaadf7c3688869362f7b5869e0b65cb808"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga7349b2cd6636a9afb68156e81da5d70b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="group__errors.html#ga76b77b272051ad446bd1d87f5d471081">nix_err</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__value__manip.html#ga7349b2cd6636a9afb68156e81da5d70b">nix_set_string</a> (<a class="el" href="structnix__c__context.html">nix_c_context</a> *context, <a class="el" href="structValue.html">Value</a> *value, const char *str)</td></tr>
-<tr class="memdesc:ga7349b2cd6636a9afb68156e81da5d70b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set a string.  <br /></td></tr>
-<tr class="separator:ga7349b2cd6636a9afb68156e81da5d70b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga5e041c80488ca161e5808cfa73a91b1b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="group__errors.html#ga76b77b272051ad446bd1d87f5d471081">nix_err</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__value__manip.html#ga5e041c80488ca161e5808cfa73a91b1b">nix_set_path_string</a> (<a class="el" href="structnix__c__context.html">nix_c_context</a> *context, <a class="el" href="structValue.html">Value</a> *value, const char *str)</td></tr>
-<tr class="memdesc:ga5e041c80488ca161e5808cfa73a91b1b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set a path.  <br /></td></tr>
-<tr class="separator:ga5e041c80488ca161e5808cfa73a91b1b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gaebe93a7c5329f59e41d481ad54c59e18"><td class="memItemLeft" align="right" valign="top"><a class="el" href="group__errors.html#ga76b77b272051ad446bd1d87f5d471081">nix_err</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__value__manip.html#gaebe93a7c5329f59e41d481ad54c59e18">nix_set_float</a> (<a class="el" href="structnix__c__context.html">nix_c_context</a> *context, <a class="el" href="structValue.html">Value</a> *value, double d)</td></tr>
-<tr class="memdesc:gaebe93a7c5329f59e41d481ad54c59e18"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set a float.  <br /></td></tr>
-<tr class="separator:gaebe93a7c5329f59e41d481ad54c59e18"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gaa28ae50cb15c24c4806a068dc447822f"><td class="memItemLeft" align="right" valign="top"><a class="el" href="group__errors.html#ga76b77b272051ad446bd1d87f5d471081">nix_err</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__value__manip.html#gaa28ae50cb15c24c4806a068dc447822f">nix_set_int</a> (<a class="el" href="structnix__c__context.html">nix_c_context</a> *context, <a class="el" href="structValue.html">Value</a> *value, int64_t i)</td></tr>
-<tr class="memdesc:gaa28ae50cb15c24c4806a068dc447822f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set an int.  <br /></td></tr>
-<tr class="separator:gaa28ae50cb15c24c4806a068dc447822f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga98f012f5a3333e2df76dd393b2ce11f5"><td class="memItemLeft" align="right" valign="top"><a class="el" href="group__errors.html#ga76b77b272051ad446bd1d87f5d471081">nix_err</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__value__manip.html#ga98f012f5a3333e2df76dd393b2ce11f5">nix_set_null</a> (<a class="el" href="structnix__c__context.html">nix_c_context</a> *context, <a class="el" href="structValue.html">Value</a> *value)</td></tr>
-<tr class="memdesc:ga98f012f5a3333e2df76dd393b2ce11f5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set null.  <br /></td></tr>
-<tr class="separator:ga98f012f5a3333e2df76dd393b2ce11f5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga60d2c0b332a4eaea4592b1c6a3a1eda3"><td class="memItemLeft" align="right" valign="top"><a class="el" href="group__errors.html#ga76b77b272051ad446bd1d87f5d471081">nix_err</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__value__manip.html#ga60d2c0b332a4eaea4592b1c6a3a1eda3">nix_set_external</a> (<a class="el" href="structnix__c__context.html">nix_c_context</a> *context, <a class="el" href="structValue.html">Value</a> *value, <a class="el" href="group__Externals.html#gaf99cd12b1e67170135b3de9ed87765bf">ExternalValue</a> *val)</td></tr>
-<tr class="memdesc:ga60d2c0b332a4eaea4592b1c6a3a1eda3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set an external value.  <br /></td></tr>
-<tr class="separator:ga60d2c0b332a4eaea4592b1c6a3a1eda3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga1f858ae6aeb441e34eada98d4eabe9c3"><td class="memItemLeft" align="right" valign="top"><a class="el" href="group__errors.html#ga76b77b272051ad446bd1d87f5d471081">nix_err</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__value__manip.html#ga1f858ae6aeb441e34eada98d4eabe9c3">nix_make_list</a> (<a class="el" href="structnix__c__context.html">nix_c_context</a> *context, <a class="el" href="structEvalState.html">EvalState</a> *s, <a class="el" href="structValue.html">Value</a> *value, unsigned int size)</td></tr>
-<tr class="memdesc:ga1f858ae6aeb441e34eada98d4eabe9c3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Allocate a list.  <br /></td></tr>
-<tr class="separator:ga1f858ae6aeb441e34eada98d4eabe9c3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gae08c2799fececc3060a36a1413d8030f"><td class="memItemLeft" align="right" valign="top"><a class="el" href="group__errors.html#ga76b77b272051ad446bd1d87f5d471081">nix_err</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__value__manip.html#gae08c2799fececc3060a36a1413d8030f">nix_set_list_byidx</a> (<a class="el" href="structnix__c__context.html">nix_c_context</a> *context, <a class="el" href="structValue.html">Value</a> *value, unsigned int ix, <a class="el" href="structValue.html">Value</a> *elem)</td></tr>
-<tr class="memdesc:gae08c2799fececc3060a36a1413d8030f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Manipulate a list by index.  <br /></td></tr>
-<tr class="separator:gae08c2799fececc3060a36a1413d8030f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="heading"><td colspan="2"><h2 class="groupheader">Initializers</h2></td></tr>
+<tr class="memitem:ga088b216dac602373f5c410c6e9f9e006"><td class="memItemLeft" align="right" valign="top"><a class="el" href="group__errors.html#ga76b77b272051ad446bd1d87f5d471081">nix_err</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__value__manip.html#ga088b216dac602373f5c410c6e9f9e006">nix_init_bool</a> (<a class="el" href="structnix__c__context.html">nix_c_context</a> *context, <a class="el" href="structValue.html">Value</a> *value, bool b)</td></tr>
+<tr class="memdesc:ga088b216dac602373f5c410c6e9f9e006"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set boolean value.  <br /></td></tr>
+<tr class="separator:ga088b216dac602373f5c410c6e9f9e006"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga8a1f19936f36939e8c5c751b71b59b17"><td class="memItemLeft" align="right" valign="top"><a class="el" href="group__errors.html#ga76b77b272051ad446bd1d87f5d471081">nix_err</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__value__manip.html#ga8a1f19936f36939e8c5c751b71b59b17">nix_init_string</a> (<a class="el" href="structnix__c__context.html">nix_c_context</a> *context, <a class="el" href="structValue.html">Value</a> *value, const char *str)</td></tr>
+<tr class="memdesc:ga8a1f19936f36939e8c5c751b71b59b17"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set a string.  <br /></td></tr>
+<tr class="separator:ga8a1f19936f36939e8c5c751b71b59b17"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga2f5af0a46caec904b05213f27bff6241"><td class="memItemLeft" align="right" valign="top"><a class="el" href="group__errors.html#ga76b77b272051ad446bd1d87f5d471081">nix_err</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__value__manip.html#ga2f5af0a46caec904b05213f27bff6241">nix_init_path_string</a> (<a class="el" href="structnix__c__context.html">nix_c_context</a> *context, <a class="el" href="structValue.html">Value</a> *value, const char *str)</td></tr>
+<tr class="memdesc:ga2f5af0a46caec904b05213f27bff6241"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set a path.  <br /></td></tr>
+<tr class="separator:ga2f5af0a46caec904b05213f27bff6241"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga8676f2a86924757b0f5ababa117c237a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="group__errors.html#ga76b77b272051ad446bd1d87f5d471081">nix_err</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__value__manip.html#ga8676f2a86924757b0f5ababa117c237a">nix_init_float</a> (<a class="el" href="structnix__c__context.html">nix_c_context</a> *context, <a class="el" href="structValue.html">Value</a> *value, double d)</td></tr>
+<tr class="memdesc:ga8676f2a86924757b0f5ababa117c237a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set a float.  <br /></td></tr>
+<tr class="separator:ga8676f2a86924757b0f5ababa117c237a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga4b600dc9c6f1bd5522c2ad336a25885f"><td class="memItemLeft" align="right" valign="top"><a class="el" href="group__errors.html#ga76b77b272051ad446bd1d87f5d471081">nix_err</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__value__manip.html#ga4b600dc9c6f1bd5522c2ad336a25885f">nix_init_int</a> (<a class="el" href="structnix__c__context.html">nix_c_context</a> *context, <a class="el" href="structValue.html">Value</a> *value, int64_t i)</td></tr>
+<tr class="memdesc:ga4b600dc9c6f1bd5522c2ad336a25885f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set an int.  <br /></td></tr>
+<tr class="separator:ga4b600dc9c6f1bd5522c2ad336a25885f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaa11afa0be694bb6fabaebb7aafa07a62"><td class="memItemLeft" align="right" valign="top"><a class="el" href="group__errors.html#ga76b77b272051ad446bd1d87f5d471081">nix_err</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__value__manip.html#gaa11afa0be694bb6fabaebb7aafa07a62">nix_init_null</a> (<a class="el" href="structnix__c__context.html">nix_c_context</a> *context, <a class="el" href="structValue.html">Value</a> *value)</td></tr>
+<tr class="memdesc:gaa11afa0be694bb6fabaebb7aafa07a62"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set null.  <br /></td></tr>
+<tr class="separator:gaa11afa0be694bb6fabaebb7aafa07a62"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga532ac2192f44edc443afe865c5e228ea"><td class="memItemLeft" align="right" valign="top"><a class="el" href="group__errors.html#ga76b77b272051ad446bd1d87f5d471081">nix_err</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__value__manip.html#ga532ac2192f44edc443afe865c5e228ea">nix_init_external</a> (<a class="el" href="structnix__c__context.html">nix_c_context</a> *context, <a class="el" href="structValue.html">Value</a> *value, <a class="el" href="group__Externals.html#gaf99cd12b1e67170135b3de9ed87765bf">ExternalValue</a> *val)</td></tr>
+<tr class="memdesc:ga532ac2192f44edc443afe865c5e228ea"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set an external value.  <br /></td></tr>
+<tr class="separator:ga532ac2192f44edc443afe865c5e228ea"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga93aef5f0da15ae59c788aedaedd2ba60"><td class="memItemLeft" align="right" valign="top"><a class="el" href="group__errors.html#ga76b77b272051ad446bd1d87f5d471081">nix_err</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__value__manip.html#ga93aef5f0da15ae59c788aedaedd2ba60">nix_make_list</a> (<a class="el" href="structnix__c__context.html">nix_c_context</a> *context, <a class="el" href="structEvalState.html">EvalState</a> *s, <a class="el" href="structValue.html">Value</a> *value, ListBuilder *b)</td></tr>
+<tr class="memdesc:ga93aef5f0da15ae59c788aedaedd2ba60"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a list from a list builder.  <br /></td></tr>
+<tr class="separator:ga93aef5f0da15ae59c788aedaedd2ba60"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaf1eae78431d73e362ac7fac503dd7332"><td class="memItemLeft" align="right" valign="top">ListBuilder *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__value__manip.html#gaf1eae78431d73e362ac7fac503dd7332">nix_make_list_builder</a> (<a class="el" href="structnix__c__context.html">nix_c_context</a> *context, <a class="el" href="structEvalState.html">EvalState</a> *state, size_t capacity)</td></tr>
+<tr class="memdesc:gaf1eae78431d73e362ac7fac503dd7332"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a list builder.  <br /></td></tr>
+<tr class="separator:gaf1eae78431d73e362ac7fac503dd7332"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga47096ed1742b3cf147c4fc42e1f1fc7c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="group__errors.html#ga76b77b272051ad446bd1d87f5d471081">nix_err</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__value__manip.html#ga47096ed1742b3cf147c4fc42e1f1fc7c">nix_list_builder_insert</a> (<a class="el" href="structnix__c__context.html">nix_c_context</a> *context, ListBuilder *builder, <a class="el" href="structValue.html">Value</a> *value)</td></tr>
+<tr class="memdesc:ga47096ed1742b3cf147c4fc42e1f1fc7c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Insert bindings into a builder.  <br /></td></tr>
+<tr class="separator:ga47096ed1742b3cf147c4fc42e1f1fc7c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga2abb82d98e53527dac7334999f7d2246"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__value__manip.html#ga2abb82d98e53527dac7334999f7d2246">nix_list_builder_free</a> (ListBuilder *builder)</td></tr>
+<tr class="memdesc:ga2abb82d98e53527dac7334999f7d2246"><td class="mdescLeft">&#160;</td><td class="mdescRight">Free a list builder.  <br /></td></tr>
+<tr class="separator:ga2abb82d98e53527dac7334999f7d2246"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga3e6c970a08e00d1d4e00c1066b9c9729"><td class="memItemLeft" align="right" valign="top"><a class="el" href="group__errors.html#ga76b77b272051ad446bd1d87f5d471081">nix_err</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__value__manip.html#ga3e6c970a08e00d1d4e00c1066b9c9729">nix_make_attrs</a> (<a class="el" href="structnix__c__context.html">nix_c_context</a> *context, <a class="el" href="structValue.html">Value</a> *value, <a class="el" href="group__value__manip.html#ga0c9f12c9e33e4211655c22e94468fa84">BindingsBuilder</a> *b)</td></tr>
 <tr class="memdesc:ga3e6c970a08e00d1d4e00c1066b9c9729"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create an attribute set from a bindings builder.  <br /></td></tr>
 <tr class="separator:ga3e6c970a08e00d1d4e00c1066b9c9729"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gaba1f6239d324f565b3e064fdcd9ac2b5"><td class="memItemLeft" align="right" valign="top"><a class="el" href="group__errors.html#ga76b77b272051ad446bd1d87f5d471081">nix_err</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__value__manip.html#gaba1f6239d324f565b3e064fdcd9ac2b5">nix_set_primop</a> (<a class="el" href="structnix__c__context.html">nix_c_context</a> *context, <a class="el" href="structValue.html">Value</a> *value, <a class="el" href="group__primops.html#ga2e435859eef601a50aadd3c39e50f2e2">PrimOp</a> *op)</td></tr>
-<tr class="memdesc:gaba1f6239d324f565b3e064fdcd9ac2b5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set primop.  <br /></td></tr>
-<tr class="separator:gaba1f6239d324f565b3e064fdcd9ac2b5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga5138834e516251ad6e5dde138fe98461"><td class="memItemLeft" align="right" valign="top"><a class="el" href="group__errors.html#ga76b77b272051ad446bd1d87f5d471081">nix_err</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__value__manip.html#ga5138834e516251ad6e5dde138fe98461">nix_init_primop</a> (<a class="el" href="structnix__c__context.html">nix_c_context</a> *context, <a class="el" href="structValue.html">Value</a> *value, <a class="el" href="group__primops.html#ga2e435859eef601a50aadd3c39e50f2e2">PrimOp</a> *op)</td></tr>
+<tr class="memdesc:ga5138834e516251ad6e5dde138fe98461"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set primop.  <br /></td></tr>
+<tr class="separator:ga5138834e516251ad6e5dde138fe98461"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga136be244551c3045bb7c87e2f5a5de3e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="group__errors.html#ga76b77b272051ad446bd1d87f5d471081">nix_err</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__value__manip.html#ga136be244551c3045bb7c87e2f5a5de3e">nix_copy_value</a> (<a class="el" href="structnix__c__context.html">nix_c_context</a> *context, <a class="el" href="structValue.html">Value</a> *value, <a class="el" href="structValue.html">Value</a> *source)</td></tr>
 <tr class="memdesc:ga136be244551c3045bb7c87e2f5a5de3e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Copy from another value.  <br /></td></tr>
 <tr class="separator:ga136be244551c3045bb7c87e2f5a5de3e"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -1003,6 +1009,431 @@ NULL in case of error. </dd></dl>
 
 </div>
 </div>
+<a id="ga088b216dac602373f5c410c6e9f9e006" name="ga088b216dac602373f5c410c6e9f9e006"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga088b216dac602373f5c410c6e9f9e006">&#9670;&#160;</a></span>nix_init_bool()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="group__errors.html#ga76b77b272051ad446bd1d87f5d471081">nix_err</a> nix_init_bool </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structnix__c__context.html">nix_c_context</a> *&#160;</td>
+          <td class="paramname"><em>context</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structValue.html">Value</a> *&#160;</td>
+          <td class="paramname"><em>value</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>b</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Set boolean value. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[out]</td><td class="paramname">context</td><td>Optional, stores error information </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">value</td><td>Nix value to modify </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">b</td><td>the boolean value </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>error code, NIX_OK on success. </dd></dl>
+
+</div>
+</div>
+<a id="ga532ac2192f44edc443afe865c5e228ea" name="ga532ac2192f44edc443afe865c5e228ea"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga532ac2192f44edc443afe865c5e228ea">&#9670;&#160;</a></span>nix_init_external()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="group__errors.html#ga76b77b272051ad446bd1d87f5d471081">nix_err</a> nix_init_external </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structnix__c__context.html">nix_c_context</a> *&#160;</td>
+          <td class="paramname"><em>context</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structValue.html">Value</a> *&#160;</td>
+          <td class="paramname"><em>value</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="group__Externals.html#gaf99cd12b1e67170135b3de9ed87765bf">ExternalValue</a> *&#160;</td>
+          <td class="paramname"><em>val</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Set an external value. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[out]</td><td class="paramname">context</td><td>Optional, stores error information </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">value</td><td>Nix value to modify </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">val</td><td>the external value to set. Will be GC-referenced by the value. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>error code, NIX_OK on success. </dd></dl>
+
+</div>
+</div>
+<a id="ga8676f2a86924757b0f5ababa117c237a" name="ga8676f2a86924757b0f5ababa117c237a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga8676f2a86924757b0f5ababa117c237a">&#9670;&#160;</a></span>nix_init_float()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="group__errors.html#ga76b77b272051ad446bd1d87f5d471081">nix_err</a> nix_init_float </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structnix__c__context.html">nix_c_context</a> *&#160;</td>
+          <td class="paramname"><em>context</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structValue.html">Value</a> *&#160;</td>
+          <td class="paramname"><em>value</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>d</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Set a float. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[out]</td><td class="paramname">context</td><td>Optional, stores error information </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">value</td><td>Nix value to modify </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">d</td><td>the float, 64-bits </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>error code, NIX_OK on success. </dd></dl>
+
+</div>
+</div>
+<a id="ga4b600dc9c6f1bd5522c2ad336a25885f" name="ga4b600dc9c6f1bd5522c2ad336a25885f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga4b600dc9c6f1bd5522c2ad336a25885f">&#9670;&#160;</a></span>nix_init_int()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="group__errors.html#ga76b77b272051ad446bd1d87f5d471081">nix_err</a> nix_init_int </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structnix__c__context.html">nix_c_context</a> *&#160;</td>
+          <td class="paramname"><em>context</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structValue.html">Value</a> *&#160;</td>
+          <td class="paramname"><em>value</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int64_t&#160;</td>
+          <td class="paramname"><em>i</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Set an int. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[out]</td><td class="paramname">context</td><td>Optional, stores error information </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">value</td><td>Nix value to modify </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">i</td><td>the int </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>error code, NIX_OK on success. </dd></dl>
+
+</div>
+</div>
+<a id="gaa11afa0be694bb6fabaebb7aafa07a62" name="gaa11afa0be694bb6fabaebb7aafa07a62"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gaa11afa0be694bb6fabaebb7aafa07a62">&#9670;&#160;</a></span>nix_init_null()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="group__errors.html#ga76b77b272051ad446bd1d87f5d471081">nix_err</a> nix_init_null </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structnix__c__context.html">nix_c_context</a> *&#160;</td>
+          <td class="paramname"><em>context</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structValue.html">Value</a> *&#160;</td>
+          <td class="paramname"><em>value</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Set null. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[out]</td><td class="paramname">context</td><td>Optional, stores error information </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">value</td><td>Nix value to modify </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>error code, NIX_OK on success. </dd></dl>
+
+</div>
+</div>
+<a id="ga2f5af0a46caec904b05213f27bff6241" name="ga2f5af0a46caec904b05213f27bff6241"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga2f5af0a46caec904b05213f27bff6241">&#9670;&#160;</a></span>nix_init_path_string()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="group__errors.html#ga76b77b272051ad446bd1d87f5d471081">nix_err</a> nix_init_path_string </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structnix__c__context.html">nix_c_context</a> *&#160;</td>
+          <td class="paramname"><em>context</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structValue.html">Value</a> *&#160;</td>
+          <td class="paramname"><em>value</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>str</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Set a path. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[out]</td><td class="paramname">context</td><td>Optional, stores error information </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">value</td><td>Nix value to modify </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">str</td><td>the path string, copied </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>error code, NIX_OK on success. </dd></dl>
+
+</div>
+</div>
+<a id="ga5138834e516251ad6e5dde138fe98461" name="ga5138834e516251ad6e5dde138fe98461"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga5138834e516251ad6e5dde138fe98461">&#9670;&#160;</a></span>nix_init_primop()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="group__errors.html#ga76b77b272051ad446bd1d87f5d471081">nix_err</a> nix_init_primop </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structnix__c__context.html">nix_c_context</a> *&#160;</td>
+          <td class="paramname"><em>context</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structValue.html">Value</a> *&#160;</td>
+          <td class="paramname"><em>value</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="group__primops.html#ga2e435859eef601a50aadd3c39e50f2e2">PrimOp</a> *&#160;</td>
+          <td class="paramname"><em>op</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Set primop. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[out]</td><td class="paramname">context</td><td>Optional, stores error information </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">value</td><td>Nix value to modify </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">op</td><td>primop, will be gc-referenced by the value </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="group__primops.html#ga5bf66d0453a6c978b34c23215b4cb4b4" title="Allocate a PrimOp.">nix_alloc_primop</a> </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>error code, NIX_OK on success. </dd></dl>
+
+</div>
+</div>
+<a id="ga8a1f19936f36939e8c5c751b71b59b17" name="ga8a1f19936f36939e8c5c751b71b59b17"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga8a1f19936f36939e8c5c751b71b59b17">&#9670;&#160;</a></span>nix_init_string()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="group__errors.html#ga76b77b272051ad446bd1d87f5d471081">nix_err</a> nix_init_string </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structnix__c__context.html">nix_c_context</a> *&#160;</td>
+          <td class="paramname"><em>context</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structValue.html">Value</a> *&#160;</td>
+          <td class="paramname"><em>value</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>str</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Set a string. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[out]</td><td class="paramname">context</td><td>Optional, stores error information </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">value</td><td>Nix value to modify </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">str</td><td>the string, copied </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>error code, NIX_OK on success. </dd></dl>
+
+</div>
+</div>
+<a id="ga2abb82d98e53527dac7334999f7d2246" name="ga2abb82d98e53527dac7334999f7d2246"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga2abb82d98e53527dac7334999f7d2246">&#9670;&#160;</a></span>nix_list_builder_free()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void nix_list_builder_free </td>
+          <td>(</td>
+          <td class="paramtype">ListBuilder *&#160;</td>
+          <td class="paramname"><em>builder</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Free a list builder. </p>
+<p>Does not fail. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">builder</td><td>the builder to free </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ga47096ed1742b3cf147c4fc42e1f1fc7c" name="ga47096ed1742b3cf147c4fc42e1f1fc7c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga47096ed1742b3cf147c4fc42e1f1fc7c">&#9670;&#160;</a></span>nix_list_builder_insert()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="group__errors.html#ga76b77b272051ad446bd1d87f5d471081">nix_err</a> nix_list_builder_insert </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structnix__c__context.html">nix_c_context</a> *&#160;</td>
+          <td class="paramname"><em>context</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">ListBuilder *&#160;</td>
+          <td class="paramname"><em>builder</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structValue.html">Value</a> *&#160;</td>
+          <td class="paramname"><em>value</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Insert bindings into a builder. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[out]</td><td class="paramname">context</td><td>Optional, stores error information </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">builder</td><td>ListBuilder to insert into </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">value</td><td>value to insert </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>error code, NIX_OK on success. </dd></dl>
+
+</div>
+</div>
 <a id="ga3e6c970a08e00d1d4e00c1066b9c9729" name="ga3e6c970a08e00d1d4e00c1066b9c9729"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ga3e6c970a08e00d1d4e00c1066b9c9729">&#9670;&#160;</a></span>nix_make_attrs()</h2>
 
@@ -1093,8 +1524,8 @@ NULL in case of error. </dd></dl>
 
 </div>
 </div>
-<a id="ga1f858ae6aeb441e34eada98d4eabe9c3" name="ga1f858ae6aeb441e34eada98d4eabe9c3"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga1f858ae6aeb441e34eada98d4eabe9c3">&#9670;&#160;</a></span>nix_make_list()</h2>
+<a id="ga93aef5f0da15ae59c788aedaedd2ba60" name="ga93aef5f0da15ae59c788aedaedd2ba60"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga93aef5f0da15ae59c788aedaedd2ba60">&#9670;&#160;</a></span>nix_make_list()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1120,52 +1551,7 @@ NULL in case of error. </dd></dl>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">unsigned int&#160;</td>
-          <td class="paramname"><em>size</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Allocate a list. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[out]</td><td class="paramname">context</td><td>Optional, stores error information </td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">value</td><td>Nix value to modify </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">size</td><td>size of list </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>error code, NIX_OK on success. </dd></dl>
-
-</div>
-</div>
-<a id="gaadf7c3688869362f7b5869e0b65cb808" name="gaadf7c3688869362f7b5869e0b65cb808"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#gaadf7c3688869362f7b5869e0b65cb808">&#9670;&#160;</a></span>nix_set_bool()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="group__errors.html#ga76b77b272051ad446bd1d87f5d471081">nix_err</a> nix_set_bool </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="structnix__c__context.html">nix_c_context</a> *&#160;</td>
-          <td class="paramname"><em>context</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="structValue.html">Value</a> *&#160;</td>
-          <td class="paramname"><em>value</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">bool&#160;</td>
+          <td class="paramtype">ListBuilder *&#160;</td>
           <td class="paramname"><em>b</em>&#160;</td>
         </tr>
         <tr>
@@ -1176,12 +1562,12 @@ NULL in case of error. </dd></dl>
       </table>
 </div><div class="memdoc">
 
-<p>Set boolean value. </p>
+<p>Create a list from a list builder. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[out]</td><td class="paramname">context</td><td>Optional, stores error information </td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">value</td><td>Nix value to modify </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">b</td><td>the boolean value </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">b</td><td>list builder to use. Make sure to unref this afterwards. </td></tr>
   </table>
   </dd>
 </dl>
@@ -1189,14 +1575,14 @@ NULL in case of error. </dd></dl>
 
 </div>
 </div>
-<a id="ga60d2c0b332a4eaea4592b1c6a3a1eda3" name="ga60d2c0b332a4eaea4592b1c6a3a1eda3"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga60d2c0b332a4eaea4592b1c6a3a1eda3">&#9670;&#160;</a></span>nix_set_external()</h2>
+<a id="gaf1eae78431d73e362ac7fac503dd7332" name="gaf1eae78431d73e362ac7fac503dd7332"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gaf1eae78431d73e362ac7fac503dd7332">&#9670;&#160;</a></span>nix_make_list_builder()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="group__errors.html#ga76b77b272051ad446bd1d87f5d471081">nix_err</a> nix_set_external </td>
+          <td class="memname">ListBuilder * nix_make_list_builder </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="structnix__c__context.html">nix_c_context</a> *&#160;</td>
           <td class="paramname"><em>context</em>, </td>
@@ -1204,14 +1590,14 @@ NULL in case of error. </dd></dl>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="structValue.html">Value</a> *&#160;</td>
-          <td class="paramname"><em>value</em>, </td>
+          <td class="paramtype"><a class="el" href="structEvalState.html">EvalState</a> *&#160;</td>
+          <td class="paramname"><em>state</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="group__Externals.html#gaf99cd12b1e67170135b3de9ed87765bf">ExternalValue</a> *&#160;</td>
-          <td class="paramname"><em>val</em>&#160;</td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>capacity</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -1221,333 +1607,16 @@ NULL in case of error. </dd></dl>
       </table>
 </div><div class="memdoc">
 
-<p>Set an external value. </p>
+<p>Create a list builder. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[out]</td><td class="paramname">context</td><td>Optional, stores error information </td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">value</td><td>Nix value to modify </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">val</td><td>the external value to set. Will be GC-referenced by the value. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">state</td><td>nix evaluator state </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">capacity</td><td>how many bindings you'll add. Don't exceed. </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>error code, NIX_OK on success. </dd></dl>
-
-</div>
-</div>
-<a id="gaebe93a7c5329f59e41d481ad54c59e18" name="gaebe93a7c5329f59e41d481ad54c59e18"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#gaebe93a7c5329f59e41d481ad54c59e18">&#9670;&#160;</a></span>nix_set_float()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="group__errors.html#ga76b77b272051ad446bd1d87f5d471081">nix_err</a> nix_set_float </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="structnix__c__context.html">nix_c_context</a> *&#160;</td>
-          <td class="paramname"><em>context</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="structValue.html">Value</a> *&#160;</td>
-          <td class="paramname"><em>value</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>d</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Set a float. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[out]</td><td class="paramname">context</td><td>Optional, stores error information </td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">value</td><td>Nix value to modify </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">d</td><td>the float, 64-bits </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>error code, NIX_OK on success. </dd></dl>
-
-</div>
-</div>
-<a id="gaa28ae50cb15c24c4806a068dc447822f" name="gaa28ae50cb15c24c4806a068dc447822f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#gaa28ae50cb15c24c4806a068dc447822f">&#9670;&#160;</a></span>nix_set_int()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="group__errors.html#ga76b77b272051ad446bd1d87f5d471081">nix_err</a> nix_set_int </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="structnix__c__context.html">nix_c_context</a> *&#160;</td>
-          <td class="paramname"><em>context</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="structValue.html">Value</a> *&#160;</td>
-          <td class="paramname"><em>value</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int64_t&#160;</td>
-          <td class="paramname"><em>i</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Set an int. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[out]</td><td class="paramname">context</td><td>Optional, stores error information </td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">value</td><td>Nix value to modify </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">i</td><td>the int </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>error code, NIX_OK on success. </dd></dl>
-
-</div>
-</div>
-<a id="gae08c2799fececc3060a36a1413d8030f" name="gae08c2799fececc3060a36a1413d8030f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#gae08c2799fececc3060a36a1413d8030f">&#9670;&#160;</a></span>nix_set_list_byidx()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="group__errors.html#ga76b77b272051ad446bd1d87f5d471081">nix_err</a> nix_set_list_byidx </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="structnix__c__context.html">nix_c_context</a> *&#160;</td>
-          <td class="paramname"><em>context</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="structValue.html">Value</a> *&#160;</td>
-          <td class="paramname"><em>value</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">unsigned int&#160;</td>
-          <td class="paramname"><em>ix</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="structValue.html">Value</a> *&#160;</td>
-          <td class="paramname"><em>elem</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Manipulate a list by index. </p>
-<p>Don't do this mid-computation. </p><dl class="section pre"><dt>Precondition</dt><dd>your list should be at least 'ix+1' items long </dd></dl>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[out]</td><td class="paramname">context</td><td>Optional, stores error information </td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">value</td><td>Nix value to modify </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">ix</td><td>index to manipulate </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">elem</td><td>the value to set, will be gc-referenced by the value </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>error code, NIX_OK on success. </dd></dl>
-
-</div>
-</div>
-<a id="ga98f012f5a3333e2df76dd393b2ce11f5" name="ga98f012f5a3333e2df76dd393b2ce11f5"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga98f012f5a3333e2df76dd393b2ce11f5">&#9670;&#160;</a></span>nix_set_null()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="group__errors.html#ga76b77b272051ad446bd1d87f5d471081">nix_err</a> nix_set_null </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="structnix__c__context.html">nix_c_context</a> *&#160;</td>
-          <td class="paramname"><em>context</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="structValue.html">Value</a> *&#160;</td>
-          <td class="paramname"><em>value</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Set null. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[out]</td><td class="paramname">context</td><td>Optional, stores error information </td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">value</td><td>Nix value to modify </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>error code, NIX_OK on success. </dd></dl>
-
-</div>
-</div>
-<a id="ga5e041c80488ca161e5808cfa73a91b1b" name="ga5e041c80488ca161e5808cfa73a91b1b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga5e041c80488ca161e5808cfa73a91b1b">&#9670;&#160;</a></span>nix_set_path_string()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="group__errors.html#ga76b77b272051ad446bd1d87f5d471081">nix_err</a> nix_set_path_string </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="structnix__c__context.html">nix_c_context</a> *&#160;</td>
-          <td class="paramname"><em>context</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="structValue.html">Value</a> *&#160;</td>
-          <td class="paramname"><em>value</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const char *&#160;</td>
-          <td class="paramname"><em>str</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Set a path. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[out]</td><td class="paramname">context</td><td>Optional, stores error information </td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">value</td><td>Nix value to modify </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">str</td><td>the path string, copied </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>error code, NIX_OK on success. </dd></dl>
-
-</div>
-</div>
-<a id="gaba1f6239d324f565b3e064fdcd9ac2b5" name="gaba1f6239d324f565b3e064fdcd9ac2b5"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#gaba1f6239d324f565b3e064fdcd9ac2b5">&#9670;&#160;</a></span>nix_set_primop()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="group__errors.html#ga76b77b272051ad446bd1d87f5d471081">nix_err</a> nix_set_primop </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="structnix__c__context.html">nix_c_context</a> *&#160;</td>
-          <td class="paramname"><em>context</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="structValue.html">Value</a> *&#160;</td>
-          <td class="paramname"><em>value</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="group__primops.html#ga2e435859eef601a50aadd3c39e50f2e2">PrimOp</a> *&#160;</td>
-          <td class="paramname"><em>op</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Set primop. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[out]</td><td class="paramname">context</td><td>Optional, stores error information </td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">value</td><td>Nix value to modify </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">op</td><td>primop, will be gc-referenced by the value </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section see"><dt>See also</dt><dd><a class="el" href="group__primops.html#ga5bf66d0453a6c978b34c23215b4cb4b4" title="Allocate a PrimOp.">nix_alloc_primop</a> </dd></dl>
-<dl class="section return"><dt>Returns</dt><dd>error code, NIX_OK on success. </dd></dl>
-
-</div>
-</div>
-<a id="ga7349b2cd6636a9afb68156e81da5d70b" name="ga7349b2cd6636a9afb68156e81da5d70b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga7349b2cd6636a9afb68156e81da5d70b">&#9670;&#160;</a></span>nix_set_string()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="group__errors.html#ga76b77b272051ad446bd1d87f5d471081">nix_err</a> nix_set_string </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="structnix__c__context.html">nix_c_context</a> *&#160;</td>
-          <td class="paramname"><em>context</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="structValue.html">Value</a> *&#160;</td>
-          <td class="paramname"><em>value</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const char *&#160;</td>
-          <td class="paramname"><em>str</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Set a string. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[out]</td><td class="paramname">context</td><td>Optional, stores error information </td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">value</td><td>Nix value to modify </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">str</td><td>the string, copied </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>error code, NIX_OK on success. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>owned reference to a list builder. Make sure to unref when you're done. </dd></dl>
 
 </div>
 </div>

@@ -25,7 +25,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">Nix<span id="projectnumber">&#160;2.20.0</span>
+   <div id="projectname">Nix<span id="projectnumber">&#160;2.21.0</span>
    </div>
    <div id="projectbrief">Nix, the purely functional package manager: C API (experimental)</div>
   </td>
@@ -145,7 +145,7 @@ Functions</h2></td></tr>
 <tr class="memdesc:gacd9d2129cbcaf43134982e87c09fbf7f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Realise a Nix store path.  <br /></td></tr>
 <tr class="separator:gacd9d2129cbcaf43134982e87c09fbf7f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gac473581ba0d5f2c4702bf3f421ec76f2"><td class="memItemLeft" align="right" valign="top"><a class="el" href="group__errors.html#ga76b77b272051ad446bd1d87f5d471081">nix_err</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__libstore.html#gac473581ba0d5f2c4702bf3f421ec76f2">nix_store_get_version</a> (<a class="el" href="structnix__c__context.html">nix_c_context</a> *, <a class="el" href="group__libstore.html#ga5af6c2c07653b5899f568233b7d267c1">Store</a> *store, char *dest, unsigned int n)</td></tr>
-<tr class="memdesc:gac473581ba0d5f2c4702bf3f421ec76f2"><td class="mdescLeft">&#160;</td><td class="mdescRight">get the version of a nix store  <br /></td></tr>
+<tr class="memdesc:gac473581ba0d5f2c4702bf3f421ec76f2"><td class="mdescLeft">&#160;</td><td class="mdescRight">get the version of a nix store. If the store doesn't have a version (like the dummy store), returns an empty string.  <br /></td></tr>
 <tr class="separator:gac473581ba0d5f2c4702bf3f421ec76f2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
