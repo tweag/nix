@@ -29,7 +29,7 @@ var nix__api__value_8h =
     [ "nix_init_float", "group__value__manip.html#ga8676f2a86924757b0f5ababa117c237a", null ],
     [ "nix_init_int", "group__value__manip.html#ga4b600dc9c6f1bd5522c2ad336a25885f", null ],
     [ "nix_init_null", "group__value__manip.html#gaa11afa0be694bb6fabaebb7aafa07a62", null ],
-    [ "nix_init_path_string", "group__value__manip.html#ga2f5af0a46caec904b05213f27bff6241", null ],
+    [ "nix_init_path_string", "group__value__manip.html#ga7f5943d5d05a47dcc4fee682130acf28", null ],
     [ "nix_init_primop", "group__value__manip.html#ga5138834e516251ad6e5dde138fe98461", null ],
     [ "nix_init_string", "group__value__manip.html#ga8a1f19936f36939e8c5c751b71b59b17", null ],
     [ "nix_list_builder_free", "group__value__manip.html#ga2abb82d98e53527dac7334999f7d2246", null ],

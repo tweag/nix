@@ -51,7 +51,7 @@ var searchData=
   ['nix_5finit_5ffloat_48',['nix_init_float',['../group__value__manip.html#ga8676f2a86924757b0f5ababa117c237a',1,'nix_api_value.h']]],
   ['nix_5finit_5fint_49',['nix_init_int',['../group__value__manip.html#ga4b600dc9c6f1bd5522c2ad336a25885f',1,'nix_api_value.h']]],
   ['nix_5finit_5fnull_50',['nix_init_null',['../group__value__manip.html#gaa11afa0be694bb6fabaebb7aafa07a62',1,'nix_api_value.h']]],
-  ['nix_5finit_5fpath_5fstring_51',['nix_init_path_string',['../group__value__manip.html#ga2f5af0a46caec904b05213f27bff6241',1,'nix_api_value.h']]],
+  ['nix_5finit_5fpath_5fstring_51',['nix_init_path_string',['../group__value__manip.html#ga7f5943d5d05a47dcc4fee682130acf28',1,'nix_api_value.h']]],
   ['nix_5finit_5fplugins_52',['nix_init_plugins',['../group__libstore.html#ga477bd5faa525f8b9ac0cae46f76c0fc8',1,'nix_api_store.h']]],
   ['nix_5finit_5fprimop_53',['nix_init_primop',['../group__value__manip.html#ga5138834e516251ad6e5dde138fe98461',1,'nix_api_value.h']]],
   ['nix_5finit_5fstring_54',['nix_init_string',['../group__value__manip.html#ga8a1f19936f36939e8c5c751b71b59b17',1,'nix_api_value.h']]],
