@@ -218,6 +218,8 @@ Functions</h2></td></tr>
 <tr class="memdesc:ga16c4e7f4b32778bfb6521fbb91e55be4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get an attribute name by index in the sorted bindings.  <br /></td></tr>
 <tr class="separator:ga16c4e7f4b32778bfb6521fbb91e55be4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr><td colspan="2"><div class="groupHeader">Initializers</div></td></tr>
+<tr><td colspan="2"><div class="groupText"><p>Values are typically "returned" by initializing already allocated memory that serves as the return value. For this reason, the construction of values is not tied their allocation. Nix is a language with immutable values. Respect this property by only initializing Values once; and only initialize Values that are meant to be initialized by you. Failing to adhere to these rules may lead to undefined behavior. </p>
+</div></td></tr>
 <tr class="memitem:ga088b216dac602373f5c410c6e9f9e006"><td class="memItemLeft" align="right" valign="top"><a class="el" href="group__errors.html#ga76b77b272051ad446bd1d87f5d471081">nix_err</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__value__manip.html#ga088b216dac602373f5c410c6e9f9e006">nix_init_bool</a> (<a class="el" href="structnix__c__context.html">nix_c_context</a> *context, <a class="el" href="structValue.html">Value</a> *value, bool b)</td></tr>
 <tr class="memdesc:ga088b216dac602373f5c410c6e9f9e006"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set boolean value.  <br /></td></tr>
 <tr class="separator:ga088b216dac602373f5c410c6e9f9e006"><td class="memSeparator" colspan="2">&#160;</td></tr>

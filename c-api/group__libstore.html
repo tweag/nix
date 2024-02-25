@@ -127,11 +127,11 @@ Functions</h2></td></tr>
 <tr class="memdesc:ga477bd5faa525f8b9ac0cae46f76c0fc8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Loads the plugins specified in Nix's plugin-files setting.  <br /></td></tr>
 <tr class="separator:ga477bd5faa525f8b9ac0cae46f76c0fc8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gac805d1efb72516568c0a23343beecb72"><td class="memItemLeft" align="right" valign="top"><a class="el" href="group__libstore.html#ga5af6c2c07653b5899f568233b7d267c1">Store</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__libstore.html#gac805d1efb72516568c0a23343beecb72">nix_store_open</a> (<a class="el" href="structnix__c__context.html">nix_c_context</a> *, const char *uri, const char ***params)</td></tr>
-<tr class="memdesc:gac805d1efb72516568c0a23343beecb72"><td class="mdescLeft">&#160;</td><td class="mdescRight">Open a nix store.  <br /></td></tr>
+<tr class="memdesc:gac805d1efb72516568c0a23343beecb72"><td class="mdescLeft">&#160;</td><td class="mdescRight">Open a nix store Store instances may share state and resources behind the scenes.  <br /></td></tr>
 <tr class="separator:gac805d1efb72516568c0a23343beecb72"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga2817c1dcef39056780932e3f2de808fa"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__libstore.html#ga2817c1dcef39056780932e3f2de808fa">nix_store_unref</a> (<a class="el" href="group__libstore.html#ga5af6c2c07653b5899f568233b7d267c1">Store</a> *store)</td></tr>
-<tr class="memdesc:ga2817c1dcef39056780932e3f2de808fa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Unref a nix store.  <br /></td></tr>
-<tr class="separator:ga2817c1dcef39056780932e3f2de808fa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga038942be7c3aa900e1c0bf0e13a90624"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__libstore.html#ga038942be7c3aa900e1c0bf0e13a90624">nix_store_free</a> (<a class="el" href="group__libstore.html#ga5af6c2c07653b5899f568233b7d267c1">Store</a> *store)</td></tr>
+<tr class="memdesc:ga038942be7c3aa900e1c0bf0e13a90624"><td class="mdescLeft">&#160;</td><td class="mdescRight">Deallocate a nix store and free any resources if not also held by other Store instances.  <br /></td></tr>
+<tr class="separator:ga038942be7c3aa900e1c0bf0e13a90624"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gaf1e37e8f98452404893898d0a2e52a27"><td class="memItemLeft" align="right" valign="top"><a class="el" href="group__errors.html#ga76b77b272051ad446bd1d87f5d471081">nix_err</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__libstore.html#gaf1e37e8f98452404893898d0a2e52a27">nix_store_get_uri</a> (<a class="el" href="structnix__c__context.html">nix_c_context</a> *context, <a class="el" href="group__libstore.html#ga5af6c2c07653b5899f568233b7d267c1">Store</a> *store, char *dest, unsigned int n)</td></tr>
 <tr class="memdesc:gaf1e37e8f98452404893898d0a2e52a27"><td class="mdescLeft">&#160;</td><td class="mdescRight">get the URI of a nix store  <br /></td></tr>
 <tr class="separator:gaf1e37e8f98452404893898d0a2e52a27"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -264,6 +264,33 @@ Functions</h2></td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">path</td><td>Path to build </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">userdata</td><td>data to pass to every callback invocation </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">callback</td><td>called for every realised output </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ga038942be7c3aa900e1c0bf0e13a90624" name="ga038942be7c3aa900e1c0bf0e13a90624"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga038942be7c3aa900e1c0bf0e13a90624">&#9670;&#160;</a></span>nix_store_free()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void nix_store_free </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="group__libstore.html#ga5af6c2c07653b5899f568233b7d267c1">Store</a> *&#160;</td>
+          <td class="paramname"><em>store</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Deallocate a nix store and free any resources if not also held by other Store instances. </p>
+<p>Does not fail.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">store</td><td>the store to free </td></tr>
   </table>
   </dd>
 </dl>
@@ -451,7 +478,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Open a nix store. </p>
+<p>Open a nix store Store instances may share state and resources behind the scenes. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[out]</td><td class="paramname">context</td><td>Optional, stores error information </td></tr>
@@ -460,8 +487,8 @@ Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>ref-counted Store pointer, NULL in case of errors </dd></dl>
-<dl class="section see"><dt>See also</dt><dd><a class="el" href="group__libstore.html#ga2817c1dcef39056780932e3f2de808fa" title="Unref a nix store.">nix_store_unref</a> </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>a Store pointer, NULL in case of errors </dd></dl>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="group__libstore.html#ga038942be7c3aa900e1c0bf0e13a90624" title="Deallocate a nix store and free any resources if not also held by other Store instances.">nix_store_free</a> </dd></dl>
 
 </div>
 </div>
@@ -531,32 +558,6 @@ Functions</h2></td></tr>
 <p>Does not fail. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">p</td><td>the path to free </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a id="ga2817c1dcef39056780932e3f2de808fa" name="ga2817c1dcef39056780932e3f2de808fa"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga2817c1dcef39056780932e3f2de808fa">&#9670;&#160;</a></span>nix_store_unref()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void nix_store_unref </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="group__libstore.html#ga5af6c2c07653b5899f568233b7d267c1">Store</a> *&#160;</td>
-          <td class="paramname"><em>store</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Unref a nix store. </p>
-<p>Does not fail. It'll be closed and deallocated when all references are gone. </p><dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">builder</td><td>the store to unref </td></tr>
   </table>
   </dd>
 </dl>
