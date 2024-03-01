@@ -204,6 +204,8 @@
         # Binary package for various platforms.
         build = forAllSystems (system: self.packages.${system}.nix);
 
+        pedanticBuild = forAllSystems (system: self.packages.${system}.nix.override { pedantic = true; });
+
         shellInputs = forAllSystems (system: self.devShells.${system}.default.inputDerivation);
 
         buildStatic = lib.genAttrs linux64BitSystems (system: self.packages.${system}.nix-static);

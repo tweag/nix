@@ -71,6 +71,12 @@ else
   unexport NIX_HARDENING_ENABLE
 endif
 
+PEDANTIC = 0
+ifeq ($(PEDANTIC), 1)
+    GLOBAL_CXXFLAGS += -fsanitize=address,undefined -fPIE -pie
+    GLOBAL_LDFLAGS += -fsanitize=address,undefined
+endif
+
 include mk/platform.mk
 
 ifdef HOST_WINDOWS
