@@ -2,6 +2,7 @@ var nix__api__value_8h =
 [
     [ "BindingsBuilder", "group__value__manip.html#ga0c9f12c9e33e4211655c22e94468fa84", null ],
     [ "ExternalValue", "group__Externals.html#gaf99cd12b1e67170135b3de9ed87765bf", null ],
+    [ "ListBuilder", "group__value__manip.html#ga4bd8d2a4cb7c71ada7cb9a2d030425a2", null ],
     [ "PrimOp", "group__primops.html#ga2e435859eef601a50aadd3c39e50f2e2", null ],
     [ "PrimOpFun", "group__primops.html#ga17365c66df7f598a3c606aa4aec7c1e5", null ],
     [ "nix_alloc_primop", "group__primops.html#ga5bf66d0453a6c978b34c23215b4cb4b4", null ],
@@ -32,11 +33,11 @@ var nix__api__value_8h =
     [ "nix_init_path_string", "group__value__manip.html#ga7f5943d5d05a47dcc4fee682130acf28", null ],
     [ "nix_init_primop", "group__value__manip.html#ga5138834e516251ad6e5dde138fe98461", null ],
     [ "nix_init_string", "group__value__manip.html#ga8a1f19936f36939e8c5c751b71b59b17", null ],
-    [ "nix_list_builder_free", "group__value__manip.html#ga2abb82d98e53527dac7334999f7d2246", null ],
-    [ "nix_list_builder_insert", "group__value__manip.html#ga47096ed1742b3cf147c4fc42e1f1fc7c", null ],
+    [ "nix_list_builder_free", "group__value__manip.html#ga120062b6a31bb2c547d43f71e2bb4d07", null ],
+    [ "nix_list_builder_insert", "group__value__manip.html#ga833dc37b76c67f13f367c0b14d35e01d", null ],
     [ "nix_make_attrs", "group__value__manip.html#ga3e6c970a08e00d1d4e00c1066b9c9729", null ],
     [ "nix_make_bindings_builder", "group__value__manip.html#ga77ea7b613a33658bbc695aff4e4eb55e", null ],
-    [ "nix_make_list", "group__value__manip.html#ga93aef5f0da15ae59c788aedaedd2ba60", null ],
+    [ "nix_make_list", "group__value__manip.html#gace5fa7643527e900e4393e7503d25cf8", null ],
     [ "nix_make_list_builder", "group__value__manip.html#gaf1eae78431d73e362ac7fac503dd7332", null ],
     [ "nix_register_primop", "group__primops.html#ga308d3d195090455a3c2383bb4f46243e", null ]
 ];

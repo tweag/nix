@@ -1,6 +1,7 @@
 var group__value__manip =
 [
     [ "BindingsBuilder", "group__value__manip.html#ga0c9f12c9e33e4211655c22e94468fa84", null ],
+    [ "ListBuilder", "group__value__manip.html#ga4bd8d2a4cb7c71ada7cb9a2d030425a2", null ],
     [ "nix_bindings_builder_free", "group__value__manip.html#gaf62b2b06dfd4b41b12b342902f38a480", null ],
     [ "nix_bindings_builder_insert", "group__value__manip.html#ga8bc508b7e88d66e5586180618976db02", null ],
     [ "nix_copy_value", "group__value__manip.html#ga136be244551c3045bb7c87e2f5a5de3e", null ],
@@ -27,10 +28,10 @@ var group__value__manip =
     [ "nix_init_path_string", "group__value__manip.html#ga7f5943d5d05a47dcc4fee682130acf28", null ],
     [ "nix_init_primop", "group__value__manip.html#ga5138834e516251ad6e5dde138fe98461", null ],
     [ "nix_init_string", "group__value__manip.html#ga8a1f19936f36939e8c5c751b71b59b17", null ],
-    [ "nix_list_builder_free", "group__value__manip.html#ga2abb82d98e53527dac7334999f7d2246", null ],
-    [ "nix_list_builder_insert", "group__value__manip.html#ga47096ed1742b3cf147c4fc42e1f1fc7c", null ],
+    [ "nix_list_builder_free", "group__value__manip.html#ga120062b6a31bb2c547d43f71e2bb4d07", null ],
+    [ "nix_list_builder_insert", "group__value__manip.html#ga833dc37b76c67f13f367c0b14d35e01d", null ],
     [ "nix_make_attrs", "group__value__manip.html#ga3e6c970a08e00d1d4e00c1066b9c9729", null ],
     [ "nix_make_bindings_builder", "group__value__manip.html#ga77ea7b613a33658bbc695aff4e4eb55e", null ],
-    [ "nix_make_list", "group__value__manip.html#ga93aef5f0da15ae59c788aedaedd2ba60", null ],
+    [ "nix_make_list", "group__value__manip.html#gace5fa7643527e900e4393e7503d25cf8", null ],
     [ "nix_make_list_builder", "group__value__manip.html#gaf1eae78431d73e362ac7fac503dd7332", null ]
 ];
