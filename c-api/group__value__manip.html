@@ -192,9 +192,9 @@ Functions</h2></td></tr>
 <tr class="memitem:ga532ac2192f44edc443afe865c5e228ea"><td class="memItemLeft" align="right" valign="top"><a class="el" href="group__errors.html#ga76b77b272051ad446bd1d87f5d471081">nix_err</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__value__manip.html#ga532ac2192f44edc443afe865c5e228ea">nix_init_external</a> (<a class="el" href="structnix__c__context.html">nix_c_context</a> *context, <a class="el" href="structValue.html">Value</a> *value, <a class="el" href="group__Externals.html#gaf99cd12b1e67170135b3de9ed87765bf">ExternalValue</a> *val)</td></tr>
 <tr class="memdesc:ga532ac2192f44edc443afe865c5e228ea"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set an external value.  <br /></td></tr>
 <tr class="separator:ga532ac2192f44edc443afe865c5e228ea"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gace5fa7643527e900e4393e7503d25cf8"><td class="memItemLeft" align="right" valign="top"><a class="el" href="group__errors.html#ga76b77b272051ad446bd1d87f5d471081">nix_err</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__value__manip.html#gace5fa7643527e900e4393e7503d25cf8">nix_make_list</a> (<a class="el" href="structnix__c__context.html">nix_c_context</a> *context, <a class="el" href="structEvalState.html">EvalState</a> *s, <a class="el" href="group__value__manip.html#ga4bd8d2a4cb7c71ada7cb9a2d030425a2">ListBuilder</a> *list_builder, <a class="el" href="structValue.html">Value</a> *value)</td></tr>
-<tr class="memdesc:gace5fa7643527e900e4393e7503d25cf8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a list from a list builder.  <br /></td></tr>
-<tr class="separator:gace5fa7643527e900e4393e7503d25cf8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga486e07110f92acd4aae323f006137ceb"><td class="memItemLeft" align="right" valign="top"><a class="el" href="group__errors.html#ga76b77b272051ad446bd1d87f5d471081">nix_err</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__value__manip.html#ga486e07110f92acd4aae323f006137ceb">nix_make_list</a> (<a class="el" href="structnix__c__context.html">nix_c_context</a> *context, <a class="el" href="group__value__manip.html#ga4bd8d2a4cb7c71ada7cb9a2d030425a2">ListBuilder</a> *list_builder, <a class="el" href="structValue.html">Value</a> *value)</td></tr>
+<tr class="memdesc:ga486e07110f92acd4aae323f006137ceb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a list from a list builder.  <br /></td></tr>
+<tr class="separator:ga486e07110f92acd4aae323f006137ceb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gaf1eae78431d73e362ac7fac503dd7332"><td class="memItemLeft" align="right" valign="top"><a class="el" href="group__value__manip.html#ga4bd8d2a4cb7c71ada7cb9a2d030425a2">ListBuilder</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__value__manip.html#gaf1eae78431d73e362ac7fac503dd7332">nix_make_list_builder</a> (<a class="el" href="structnix__c__context.html">nix_c_context</a> *context, <a class="el" href="structEvalState.html">EvalState</a> *state, size_t capacity)</td></tr>
 <tr class="memdesc:gaf1eae78431d73e362ac7fac503dd7332"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a list builder.  <br /></td></tr>
 <tr class="separator:gaf1eae78431d73e362ac7fac503dd7332"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -249,7 +249,7 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Stores an under-construction list. </p>
-<p>Do not reuse. </p><dl class="section see"><dt>See also</dt><dd><a class="el" href="group__value__manip.html#gaf1eae78431d73e362ac7fac503dd7332" title="Create a list builder.">nix_make_list_builder</a>, <a class="el" href="group__value__manip.html#ga120062b6a31bb2c547d43f71e2bb4d07" title="Free a list builder.">nix_list_builder_free</a>, <a class="el" href="group__value__manip.html#gace5fa7643527e900e4393e7503d25cf8" title="Create a list from a list builder.">nix_make_list</a> </dd>
+<p>Do not reuse. </p><dl class="section see"><dt>See also</dt><dd><a class="el" href="group__value__manip.html#gaf1eae78431d73e362ac7fac503dd7332" title="Create a list builder.">nix_make_list_builder</a>, <a class="el" href="group__value__manip.html#ga120062b6a31bb2c547d43f71e2bb4d07" title="Free a list builder.">nix_list_builder_free</a>, <a class="el" href="group__value__manip.html#ga486e07110f92acd4aae323f006137ceb" title="Create a list from a list builder.">nix_make_list</a> </dd>
 <dd>
 <a class="el" href="group__value__manip.html#ga833dc37b76c67f13f367c0b14d35e01d" title="Insert bindings into a builder.">nix_list_builder_insert</a> </dd></dl>
 
@@ -1561,8 +1561,8 @@ NULL in case of error. </dd></dl>
 
 </div>
 </div>
-<a id="gace5fa7643527e900e4393e7503d25cf8" name="gace5fa7643527e900e4393e7503d25cf8"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#gace5fa7643527e900e4393e7503d25cf8">&#9670;&#160;</a></span>nix_make_list()</h2>
+<a id="ga486e07110f92acd4aae323f006137ceb" name="ga486e07110f92acd4aae323f006137ceb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga486e07110f92acd4aae323f006137ceb">&#9670;&#160;</a></span>nix_make_list()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1572,12 +1572,6 @@ NULL in case of error. </dd></dl>
           <td>(</td>
           <td class="paramtype"><a class="el" href="structnix__c__context.html">nix_c_context</a> *&#160;</td>
           <td class="paramname"><em>context</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="structEvalState.html">EvalState</a> *&#160;</td>
-          <td class="paramname"><em>s</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>

@@ -37,7 +37,7 @@ var nix__api__value_8h =
     [ "nix_list_builder_insert", "group__value__manip.html#ga833dc37b76c67f13f367c0b14d35e01d", null ],
     [ "nix_make_attrs", "group__value__manip.html#ga3e6c970a08e00d1d4e00c1066b9c9729", null ],
     [ "nix_make_bindings_builder", "group__value__manip.html#ga77ea7b613a33658bbc695aff4e4eb55e", null ],
-    [ "nix_make_list", "group__value__manip.html#gace5fa7643527e900e4393e7503d25cf8", null ],
+    [ "nix_make_list", "group__value__manip.html#ga486e07110f92acd4aae323f006137ceb", null ],
     [ "nix_make_list_builder", "group__value__manip.html#gaf1eae78431d73e362ac7fac503dd7332", null ],
     [ "nix_register_primop", "group__primops.html#ga308d3d195090455a3c2383bb4f46243e", null ]
 ];

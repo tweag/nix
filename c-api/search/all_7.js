@@ -62,7 +62,7 @@ var searchData=
   ['nix_5flist_5fbuilder_5finsert_59',['nix_list_builder_insert',['../group__value__manip.html#ga833dc37b76c67f13f367c0b14d35e01d',1,'nix_api_value.h']]],
   ['nix_5fmake_5fattrs_60',['nix_make_attrs',['../group__value__manip.html#ga3e6c970a08e00d1d4e00c1066b9c9729',1,'nix_api_value.h']]],
   ['nix_5fmake_5fbindings_5fbuilder_61',['nix_make_bindings_builder',['../group__value__manip.html#ga77ea7b613a33658bbc695aff4e4eb55e',1,'nix_api_value.h']]],
-  ['nix_5fmake_5flist_62',['nix_make_list',['../group__value__manip.html#gace5fa7643527e900e4393e7503d25cf8',1,'nix_api_value.h']]],
+  ['nix_5fmake_5flist_62',['nix_make_list',['../group__value__manip.html#ga486e07110f92acd4aae323f006137ceb',1,'nix_api_value.h']]],
   ['nix_5fmake_5flist_5fbuilder_63',['nix_make_list_builder',['../group__value__manip.html#gaf1eae78431d73e362ac7fac503dd7332',1,'nix_api_value.h']]],
   ['nix_5fobserve_5fstring_64',['nix_observe_string',['../group__errors.html#ga6d4e34b5b0af5ec86c1c2e8e9d1c1243',1,'nix_api_util.h']]],
   ['nix_5fok_65',['NIX_OK',['../group__errors.html#ga8195d048e663f174a20f882a82f96fb1',1,'nix_api_util.h']]],
