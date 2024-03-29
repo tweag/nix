@@ -114,6 +114,8 @@ Embedding the Nix Evaluator</h1>
 <div class="line"><span class="preprocessor">#include &lt;<a class="code" href="nix__api__value_8h.html">nix_api_value.h</a>&gt;</span></div>
 <div class="line"><span class="preprocessor">#include &lt;stdio.h&gt;</span></div>
 <div class="line"> </div>
+<div class="line"><span class="comment">// NOTE: This example lacks all error handling. Production code must check for</span></div>
+<div class="line"><span class="comment">// errors, as some return values will be undefined.</span></div>
 <div class="line"><span class="keywordtype">int</span> main() {</div>
 <div class="line">   <a class="code hl_function" href="group__libexpr.html#ga5772ea855de5220ee73dc1a2071ae493">nix_libexpr_init</a>(NULL);</div>
 <div class="line"> </div>
