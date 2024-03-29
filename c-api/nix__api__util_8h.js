@@ -6,7 +6,7 @@ var nix__api__util_8h =
     [ "NIX_ERR_UNKNOWN", "group__errors.html#ga6e3f145fd7fe22e986b4f15a9d71a863", null ],
     [ "NIX_OK", "group__errors.html#ga8195d048e663f174a20f882a82f96fb1", null ],
     [ "nix_err", "group__errors.html#ga76b77b272051ad446bd1d87f5d471081", null ],
-    [ "nix_observe_string", "group__errors.html#ga6d4e34b5b0af5ec86c1c2e8e9d1c1243", null ],
+    [ "nix_get_string_callback", "group__errors.html#gad752a4c711de03b148636b54802ebe94", null ],
     [ "nix_c_context_create", "group__errors.html#ga648bcf865d9ec1f7111a0a135a50e807", null ],
     [ "nix_c_context_free", "group__errors.html#ga80ab0cb0628232e306350292e9f6ace4", null ],
     [ "nix_err_code", "group__errors.html#gaf172b5aa2e454f006b916ad3487ffb5d", null ],

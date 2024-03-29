@@ -134,9 +134,9 @@ Typedefs</h2></td></tr>
 <tr class="memitem:ga6ac58b2c3aea76fcc6b62f722441874d"><td class="memItemLeft" align="right" valign="top"><a id="ga6ac58b2c3aea76fcc6b62f722441874d" name="ga6ac58b2c3aea76fcc6b62f722441874d"></a>
 typedef struct <a class="el" href="structnix__c__context.html">nix_c_context</a>&#160;</td><td class="memItemRight" valign="bottom"><b>nix_c_context</b></td></tr>
 <tr class="separator:ga6ac58b2c3aea76fcc6b62f722441874d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga6d4e34b5b0af5ec86c1c2e8e9d1c1243"><td class="memItemLeft" align="right" valign="top">typedef void(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__errors.html#ga6d4e34b5b0af5ec86c1c2e8e9d1c1243">nix_observe_string</a>) (const char *start, unsigned int n, void *user_data)</td></tr>
-<tr class="memdesc:ga6d4e34b5b0af5ec86c1c2e8e9d1c1243"><td class="mdescLeft">&#160;</td><td class="mdescRight">Called to get the value of a string owned by Nix.  <br /></td></tr>
-<tr class="separator:ga6d4e34b5b0af5ec86c1c2e8e9d1c1243"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gad752a4c711de03b148636b54802ebe94"><td class="memItemLeft" align="right" valign="top">typedef void(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__errors.html#gad752a4c711de03b148636b54802ebe94">nix_get_string_callback</a>) (const char *start, unsigned int n, void *user_data)</td></tr>
+<tr class="memdesc:gad752a4c711de03b148636b54802ebe94"><td class="mdescLeft">&#160;</td><td class="mdescRight">Called to get the value of a string owned by Nix.  <br /></td></tr>
+<tr class="separator:gad752a4c711de03b148636b54802ebe94"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
@@ -292,14 +292,14 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="ga6d4e34b5b0af5ec86c1c2e8e9d1c1243" name="ga6d4e34b5b0af5ec86c1c2e8e9d1c1243"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga6d4e34b5b0af5ec86c1c2e8e9d1c1243">&#9670;&#160;</a></span>nix_observe_string</h2>
+<a id="gad752a4c711de03b148636b54802ebe94" name="gad752a4c711de03b148636b54802ebe94"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gad752a4c711de03b148636b54802ebe94">&#9670;&#160;</a></span>nix_get_string_callback</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">typedef void(* nix_observe_string) (const char *start, unsigned int n, void *user_data)</td>
+          <td class="memname">typedef void(* nix_get_string_callback) (const char *start, unsigned int n, void *user_data)</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -309,7 +309,7 @@ Functions</h2></td></tr>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">start</td><td>the string to copy. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>the string length. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">user_data</td><td>optional, arbitrary data, passed to the nix_observe_string when it's called. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">user_data</td><td>optional, arbitrary data, passed to the nix_get_string_callback when it's called. </td></tr>
   </table>
   </dd>
 </dl>
@@ -448,7 +448,7 @@ Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section see"><dt>See also</dt><dd><a class="el" href="group__errors.html#ga6d4e34b5b0af5ec86c1c2e8e9d1c1243" title="Called to get the value of a string owned by Nix.">nix_observe_string</a> </dd></dl>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="group__errors.html#gad752a4c711de03b148636b54802ebe94" title="Called to get the value of a string owned by Nix.">nix_get_string_callback</a> </dd></dl>
 <dl class="section return"><dt>Returns</dt><dd>NIX_OK if there were no errors, an error code otherwise. </dd></dl>
 
 </div>
@@ -549,7 +549,7 @@ Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section see"><dt>See also</dt><dd><a class="el" href="group__errors.html#ga6d4e34b5b0af5ec86c1c2e8e9d1c1243" title="Called to get the value of a string owned by Nix.">nix_observe_string</a> </dd></dl>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="group__errors.html#gad752a4c711de03b148636b54802ebe94" title="Called to get the value of a string owned by Nix.">nix_get_string_callback</a> </dd></dl>
 <dl class="section return"><dt>Returns</dt><dd>NIX_OK if there were no errors, an error code otherwise. </dd></dl>
 
 </div>
